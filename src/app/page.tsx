@@ -1,4 +1,13 @@
-export default function Home() {
+import Link from "next/link";
+import { redirect } from "next/navigation";
+import { auth } from "@/auth";
+
+export default async function Home() {
+  const session = await auth();
+  if (session?.user) {
+    redirect(session.user.onboardingComplete ? "/dashboard" : "/onboarding");
+  }
+
   return (
     <main className="flex flex-1 flex-col items-center justify-center px-6 py-16">
       <div className="w-full max-w-md text-center">
@@ -9,22 +18,19 @@ export default function Home() {
           Rencana konten TikTok kamu, tiap minggu — niche Couple Date Ideas.
         </p>
         <div className="mt-8 flex flex-col gap-3">
-          <a
+          <Link
             href="/login"
             className="min-touch inline-flex items-center justify-center rounded-xl bg-coral px-5 py-3 text-sm font-semibold text-white"
           >
             Masuk
-          </a>
-          <a
+          </Link>
+          <Link
             href="/register"
             className="min-touch inline-flex items-center justify-center rounded-xl border border-border bg-surface px-5 py-3 text-sm font-semibold text-ink"
           >
             Daftar
-          </a>
+          </Link>
         </div>
-        <p className="mt-6 text-xs text-ink-muted">
-          Scaffold siap · Auth & halaman inti menyusul
-        </p>
       </div>
     </main>
   );

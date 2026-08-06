@@ -11,7 +11,7 @@ function createPrismaClient() {
   const relative = raw.replace(/^file:/, "");
   const dbPath = path.isAbsolute(relative)
     ? relative
-    : path.join(process.cwd(), relative);
+    : path.join(/*turbopackIgnore: true*/ process.cwd(), relative);
 
   const adapter = new PrismaBetterSqlite3({ url: dbPath });
   return new PrismaClient({ adapter });
