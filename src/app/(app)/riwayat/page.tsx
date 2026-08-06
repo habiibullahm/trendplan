@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { auth } from "@/auth";
+import { FadeIn, Stagger } from "@/components/motion";
 import { prisma } from "@/lib/prisma";
 import { DAY_SHORT } from "@/lib/week";
 
@@ -28,11 +29,12 @@ export default async function RiwayatPage() {
         Konten yang sudah ditandai Posted.
       </p>
 
-      <ul className="mt-6 space-y-3">
+      <Stagger as="ul" className="mt-6 space-y-3">
         {items.map((item) => (
-          <li
+          <FadeIn
             key={item.id}
-            className="rounded-2xl border border-border bg-surface p-4"
+            as="li"
+            className="rounded-2xl border border-border bg-surface p-4 transition-colors hover:border-coral/30"
           >
             <Link href={`/planner/${item.id}`} className="block">
               <p className="font-semibold text-ink">{item.title}</p>
@@ -41,7 +43,7 @@ export default async function RiwayatPage() {
                 {item.performanceNote || "Belum ada catatan performa"}
               </p>
             </Link>
-          </li>
+          </FadeIn>
         ))}
         {items.length === 0 ? (
           <li className="rounded-2xl border border-dashed border-border px-4 py-6 text-sm text-ink-muted">
@@ -49,7 +51,7 @@ export default async function RiwayatPage() {
             <span className="font-semibold text-ink">Posted</span>.
           </li>
         ) : null}
-      </ul>
+      </Stagger>
     </main>
   );
 }

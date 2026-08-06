@@ -105,3 +105,78 @@ export async function deleteContentItemAction(formData: FormData) {
   revalidatePlanner();
   redirect("/planner");
 }
+
+/** Move item to another day; swap if that day is occupied. */
+export async function moveContentItemAction(
+  itemId: string,
+  toDayOfWeek: number,
+  expectedFromDay?: number,
+): Promise<PlannerActionState> {
+  const userId = await requireUserId();
+  const dayParsed = daySchema.safeParse(toDayOfWeek);
+  if (!itemId || !dayParsed.success) {
+    return { error: "Hari tidak valid." };
+  }
+
+  const toDay = dayParsed.data;
+
+  try {
+    const result = await prisma.$transaction(async (tx) => {
+      const item = await tx.contentItem.findFirst({
+        where: { id: itemId, weekPlan: { userId } },
+      });
+      if (!item) return { error: "Konten tidak ditemukan." } as const;
+
+      const fromDay = item.dayOfWeek;
+      if (expectedFromDay !== undefined && expectedFromDay !== fromDay) {
+        return {
+          error: "Planner sudah berubah. Muat ulang lalu coba lagi.",
+        } as const;
+      }
+
+      if (fromDay === toDay) {
+        return {} as const;
+      }
+
+      const occupant = await tx.contentItem.findFirst({
+        where: {
+          weekPlanId: item.weekPlanId,
+          dayOfWeek: toDay,
+          NOT: { id: item.id },
+        },
+      });
+
+      if (!occupant) {
+        await tx.contentItem.update({
+          where: { id: item.id },
+          data: { dayOfWeek: toDay },
+        });
+        return { success: "Ide dipindahkan." } as const;
+      }
+
+      // Unique (weekPlanId, dayOfWeek): park on temp day, then finish swap
+      const tempDay = -1 - fromDay;
+      await tx.contentItem.update({
+        where: { id: item.id },
+        data: { dayOfWeek: tempDay },
+      });
+      await tx.contentItem.update({
+        where: { id: occupant.id },
+        data: { dayOfWeek: fromDay },
+      });
+      await tx.contentItem.update({
+        where: { id: item.id },
+        data: { dayOfWeek: toDay },
+      });
+
+      return { success: "Ide ditukar harinya." } as const;
+    });
+
+    if (result.success) {
+      revalidatePlanner();
+    }
+    return result;
+  } catch {
+    return { error: "Gagal memindahkan ide. Coba lagi." };
+  }
+}

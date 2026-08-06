@@ -1,4 +1,5 @@
 import { AddToPlannerForm } from "@/components/add-to-planner-form";
+import { FadeIn, Stagger } from "@/components/motion";
 import { FORMAT_LABEL } from "@/lib/labels";
 import { getRecommendations } from "@/lib/planner";
 
@@ -19,14 +20,14 @@ export default async function RekomendasiPage() {
         Diurutkan dari skor tren × kecocokan niche Couple Date Ideas.
       </p>
 
-      <ul className="mt-6 space-y-4">
+      <Stagger as="ul" className="mt-6 space-y-4">
         {trends.map((trend, index) => (
-          <li
+          <FadeIn
             key={trend.id}
-            id={trend.id}
+            as="li"
             className="scroll-mt-24 rounded-2xl border border-border bg-surface p-4"
           >
-            <div className="flex items-center gap-2">
+            <div id={trend.id} className="flex items-center gap-2">
               <span className="rounded-full bg-coral/10 px-2 py-0.5 text-xs font-semibold text-coral">
                 #{index + 1}
               </span>
@@ -38,14 +39,14 @@ export default async function RekomendasiPage() {
               Format {FORMAT_LABEL[trend.format]} · skor {trend.score}
             </p>
             <AddToPlannerForm trendId={trend.id} />
-          </li>
+          </FadeIn>
         ))}
         {trends.length === 0 ? (
           <li className="text-sm text-ink-muted">
             Belum ada rekomendasi. Jalankan <code>npm run db:seed</code>.
           </li>
         ) : null}
-      </ul>
+      </Stagger>
     </main>
   );
 }

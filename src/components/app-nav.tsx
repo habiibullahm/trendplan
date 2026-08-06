@@ -28,7 +28,7 @@ export function TopNav() {
       <div className="mx-auto flex w-full max-w-5xl items-center justify-between gap-4 px-6 py-3">
         <Link
           href="/dashboard"
-          className="font-[family-name:var(--font-fraunces)] text-xl font-semibold text-ink"
+          className="font-[family-name:var(--font-fraunces)] text-xl font-semibold text-ink transition-opacity hover:opacity-80"
         >
           TrendPlan
         </Link>
@@ -39,7 +39,7 @@ export function TopNav() {
               <Link
                 key={item.href}
                 href={item.href}
-                className={`min-touch inline-flex items-center justify-center rounded-xl px-4 text-sm font-semibold transition-colors ${
+                className={`min-touch inline-flex items-center justify-center rounded-xl px-4 text-sm font-semibold transition-colors duration-200 ${
                   active
                     ? "bg-coral/10 text-coral"
                     : "text-ink-muted hover:bg-paper hover:text-ink"
@@ -70,12 +70,14 @@ export function BottomNav() {
             <li key={item.href}>
               <Link
                 href={item.href}
-                className={`min-touch flex flex-col items-center justify-center gap-0.5 px-1 text-xs font-semibold ${
+                className={`min-touch flex flex-col items-center justify-center gap-0.5 px-1 text-xs font-semibold transition-colors duration-200 ${
                   active ? "text-coral" : "text-ink-muted"
                 }`}
               >
                 <span
-                  className={`h-1 w-1 rounded-full ${active ? "bg-coral" : "bg-transparent"}`}
+                  className={`h-1 w-1 rounded-full transition-colors duration-200 ${
+                    active ? "bg-coral" : "bg-transparent"
+                  }`}
                   aria-hidden
                 />
                 {item.label}
