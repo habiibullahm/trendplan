@@ -1,15 +1,16 @@
 import type { ReactNode } from "react";
 import { redirect } from "next/navigation";
-import { auth, signOut } from "@/auth";
+import { signOut } from "@/auth";
 import { AppShell } from "@/components/app-shell";
 import { prisma } from "@/lib/prisma";
+import { getSafeSession } from "@/lib/session";
 
 export default async function AppLayout({
   children,
 }: {
   children: ReactNode;
 }) {
-  const session = await auth();
+  const session = await getSafeSession();
   if (!session?.user?.id) redirect("/login");
 
   const user = await prisma.user.findUnique({

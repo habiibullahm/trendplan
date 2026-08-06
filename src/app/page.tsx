@@ -1,9 +1,9 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { auth } from "@/auth";
+import { getSafeSession } from "@/lib/session";
 
 export default async function Home() {
-  const session = await auth();
+  const session = await getSafeSession();
   if (session?.user) {
     redirect(session.user.onboardingComplete ? "/dashboard" : "/onboarding");
   }

@@ -7,6 +7,23 @@ export const authConfig = {
   session: {
     strategy: "jwt",
   },
+  logger: {
+    error(error) {
+      // Stale cookie after AUTH_SECRET change — treat as logged out
+      if (
+        error &&
+        typeof error === "object" &&
+        "type" in error &&
+        (error as { type: string }).type === "JWTSessionError"
+      ) {
+        return;
+      }
+      console.error(
+        `[auth][error]`,
+        error instanceof Error ? error.message : error,
+      );
+    },
+  },
   providers: [],
   callbacks: {
     authorized({ auth, request: { nextUrl } }) {
