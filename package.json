@@ -15,13 +15,17 @@
     "db:studio": "prisma studio",
     "db:seed": "tsx prisma/seed.ts",
     "db:copy-to-prod": "tsx scripts/copy-local-to-prod.ts",
-    "smoke": "tsx scripts/smoke-happy-path.ts"
+    "smoke": "tsx scripts/smoke-happy-path.ts",
+    "test": "tsx --test src/**/*.test.ts"
   },
   "dependencies": {
+    "@dnd-kit/core": "^6.3.1",
+    "@dnd-kit/utilities": "^3.2.2",
     "@prisma/adapter-pg": "^7.9.1",
     "@prisma/client": "^7.9.1",
     "bcryptjs": "^3.0.3",
     "dotenv": "^17.4.2",
+    "motion": "^13.0.0",
     "next": "16.3.0",
     "next-auth": "^5.0.0-beta.32",
     "pg": "^8.22.0",

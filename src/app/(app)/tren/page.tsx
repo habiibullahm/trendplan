@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { AddToPlannerForm } from "@/components/add-to-planner-form";
+import { FadeIn, Stagger } from "@/components/motion";
 import { FORMAT_LABEL } from "@/lib/labels";
 import { getRecommendations } from "@/lib/planner";
 
@@ -20,10 +21,11 @@ export default async function TrenPage() {
         Tren TikTok mock untuk niche Couple Date Ideas.
       </p>
 
-      <ul className="mt-6 space-y-3">
+      <Stagger as="ul" className="mt-6 space-y-3">
         {trends.map((trend) => (
-          <li
+          <FadeIn
             key={trend.id}
+            as="li"
             className="rounded-2xl border border-border bg-surface p-4"
           >
             <div className="flex items-start justify-between gap-3">
@@ -36,20 +38,20 @@ export default async function TrenPage() {
               </div>
               <Link
                 href={`/rekomendasi#${trend.id}`}
-                className="min-touch shrink-0 text-sm font-semibold text-coral"
+                className="min-touch shrink-0 text-sm font-semibold text-coral transition-colors hover:text-ink"
               >
                 Pakai ide
               </Link>
             </div>
             <AddToPlannerForm trendId={trend.id} />
-          </li>
+          </FadeIn>
         ))}
         {trends.length === 0 ? (
           <li className="text-sm text-ink-muted">
             Belum ada tren. Jalankan <code>npm run db:seed</code>.
           </li>
         ) : null}
-      </ul>
+      </Stagger>
     </main>
   );
 }

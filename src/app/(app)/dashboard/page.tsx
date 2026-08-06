@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { auth } from "@/auth";
+import { FadeIn, ProgressBar, Stagger } from "@/components/motion";
 import { prisma } from "@/lib/prisma";
 import { getOrCreateWeekPlan, getRecommendations } from "@/lib/planner";
 import { formatWeekRange } from "@/lib/week";
@@ -38,41 +39,40 @@ export default async function DashboardPage() {
         <p className="mt-1 text-lg font-semibold text-ink">
           {scheduled} dari {goal} terjadwal
         </p>
-        <div className="mt-3 h-2 overflow-hidden rounded-full bg-paper">
-          <div
-            className="h-full rounded-full bg-coral"
-            style={{ width: `${progress}%` }}
-          />
-        </div>
+        <ProgressBar value={progress} />
         {weekPlan.items.length > 0 ? (
-          <ul className="mt-4 space-y-2">
+          <Stagger as="ul" className="mt-4 space-y-2">
             {weekPlan.items.slice(0, 3).map((item) => (
-              <li key={item.id} className="flex justify-between gap-2 text-sm">
+              <FadeIn
+                key={item.id}
+                as="li"
+                className="flex justify-between gap-2 text-sm"
+              >
                 <Link
                   href={`/planner/${item.id}`}
-                  className="truncate font-medium text-ink hover:text-coral"
+                  className="truncate font-medium text-ink transition-colors hover:text-coral"
                 >
                   {item.title}
                 </Link>
                 <span className="shrink-0 text-ink-muted">
                   {STATUS_LABEL[item.status]}
                 </span>
-              </li>
+              </FadeIn>
             ))}
-          </ul>
+          </Stagger>
         ) : null}
       </section>
 
       <div className="mt-4 flex flex-col gap-3 sm:flex-row">
         <Link
           href="/planner"
-          className="min-touch inline-flex items-center justify-center rounded-xl bg-coral px-5 py-3 text-sm font-semibold text-white"
+          className="min-touch inline-flex items-center justify-center rounded-xl bg-coral px-5 py-3 text-sm font-semibold text-white transition-transform active:scale-[0.98]"
         >
           Lanjut ke Planner
         </Link>
         <Link
           href="/tren"
-          className="min-touch inline-flex items-center justify-center rounded-xl border border-border bg-surface px-5 py-3 text-sm font-semibold text-ink"
+          className="min-touch inline-flex items-center justify-center rounded-xl border border-border bg-surface px-5 py-3 text-sm font-semibold text-ink transition-colors hover:bg-paper active:scale-[0.98]"
         >
           Lihat tren minggu ini
         </Link>
@@ -85,24 +85,25 @@ export default async function DashboardPage() {
             Lihat semua
           </Link>
         </div>
-        <ul className="mt-3 space-y-2">
+        <Stagger as="ul" className="mt-3 space-y-2">
           {topRecs.map((trend, index) => (
-            <li
+            <FadeIn
               key={trend.id}
+              as="li"
               className="rounded-2xl border border-border bg-surface px-4 py-3"
             >
               <p className="text-sm font-semibold text-ink">
                 {index + 1}. {trend.title}
               </p>
               <p className="mt-1 text-xs text-ink-muted">{trend.reason}</p>
-            </li>
+            </FadeIn>
           ))}
           {topRecs.length === 0 ? (
             <li className="text-sm text-ink-muted">
               Belum ada tren. Jalankan <code>npm run db:seed</code>.
             </li>
           ) : null}
-        </ul>
+        </Stagger>
       </section>
     </main>
   );
