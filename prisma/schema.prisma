@@ -1,4 +1,4 @@
-// TrendPlan — Prisma schema (SQLite)
+// TrendPlan — Prisma schema (PostgreSQL for Vercel/Neon)
 
 generator client {
   provider = "prisma-client"
@@ -6,7 +6,7 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
+  provider = "postgresql"
 }
 
 enum ContentFormat {
@@ -23,16 +23,16 @@ enum ContentStatus {
 }
 
 model User {
-  id                  String     @id @default(cuid())
-  email               String     @unique
-  passwordHash        String
-  name                String?
-  niche               String     @default("Couple Date Ideas")
-  weeklyGoal          Int        @default(3)
-  onboardingComplete  Boolean    @default(false)
-  createdAt           DateTime   @default(now())
-  updatedAt           DateTime   @updatedAt
-  weekPlans           WeekPlan[]
+  id                 String     @id @default(cuid())
+  email              String     @unique
+  passwordHash       String
+  name               String?
+  niche              String     @default("Couple Date Ideas")
+  weeklyGoal         Int        @default(3)
+  onboardingComplete Boolean    @default(false)
+  createdAt          DateTime   @default(now())
+  updatedAt          DateTime   @updatedAt
+  weekPlans          WeekPlan[]
 }
 
 model Trend {
@@ -61,20 +61,20 @@ model WeekPlan {
 }
 
 model ContentItem {
-  id               String         @id @default(cuid())
-  weekPlanId       String
-  dayOfWeek        Int
-  title            String
-  hook             String?
-  caption          String?
-  hashtags         String?
-  status           ContentStatus  @default(IDE)
-  trendId          String?
-  performanceNote  String?
-  createdAt        DateTime       @default(now())
-  updatedAt        DateTime       @updatedAt
-  weekPlan         WeekPlan       @relation(fields: [weekPlanId], references: [id], onDelete: Cascade)
-  trend            Trend?         @relation(fields: [trendId], references: [id], onDelete: SetNull)
+  id              String        @id @default(cuid())
+  weekPlanId      String
+  dayOfWeek       Int
+  title           String
+  hook            String?
+  caption         String?
+  hashtags        String?
+  status          ContentStatus @default(IDE)
+  trendId         String?
+  performanceNote String?
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+  weekPlan        WeekPlan      @relation(fields: [weekPlanId], references: [id], onDelete: Cascade)
+  trend           Trend?        @relation(fields: [trendId], references: [id], onDelete: SetNull)
 
   @@index([weekPlanId])
   @@index([status])
