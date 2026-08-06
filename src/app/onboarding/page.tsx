@@ -1,11 +1,11 @@
 import { redirect } from "next/navigation";
-import { auth } from "@/auth";
 import { completeOnboardingAction } from "@/app/actions/onboarding";
 import { OnboardingForm } from "@/components/onboarding-form";
 import { prisma } from "@/lib/prisma";
+import { getSafeSession } from "@/lib/session";
 
 export default async function OnboardingPage() {
-  const session = await auth();
+  const session = await getSafeSession();
   if (!session?.user) redirect("/login");
   if (session.user.onboardingComplete) redirect("/dashboard");
 
