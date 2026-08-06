@@ -1,36 +1,118 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# TrendPlan
 
-## Getting Started
+Perencanaan konten TikTok mingguan berbasis tren — niche **Couple Date Ideas**. UI dalam Bahasa Indonesia.
 
-First, run the development server:
+**Live:** [trendplan.vercel.app](https://trendplan.vercel.app)
+
+## Stack
+
+- Next.js 16 (App Router) + React 19 + Tailwind CSS 4
+- Auth.js (credentials + JWT)
+- Prisma 7 + PostgreSQL (`pg` adapter)
+- Sonner (toast feedback)
+- Deploy: Vercel + Neon (Vercel Postgres / Marketplace)
+
+## Fitur MVP
+
+- Daftar / masuk, onboarding niche & target mingguan
+- Tren & rekomendasi (seed mock Couple Date Ideas)
+- Planner mingguan (1 slot per hari), edit caption / status / hashtag
+- Dashboard progress + riwayat
+- Toast sukses/error (Bahasa Indonesia)
+
+## Setup lokal
+
+### Prasyarat
+
+- Node.js 20+
+- PostgreSQL di `localhost:5432` (atau sesuaikan URL)
+
+### 1. Install
+
+```bash
+npm install
+cp .env.example .env
+```
+
+### 2. Environment (`.env`)
+
+```env
+DATABASE_URL="postgresql://trendplan:trendplan@localhost:5432/trendplan"
+AUTH_SECRET="generate-a-long-random-string"
+AUTH_TRUST_HOST="true"
+```
+
+Buat database/user `trendplan` di Postgres lokal jika belum ada.
+
+### 3. Migrate + seed
+
+```bash
+npx prisma migrate deploy
+npm run db:seed
+```
+
+### 4. Dev server
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Buka [http://localhost:3000](http://localhost:3000).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Opsional: Postgres terisolasi via Docker — lihat `docker-compose.yml` (pastikan port 5432 bebas).
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Scripts
 
-## Learn More
+| Command | Keterangan |
+|---------|------------|
+| `npm run dev` | Dev server |
+| `npm run build` | `prisma generate` + production build |
+| `npm run db:migrate` | Migrate (dev) |
+| `npm run db:deploy` | Migrate (prod/CI) |
+| `npm run db:seed` | Seed 12 tren Couple Date Ideas |
+| `npm run db:studio` | Prisma Studio |
+| `npm run smoke` | Happy-path smoke test |
+| `npm run db:copy-to-prod` | Copy data lokal → Neon (butuh `TARGET_DATABASE_URL`) |
 
-To learn more about Next.js, take a look at the following resources:
+Copy ke production:
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+```bash
+TARGET_DATABASE_URL="postgresql://...@....neon.tech/neondb?sslmode=require" npm run db:copy-to-prod
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Deploy (Vercel)
 
-## Deploy on Vercel
+1. Import repo ke Vercel.
+2. Pasang **Neon** dari [Vercel Marketplace](https://vercel.com/marketplace/neon) (inject `DATABASE_URL`).
+3. Set env Production:
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+| Variable | Contoh |
+|----------|--------|
+| `DATABASE_URL` | (dari Neon) |
+| `AUTH_SECRET` | `openssl rand -base64 32` |
+| `AUTH_URL` | `https://trendplan.vercel.app` |
+| `AUTH_TRUST_HOST` | `true` |
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+4. Deploy — build menjalankan `prisma migrate deploy` (`vercel.json`).
+5. Seed sekali ke Neon:
+
+```bash
+DATABASE_URL="<neon-url>" npm run db:seed
+```
+
+Redeploy **tidak** wajib setelah seed.
+
+## Struktur singkat
+
+```
+src/app/(app)/     # Dashboard, tren, rekomendasi, planner, riwayat
+src/app/actions/   # Auth + planner server actions
+src/components/    # UI (nav, forms, toaster, planner board)
+prisma/            # Schema, migrations, seed
+scripts/           # Smoke + copy-local-to-prod
+```
+
+## Catatan
+
+- Session JWT: jika ganti `AUTH_SECRET`, cookie lama invalid (app membersihkan stale cookie).
+- `prisma/dev.db` adalah SQLite lama — app memakai PostgreSQL.

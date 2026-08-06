@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { DM_Sans, Fraunces } from "next/font/google";
+import { AppToaster } from "@/components/toaster";
 import "./globals.css";
 
 const dmSans = DM_Sans({
@@ -26,6 +27,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
     >
       <body className="min-h-full flex flex-col bg-paper text-ink font-sans">
         {children}
+        <AppToaster />
       </body>
     </html>
   );

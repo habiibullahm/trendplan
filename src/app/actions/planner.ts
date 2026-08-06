@@ -41,7 +41,7 @@ export async function addTrendToPlannerAction(
   const weekPlan = await getOrCreateWeekPlan(userId);
   const existing = weekPlan.items.find((i) => i.dayOfWeek === dayParsed.data);
   if (existing) {
-    return { error: "Hari itu sudah terisi. Hapus/ubah dulu di Planner." };
+    return { error: "Hari itu sudah ada ide — pilih hari lain." };
   }
 
   await prisma.contentItem.create({
