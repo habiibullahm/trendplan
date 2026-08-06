@@ -7,6 +7,7 @@ import {
   deleteContentItemAction,
   type PlannerActionState,
 } from "@/app/actions/planner";
+import { useActionToasts } from "@/hooks/use-action-toasts";
 import { ALL_STATUSES, STATUS_LABEL } from "@/lib/labels";
 import type { ContentStatus } from "@/generated/prisma/client";
 
@@ -29,22 +30,12 @@ export function ContentEditForm({ item }: Props) {
     updateContentItemAction,
     initial,
   );
+  useActionToasts(state);
 
   return (
     <div className="flex flex-col gap-4">
       <form action={action} className="flex flex-col gap-4">
         <input type="hidden" name="itemId" value={item.id} />
-
-        {state.error ? (
-          <p className="rounded-xl border border-coral/30 bg-coral/10 px-3 py-2 text-sm text-coral">
-            {state.error}
-          </p>
-        ) : null}
-        {state.success ? (
-          <p className="rounded-xl border border-sage/30 bg-sage/10 px-3 py-2 text-sm text-sage">
-            {state.success}
-          </p>
-        ) : null}
 
         <div>
           <p className="text-sm font-medium text-ink">Status</p>

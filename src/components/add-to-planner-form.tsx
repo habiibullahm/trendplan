@@ -5,6 +5,7 @@ import {
   addTrendToPlannerAction,
   type PlannerActionState,
 } from "@/app/actions/planner";
+import { useActionToasts } from "@/hooks/use-action-toasts";
 import { DAY_SHORT } from "@/lib/week";
 
 const initial: PlannerActionState = {};
@@ -14,6 +15,7 @@ export function AddToPlannerForm({ trendId }: { trendId: string }) {
     addTrendToPlannerAction,
     initial,
   );
+  useActionToasts(state);
 
   return (
     <form action={action} className="mt-3 flex flex-col gap-2">
@@ -39,12 +41,6 @@ export function AddToPlannerForm({ trendId }: { trendId: string }) {
       >
         {pending ? "Menambahkan..." : "Tambah ke planner"}
       </button>
-      {state.error ? (
-        <p className="text-sm text-coral">{state.error}</p>
-      ) : null}
-      {state.success ? (
-        <p className="text-sm text-sage">{state.success}</p>
-      ) : null}
     </form>
   );
 }

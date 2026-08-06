@@ -7,6 +7,7 @@ import {
   registerAction,
   type AuthFormState,
 } from "@/app/actions/auth";
+import { useActionToasts } from "@/hooks/use-action-toasts";
 
 const initialState: AuthFormState = {};
 
@@ -17,15 +18,10 @@ function FieldError({ messages }: { messages?: string[] }) {
 
 export function LoginForm() {
   const [state, action, pending] = useActionState(loginAction, initialState);
+  useActionToasts(state);
 
   return (
     <form action={action} className="flex w-full flex-col gap-4">
-      {state.error ? (
-        <p className="rounded-xl border border-coral/30 bg-coral/10 px-3 py-2 text-sm text-coral">
-          {state.error}
-        </p>
-      ) : null}
-
       <label className="block text-left">
         <span className="text-sm font-medium text-ink">Email</span>
         <input
@@ -72,15 +68,10 @@ export function LoginForm() {
 
 export function RegisterForm() {
   const [state, action, pending] = useActionState(registerAction, initialState);
+  useActionToasts(state);
 
   return (
     <form action={action} className="flex w-full flex-col gap-4">
-      {state.error ? (
-        <p className="rounded-xl border border-coral/30 bg-coral/10 px-3 py-2 text-sm text-coral">
-          {state.error}
-        </p>
-      ) : null}
-
       <label className="block text-left">
         <span className="text-sm font-medium text-ink">Nama</span>
         <input

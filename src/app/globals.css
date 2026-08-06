@@ -32,3 +32,48 @@ body {
   min-height: 44px;
   min-width: 44px;
 }
+
+/* Sonner — left accent bar, surface body, ink text */
+[data-sonner-toaster] [data-sonner-toast].tp-toast {
+  --border-radius: 16px;
+  padding-left: 1rem;
+  position: relative;
+  overflow: hidden;
+  box-shadow: none !important;
+}
+
+[data-sonner-toaster] [data-sonner-toast].tp-toast::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 4px;
+  background: var(--color-border);
+}
+
+[data-sonner-toaster] [data-sonner-toast].tp-toast-success {
+  background: var(--color-surface) !important;
+  border-color: var(--color-border) !important;
+  color: var(--color-ink) !important;
+}
+
+[data-sonner-toaster] [data-sonner-toast].tp-toast-success::before {
+  background: var(--color-sage);
+}
+
+[data-sonner-toaster] [data-sonner-toast].tp-toast-error {
+  background: var(--color-surface) !important;
+  border-color: var(--color-border) !important;
+  color: var(--color-ink) !important;
+}
+
+[data-sonner-toaster] [data-sonner-toast].tp-toast-error::before {
+  background: var(--color-coral);
+}
+
+[data-sonner-toaster] [data-sonner-toast] [data-icon] {
+  display: none;
+}
+
+
