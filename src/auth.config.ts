@@ -19,7 +19,8 @@ export const authConfig = {
         path.startsWith("/tren") ||
         path.startsWith("/rekomendasi") ||
         path.startsWith("/planner") ||
-        path.startsWith("/riwayat");
+        path.startsWith("/riwayat") ||
+        path.startsWith("/lain");
 
       if (isAuthPage) {
         if (isLoggedIn) {

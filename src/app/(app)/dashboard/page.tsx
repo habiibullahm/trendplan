@@ -1,16 +1,14 @@
 import Link from "next/link";
-import { redirect } from "next/navigation";
-import { auth, signOut } from "@/auth";
+import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 
 export default async function DashboardPage() {
   const session = await auth();
-  if (!session?.user) redirect("/login");
-  if (!session.user.onboardingComplete) redirect("/onboarding");
+  const userId = session!.user!.id;
 
   const user = await prisma.user.findUnique({
-    where: { id: session.user.id },
-    select: { weeklyGoal: true, niche: true },
+    where: { id: userId },
+    select: { weeklyGoal: true, niche: true, name: true },
   });
 
   const trendCount = await prisma.trend.count({
@@ -18,20 +16,22 @@ export default async function DashboardPage() {
   });
 
   return (
-    <main className="mx-auto flex w-full max-w-lg flex-1 flex-col px-6 py-10">
-      <p className="text-sm text-ink-muted">Halo, {session.user.name ?? "creator"}</p>
+    <main className="flex w-full max-w-lg flex-1 flex-col md:max-w-none">
+      <p className="text-sm text-ink-muted">
+        Halo, {user?.name ?? session?.user?.name ?? "creator"}
+      </p>
       <h1 className="mt-1 font-[family-name:var(--font-fraunces)] text-3xl font-semibold text-ink">
-        Dashboard
+        Beranda
       </h1>
       <p className="mt-3 text-sm text-ink-muted">
         Target {user?.weeklyGoal ?? 3} konten / minggu. Tren mock siap dipakai di langkah
         berikutnya.
       </p>
 
-      <div className="mt-8 space-y-3">
+      <div className="mt-8 grid gap-3 md:grid-cols-2">
         <div className="rounded-2xl border border-border bg-surface p-4">
           <p className="text-sm text-ink">
-            Email: <span className="font-medium">{session.user.email}</span>
+            Email: <span className="font-medium">{session?.user?.email}</span>
           </p>
           <p className="mt-1 text-sm text-ink-muted">
             Niche: {user?.niche ?? "Couple Date Ideas"} · TikTok
@@ -47,24 +47,20 @@ export default async function DashboardPage() {
         </div>
       </div>
 
-      <form
-        action={async () => {
-          "use server";
-          await signOut({ redirectTo: "/" });
-        }}
-        className="mt-8"
-      >
-        <button
-          type="submit"
-          className="min-touch inline-flex w-full items-center justify-center rounded-xl border border-border bg-surface px-5 py-3 text-sm font-semibold text-ink"
+      <div className="mt-6 flex flex-col gap-3 sm:flex-row">
+        <Link
+          href="/tren"
+          className="min-touch inline-flex items-center justify-center rounded-xl bg-coral px-5 py-3 text-sm font-semibold text-white"
         >
-          Keluar
-        </button>
-      </form>
-
-      <Link href="/" className="mt-4 text-center text-sm text-coral">
-        Kembali ke beranda
-      </Link>
+          Lihat tren minggu ini
+        </Link>
+        <Link
+          href="/planner"
+          className="min-touch inline-flex items-center justify-center rounded-xl border border-border bg-surface px-5 py-3 text-sm font-semibold text-ink"
+        >
+          Buka planner
+        </Link>
+      </div>
     </main>
   );
 }
