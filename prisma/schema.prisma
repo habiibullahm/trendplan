@@ -1,0 +1,81 @@
+// TrendPlan — Prisma schema (SQLite)
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+enum ContentFormat {
+  POV
+  LIST
+  STORYTELLING
+}
+
+enum ContentStatus {
+  IDE
+  DRAFT
+  READY
+  POSTED
+}
+
+model User {
+  id                  String     @id @default(cuid())
+  email               String     @unique
+  passwordHash        String
+  name                String?
+  niche               String     @default("Couple Date Ideas")
+  weeklyGoal          Int        @default(3)
+  onboardingComplete  Boolean    @default(false)
+  createdAt           DateTime   @default(now())
+  updatedAt           DateTime   @updatedAt
+  weekPlans           WeekPlan[]
+}
+
+model Trend {
+  id           String          @id @default(cuid())
+  title        String
+  hook         String
+  format       ContentFormat
+  score        Int
+  reason       String
+  niche        String          @default("Couple Date Ideas")
+  createdAt    DateTime        @default(now())
+  contentItems ContentItem[]
+}
+
+model WeekPlan {
+  id        String        @id @default(cuid())
+  userId    String
+  weekStart DateTime
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
+  user      User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  items     ContentItem[]
+
+  @@unique([userId, weekStart])
+  @@index([userId])
+}
+
+model ContentItem {
+  id               String         @id @default(cuid())
+  weekPlanId       String
+  dayOfWeek        Int
+  title            String
+  hook             String?
+  caption          String?
+  hashtags         String?
+  status           ContentStatus  @default(IDE)
+  trendId          String?
+  performanceNote  String?
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
+  weekPlan         WeekPlan       @relation(fields: [weekPlanId], references: [id], onDelete: Cascade)
+  trend            Trend?         @relation(fields: [trendId], references: [id], onDelete: SetNull)
+
+  @@index([weekPlanId])
+  @@index([status])
+}
