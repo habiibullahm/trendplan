@@ -12,7 +12,10 @@ const primaryNav = [
 
 function isActive(pathname: string, href: string) {
   if (href === "/dashboard") {
-    return pathname === "/dashboard" || pathname === "/rekomendasi";
+    return pathname === "/dashboard";
+  }
+  if (href === "/planner") {
+    return pathname === "/planner" || pathname.startsWith("/planner/");
   }
   return pathname === href || pathname.startsWith(`${href}/`);
 }
