@@ -3,6 +3,19 @@
 import "dotenv/config";
 import { defineConfig } from "prisma/config";
 
+/**
+ * Prisma Migrate needs a session-capable Postgres connection.
+ * Neon pooled URLs (`*-pooler.*`) go through PgBouncer and can leak
+ * session advisory locks → P1002. Prefer DIRECT_URL; otherwise strip `-pooler`.
+ */
+function migrateDatasourceUrl(): string | undefined {
+  const direct = process.env["DIRECT_URL"];
+  if (direct) return direct;
+  const databaseUrl = process.env["DATABASE_URL"];
+  if (!databaseUrl) return undefined;
+  return databaseUrl.replace("-pooler.", ".");
+}
+
 export default defineConfig({
   schema: "prisma/schema.prisma",
   migrations: {
@@ -10,6 +23,6 @@ export default defineConfig({
     seed: "tsx prisma/seed.ts",
   },
   datasource: {
-    url: process.env["DATABASE_URL"],
+    url: migrateDatasourceUrl(),
   },
 });

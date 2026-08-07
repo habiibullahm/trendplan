@@ -91,7 +91,8 @@ TARGET_DATABASE_URL="postgresql://...@....neon.tech/neondb?sslmode=require" npm 
 
 | Variable | Contoh |
 |----------|--------|
-| `DATABASE_URL` | (dari Neon) |
+| `DATABASE_URL` | Neon pooled URL (`…-pooler…`) for the app |
+| `DIRECT_URL` | Neon direct URL (no `-pooler`) for `prisma migrate` |
 | `AUTH_SECRET` | `openssl rand -base64 32` |
 | `AUTH_URL` | `https://trendplan.vercel.app` |
 | `AUTH_TRUST_HOST` | `true` |
