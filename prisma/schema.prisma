@@ -27,6 +27,7 @@ model User {
   email              String     @unique
   passwordHash       String
   name               String?
+  imageUrl           String?
   niche              String     @default("Couple Date Ideas")
   weeklyGoal         Int        @default(3)
   onboardingComplete Boolean    @default(false)

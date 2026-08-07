@@ -11,6 +11,7 @@ Perencanaan konten TikTok mingguan berbasis tren — niche **Couple Date Ideas**
 - Prisma 7 + PostgreSQL (`pg` adapter)
 - Sonner (toast feedback)
 - Deploy: Vercel + Neon (Vercel Postgres / Marketplace)
+- Vercel Blob (foto profil Akun)
 
 ## Fitur MVP
 
@@ -20,7 +21,7 @@ Perencanaan konten TikTok mingguan berbasis tren — niche **Couple Date Ideas**
 - Salin caption siap TikTok (detail) dan Salin minggu (daftar hari)
 - Hapus dengan toast Urungkan singkat, lalu hapus permanen
 - Dashboard progress + riwayat
-- Akun: identitas, target mingguan (ubah), pintasan Riwayat/Rekomendasi, keluar
+- Akun: identitas, foto profil (unggah), target mingguan (ubah), pintasan Riwayat/Rekomendasi, keluar
 - Demo baca saja di `/demo` (embed portfolio)
 - Toast sukses/error (Bahasa Indonesia)
 
@@ -115,6 +116,7 @@ TARGET_DATABASE_URL="postgresql://...@....neon.tech/neondb?sslmode=require" npm 
 | `AUTH_SECRET` | `openssl rand -base64 32` |
 | `AUTH_URL` | `https://trendplan.vercel.app` |
 | `AUTH_TRUST_HOST` | `true` |
+| `BLOB_READ_WRITE_TOKEN` | (dari Vercel Blob store) |
 
 4. Deploy — build menjalankan `prisma migrate deploy` (`vercel.json`).
 5. Seed sekali ke Neon:
