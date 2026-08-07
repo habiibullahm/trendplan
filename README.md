@@ -74,6 +74,7 @@ Opsional: Postgres terisolasi via Docker — lihat `docker-compose.yml` (pastika
 | `npm run build` | `prisma generate` + production build |
 | `npm run db:migrate` | Migrate (dev) |
 | `npm run db:deploy` | Migrate (prod/CI) |
+| `npm run db:clear-lock` | Clear stuck Prisma migrate advisory lock (P1002) |
 | `npm run db:seed` | Seed 12 tren Couple Date Ideas |
 | `npm run db:studio` | Prisma Studio |
 | `npm run smoke` | Happy-path smoke test |
@@ -112,7 +113,8 @@ TARGET_DATABASE_URL="postgresql://...@....neon.tech/neondb?sslmode=require" npm 
 
 | Variable | Contoh |
 |----------|--------|
-| `DATABASE_URL` | (dari Neon) |
+| `DATABASE_URL` | Neon pooled URL (`…-pooler…`) for the app |
+| `DIRECT_URL` | Neon direct URL (no `-pooler`) for `prisma migrate` |
 | `AUTH_SECRET` | `openssl rand -base64 32` |
 | `AUTH_URL` | `https://trendplan.vercel.app` |
 | `AUTH_TRUST_HOST` | `true` |
@@ -123,6 +125,13 @@ TARGET_DATABASE_URL="postgresql://...@....neon.tech/neondb?sslmode=require" npm 
 
 ```bash
 DATABASE_URL="<neon-url>" npm run db:seed
+```
+
+Jika migrate gagal dengan **P1002** (advisory lock timeout): pastikan `DIRECT_URL` mengarah ke koneksi **direct** (bukan `-pooler`), lalu:
+
+```bash
+npm run db:clear-lock
+DIRECT_URL="<neon-direct-url>" npm run db:deploy
 ```
 
 Redeploy **tidak** wajib setelah seed.
