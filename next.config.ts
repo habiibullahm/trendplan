@@ -28,6 +28,14 @@ function vercelBlobRemotePatterns(): NonNullable<
 
 const nextConfig: NextConfig = {
   serverExternalPackages: ["pg", "@prisma/adapter-pg", "sharp"],
+  // sharp 0.34+ ships libvips as a sibling optional package; ensure Linux
+  // binaries are traced into Vercel serverless functions (avoids ERR_DLOPEN).
+  outputFileTracingIncludes: {
+    "/*": [
+      "./node_modules/@img/sharp-libvips-linux-x64/**/*",
+      "./node_modules/@img/sharp-linux-x64/**/*",
+    ],
+  },
   // Default Server Action body limit is 1 MB; profile photo allows up to 2 MB
   // (+ multipart overhead). See serverActions.bodySizeLimit docs.
   experimental: {
