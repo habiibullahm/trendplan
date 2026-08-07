@@ -10,35 +10,47 @@ const primaryNav = [
   { href: "/lain", label: "Lain" },
 ] as const;
 
-function isActive(pathname: string, href: string) {
-  if (href === "/dashboard") {
-    return pathname === "/dashboard";
-  }
-  if (href === "/planner") {
-    return pathname === "/planner" || pathname.startsWith("/planner/");
-  }
-  return pathname === href || pathname.startsWith(`${href}/`);
+function withBase(basePath: string, href: string) {
+  if (!basePath) return href;
+  return `${basePath}${href}`;
 }
 
-export function TopNav() {
+function isActive(pathname: string, href: string, basePath = "") {
+  const full = withBase(basePath, href);
+  if (href === "/dashboard") {
+    return (
+      pathname === full ||
+      pathname === basePath ||
+      pathname === `${basePath}/`
+    );
+  }
+  if (href === "/planner") {
+    return pathname === full || pathname.startsWith(`${full}/`);
+  }
+  return pathname === full || pathname.startsWith(`${full}/`);
+}
+
+export function TopNav({ basePath = "" }: { basePath?: string }) {
   const pathname = usePathname();
+  const homeHref = withBase(basePath, "/dashboard");
 
   return (
     <header className="sticky top-0 z-40 hidden border-b border-border bg-surface/95 backdrop-blur-sm md:block">
       <div className="mx-auto flex w-full max-w-5xl items-center justify-between gap-4 px-6 py-3">
         <Link
-          href="/dashboard"
+          href={homeHref}
           className="font-[family-name:var(--font-fraunces)] text-xl font-semibold text-ink transition-opacity hover:opacity-80"
         >
           TrendPlan
         </Link>
         <nav className="flex items-center gap-1" aria-label="Navigasi utama">
           {primaryNav.map((item) => {
-            const active = isActive(pathname, item.href);
+            const href = withBase(basePath, item.href);
+            const active = isActive(pathname, item.href, basePath);
             return (
               <Link
                 key={item.href}
-                href={item.href}
+                href={href}
                 className={`min-touch inline-flex items-center justify-center rounded-xl px-4 text-sm font-semibold transition-colors duration-200 ${
                   active
                     ? "bg-coral/10 text-coral"
@@ -55,7 +67,7 @@ export function TopNav() {
   );
 }
 
-export function BottomNav() {
+export function BottomNav({ basePath = "" }: { basePath?: string }) {
   const pathname = usePathname();
 
   return (
@@ -65,11 +77,12 @@ export function BottomNav() {
     >
       <ul className="mx-auto grid max-w-lg grid-cols-4">
         {primaryNav.map((item) => {
-          const active = isActive(pathname, item.href);
+          const href = withBase(basePath, item.href);
+          const active = isActive(pathname, item.href, basePath);
           return (
             <li key={item.href}>
               <Link
-                href={item.href}
+                href={href}
                 className={`min-touch flex flex-col items-center justify-center gap-0.5 px-1 text-xs font-semibold transition-colors duration-200 ${
                   active ? "text-coral" : "text-ink-muted"
                 }`}
