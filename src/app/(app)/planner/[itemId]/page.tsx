@@ -16,6 +16,8 @@ export default async function PlannerItemPage({ params }: Props) {
   const item = await prisma.contentItem.findFirst({
     where: {
       id: itemId,
+      deletedAt: null,
+      dayOfWeek: { gte: 0 },
       weekPlan: { userId: session.user.id },
     },
     include: { trend: true },

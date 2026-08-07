@@ -71,6 +71,7 @@ model ContentItem {
   status          ContentStatus @default(IDE)
   trendId         String?
   performanceNote String?
+  deletedAt       DateTime?
   createdAt       DateTime      @default(now())
   updatedAt       DateTime      @updatedAt
   weekPlan        WeekPlan      @relation(fields: [weekPlanId], references: [id], onDelete: Cascade)
@@ -79,4 +80,5 @@ model ContentItem {
   @@unique([weekPlanId, dayOfWeek])
   @@index([weekPlanId])
   @@index([status])
+  @@index([deletedAt])
 }

@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { FadeIn, ProgressBar, Stagger } from "@/components/motion";
+import { ButtonLink } from "@/components/ui/button-link";
 import { STATUS_LABEL } from "@/lib/labels";
 import {
   DEMO_ITEMS,
@@ -48,19 +49,11 @@ export default function DemoDashboardPage() {
         </Stagger>
       </section>
 
-      <div className="mt-4 flex flex-col gap-3 sm:flex-row">
-        <Link
-          href="/demo/planner"
-          className="min-touch inline-flex items-center justify-center rounded-xl bg-coral px-5 py-3 text-sm font-semibold text-white transition-transform active:scale-[0.98]"
-        >
-          Lanjut ke Planner
-        </Link>
-        <Link
-          href="/demo/tren"
-          className="min-touch inline-flex items-center justify-center rounded-xl border border-border bg-surface px-5 py-3 text-sm font-semibold text-ink transition-colors hover:bg-paper active:scale-[0.98]"
-        >
-          Lihat tren minggu ini
-        </Link>
+      <div className="mt-4 flex flex-wrap items-center gap-2">
+        <ButtonLink href="/demo/planner">Lanjut ke Planner</ButtonLink>
+        <ButtonLink href="/demo/tren" variant="secondary">
+          Lihat tren
+        </ButtonLink>
       </div>
 
       <section className="mt-8">

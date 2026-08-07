@@ -7,6 +7,7 @@ import {
   registerAction,
   type AuthFormState,
 } from "@/app/actions/auth";
+import { Button } from "@/components/ui/button";
 import { useActionToasts } from "@/hooks/use-action-toasts";
 
 const initialState: AuthFormState = {};
@@ -48,13 +49,9 @@ export function LoginForm() {
         <FieldError messages={state.fieldErrors?.password} />
       </label>
 
-      <button
-        type="submit"
-        disabled={pending}
-        className="min-touch mt-2 inline-flex items-center justify-center rounded-xl bg-coral px-5 py-3 text-sm font-semibold text-white disabled:opacity-60"
-      >
+      <Button type="submit" width="full" className="mt-2" disabled={pending}>
         {pending ? "Masuk..." : "Masuk"}
-      </button>
+      </Button>
 
       <p className="text-center text-sm text-ink-muted">
         Belum punya akun?{" "}
@@ -112,13 +109,9 @@ export function RegisterForm() {
         <FieldError messages={state.fieldErrors?.password} />
       </label>
 
-      <button
-        type="submit"
-        disabled={pending}
-        className="min-touch mt-2 inline-flex items-center justify-center rounded-xl bg-coral px-5 py-3 text-sm font-semibold text-white disabled:opacity-60"
-      >
+      <Button type="submit" width="full" className="mt-2" disabled={pending}>
         {pending ? "Mendaftar..." : "Daftar"}
-      </button>
+      </Button>
 
       <p className="text-center text-sm text-ink-muted">
         Sudah punya akun?{" "}

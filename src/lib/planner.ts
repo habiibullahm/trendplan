@@ -1,7 +1,20 @@
 import { prisma } from "@/lib/prisma";
+import { softDeleteStaleBefore } from "@/lib/soft-delete";
 import { getWeekStart } from "@/lib/week";
 
+/** Hard-delete soft-parked rows past the undo window (owned by this user). */
+export async function purgeStaleSoftDeletes(userId: string) {
+  await prisma.contentItem.deleteMany({
+    where: {
+      deletedAt: { lt: softDeleteStaleBefore() },
+      weekPlan: { userId },
+    },
+  });
+}
+
 export async function getOrCreateWeekPlan(userId: string, date = new Date()) {
+  await purgeStaleSoftDeletes(userId);
+
   const weekStart = getWeekStart(date);
   return prisma.weekPlan.upsert({
     where: {
@@ -11,6 +24,7 @@ export async function getOrCreateWeekPlan(userId: string, date = new Date()) {
     update: {},
     include: {
       items: {
+        where: { deletedAt: null, dayOfWeek: { gte: 0 } },
         include: { trend: true },
         orderBy: { dayOfWeek: "asc" },
       },

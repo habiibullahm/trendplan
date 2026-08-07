@@ -1,14 +1,23 @@
 "use client";
 
 import Link from "next/link";
-import { useActionState } from "react";
+import { useActionState, useState } from "react";
 import {
   updateContentItemAction,
-  deleteContentItemAction,
+  softDeleteContentItemAction,
   type PlannerActionState,
 } from "@/app/actions/planner";
+import { ChipButton } from "@/components/ui/chip-button";
+import { Button } from "@/components/ui/button";
 import { useActionToasts } from "@/hooks/use-action-toasts";
 import { ALL_STATUSES, STATUS_LABEL } from "@/lib/labels";
+import { copyText } from "@/lib/clipboard";
+import { copyToastError, copyToastSuccess } from "@/lib/copy-toast";
+import {
+  formatItemPaste,
+  suggestCaption,
+  suggestHashtags,
+} from "@/lib/export-text";
 import type { ContentStatus } from "@/generated/prisma/client";
 
 const initial: PlannerActionState = {};
@@ -32,8 +41,50 @@ export function ContentEditForm({ item }: Props) {
   );
   useActionToasts(state);
 
+  const [caption, setCaption] = useState(item.caption ?? "");
+  const [hashtags, setHashtags] = useState(item.hashtags ?? "");
+
+  function isiSaran() {
+    const nextCaption = suggestCaption({
+      title: item.title,
+      hook: item.hook,
+    });
+    const nextHashtags = suggestHashtags();
+    const captionDirty =
+      caption.trim().length > 0 && caption.trim() !== nextCaption;
+    const hashtagsDirty =
+      hashtags.trim().length > 0 && hashtags.trim() !== nextHashtags;
+
+    if (captionDirty || hashtagsDirty) {
+      const ok = window.confirm(
+        "Ganti caption & hashtag dengan saran? Teks di field akan ditimpa.",
+      );
+      if (!ok) return;
+    }
+
+    setCaption(nextCaption);
+    setHashtags(nextHashtags);
+    copyToastSuccess("Saran diisi.");
+  }
+
+  async function salin() {
+    const text = formatItemPaste({
+      title: item.title,
+      hook: item.hook,
+      caption,
+      hashtags,
+    });
+    if (!text) {
+      copyToastError("Belum ada teks untuk disalin.");
+      return;
+    }
+    const ok = await copyText(text);
+    if (ok) copyToastSuccess("Disalin.");
+    else copyToastError("Gagal menyalin.");
+  }
+
   return (
-    <div className="flex flex-col gap-4">
+    <div className="flex flex-col gap-5">
       <form action={action} className="flex flex-col gap-4">
         <input type="hidden" name="itemId" value={item.id} />
 
@@ -58,25 +109,32 @@ export function ContentEditForm({ item }: Props) {
           </div>
         </div>
 
-        <label className="block">
-          <span className="text-sm font-medium text-ink">Caption</span>
+        <div>
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <span className="text-sm font-medium text-ink">Caption</span>
+            <ChipButton variant="ghost" onClick={isiSaran}>
+              Isi saran
+            </ChipButton>
+          </div>
           <textarea
             name="caption"
             rows={4}
-            defaultValue={item.caption ?? ""}
+            value={caption}
+            onChange={(e) => setCaption(e.target.value)}
             placeholder="Tulis caption draft…"
             className="mt-1 w-full rounded-xl border border-border bg-surface px-3 py-2 text-sm text-ink outline-none focus:border-coral"
           />
-        </label>
+        </div>
 
-        <label className="block">
+        <div>
           <span className="text-sm font-medium text-ink">Hashtag</span>
           <input
             name="hashtags"
-            defaultValue={item.hashtags ?? ""}
+            value={hashtags}
+            onChange={(e) => setHashtags(e.target.value)}
             className="min-touch mt-1 w-full rounded-xl border border-border bg-surface px-3 text-sm text-ink outline-none focus:border-coral"
           />
-        </label>
+        </div>
 
         <label className="block">
           <span className="text-sm font-medium text-ink">
@@ -90,28 +148,31 @@ export function ContentEditForm({ item }: Props) {
           />
         </label>
 
-        <button
-          type="submit"
-          disabled={pending}
-          className="min-touch inline-flex items-center justify-center rounded-xl bg-coral px-5 text-sm font-semibold text-white disabled:opacity-60"
-        >
-          {pending ? "Menyimpan..." : "Simpan"}
-        </button>
+        <div className="flex flex-wrap items-center gap-2">
+          <Button type="submit" disabled={pending}>
+            {pending ? "Menyimpan..." : "Simpan"}
+          </Button>
+          <ChipButton onClick={salin}>Salin</ChipButton>
+        </div>
       </form>
 
-      <form action={deleteContentItemAction}>
-        <input type="hidden" name="itemId" value={item.id} />
-        <button
-          type="submit"
-          className="min-touch inline-flex w-full items-center justify-center rounded-xl border border-border bg-surface px-5 text-sm font-semibold text-ink-muted"
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <Link
+          href="/planner"
+          className="text-sm font-semibold text-coral hover:underline"
         >
-          Hapus dari planner
-        </button>
-      </form>
-
-      <Link href="/planner" className="text-center text-sm font-semibold text-coral">
-        Kembali ke planner
-      </Link>
+          Kembali ke planner
+        </Link>
+        <form action={softDeleteContentItemAction}>
+          <input type="hidden" name="itemId" value={item.id} />
+          <button
+            type="submit"
+            className="text-sm font-semibold text-ink-muted hover:text-coral hover:underline"
+          >
+            Hapus
+          </button>
+        </form>
+      </div>
     </div>
   );
 }
