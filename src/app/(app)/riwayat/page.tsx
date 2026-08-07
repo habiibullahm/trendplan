@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import { auth } from "@/auth";
 import { FadeIn, Stagger } from "@/components/motion";
 import { prisma } from "@/lib/prisma";
@@ -6,7 +7,8 @@ import { DAY_SHORT } from "@/lib/week";
 
 export default async function RiwayatPage() {
   const session = await auth();
-  const userId = session!.user!.id;
+  if (!session?.user?.id) redirect("/login");
+  const userId = session.user.id;
 
   const items = await prisma.contentItem.findMany({
     where: {

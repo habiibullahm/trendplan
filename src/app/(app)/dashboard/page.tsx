@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import { auth } from "@/auth";
 import { FadeIn, ProgressBar, Stagger } from "@/components/motion";
 import { prisma } from "@/lib/prisma";
@@ -8,7 +9,8 @@ import { STATUS_LABEL } from "@/lib/labels";
 
 export default async function DashboardPage() {
   const session = await auth();
-  const userId = session!.user!.id;
+  if (!session?.user?.id) redirect("/login");
+  const userId = session.user.id;
 
   const user = await prisma.user.findUnique({
     where: { id: userId },
