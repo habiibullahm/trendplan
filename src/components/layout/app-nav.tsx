@@ -7,7 +7,7 @@ const primaryNav = [
   { href: "/dashboard", label: "Beranda" },
   { href: "/tren", label: "Tren" },
   { href: "/planner", label: "Plan" },
-  { href: "/lain", label: "Lain" },
+  { href: "/akun", label: "Akun" },
 ] as const;
 
 function withBase(basePath: string, href: string) {

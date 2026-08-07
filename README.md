@@ -20,6 +20,7 @@ Perencanaan konten TikTok mingguan berbasis tren — niche **Couple Date Ideas**
 - Salin caption siap TikTok (detail) dan Salin minggu (daftar hari)
 - Hapus dengan toast Urungkan singkat, lalu hapus permanen
 - Dashboard progress + riwayat
+- Akun: identitas, target mingguan (ubah), pintasan Riwayat/Rekomendasi, keluar
 - Demo baca saja di `/demo` (embed portfolio)
 - Toast sukses/error (Bahasa Indonesia)
 

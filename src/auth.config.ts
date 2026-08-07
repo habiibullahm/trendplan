@@ -37,7 +37,7 @@ export const authConfig = {
         path.startsWith("/rekomendasi") ||
         path.startsWith("/planner") ||
         path.startsWith("/riwayat") ||
-        path.startsWith("/lain");
+        path.startsWith("/akun");
 
       if (isAuthPage) {
         if (isLoggedIn) {

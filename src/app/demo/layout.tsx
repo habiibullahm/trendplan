@@ -5,7 +5,7 @@ import { ButtonLink } from "@/components/ui/button-link";
 export const metadata = {
   title: "Demo · TrendPlan",
   description:
-    "Tour baca saja — Beranda, Tren, Planner, dan Lain tanpa login.",
+    "Tour baca saja — Beranda, Tren, Planner, dan Akun tanpa login.",
   robots: { index: false, follow: true },
 };
 
