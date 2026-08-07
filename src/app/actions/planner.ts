@@ -6,6 +6,12 @@ import { z } from "zod";
 import { ContentStatus } from "@/generated/prisma/client";
 import { prisma } from "@/lib/prisma";
 import { getOrCreateWeekPlan, requireUserId } from "@/lib/planner";
+import { suggestCaption, suggestHashtags } from "@/lib/export-text";
+import {
+  isParkedSoftDeleteDay,
+  parkDayOfWeek,
+  unparkDayOfWeek,
+} from "@/lib/soft-delete";
 
 const daySchema = z.coerce.number().int().min(0).max(6);
 const statusSchema = z.enum(["IDE", "DRAFT", "READY", "POSTED"]);
@@ -51,9 +57,10 @@ export async function addTrendToPlannerAction(
       dayOfWeek: dayParsed.data,
       title: trend.title,
       hook: trend.hook,
+      caption: suggestCaption({ title: trend.title, hook: trend.hook }),
       status: ContentStatus.IDE,
       trendId: trend.id,
-      hashtags: "#coupledate #dateideas #tiktok",
+      hashtags: suggestHashtags(),
     },
   });
 
@@ -90,6 +97,8 @@ export async function createContentItemAction(
       dayOfWeek: dayParsed.data,
       title: titleParsed.data,
       hook,
+      caption: suggestCaption({ title: titleParsed.data, hook }),
+      hashtags: suggestHashtags(),
       status: ContentStatus.IDE,
     },
   });
@@ -111,7 +120,7 @@ export async function updateContentItemAction(
   }
 
   const item = await prisma.contentItem.findFirst({
-    where: { id: itemId, weekPlan: { userId } },
+    where: { id: itemId, deletedAt: null, weekPlan: { userId } },
   });
   if (!item) return { error: "Konten tidak ditemukan." };
 
@@ -131,17 +140,116 @@ export async function updateContentItemAction(
   redirect("/planner?toast=saved");
 }
 
-export async function deleteContentItemAction(formData: FormData) {
+/** Soft-park for undo toast; hard-purge after toast window. */
+export async function softDeleteContentItemAction(formData: FormData) {
   const userId = await requireUserId();
   const itemId = String(formData.get("itemId") ?? "");
   if (!itemId) return;
 
+  const item = await prisma.contentItem.findFirst({
+    where: {
+      id: itemId,
+      deletedAt: null,
+      dayOfWeek: { gte: 0 },
+      weekPlan: { userId },
+    },
+  });
+  if (!item) {
+    redirect("/planner");
+  }
+
+  const parkedDay = parkDayOfWeek(item.dayOfWeek);
+
+  await prisma.$transaction([
+    // Free park slot if a prior undo never purged (unique weekPlanId+dayOfWeek).
+    prisma.contentItem.deleteMany({
+      where: {
+        weekPlanId: item.weekPlanId,
+        dayOfWeek: parkedDay,
+        deletedAt: { not: null },
+        NOT: { id: item.id },
+      },
+    }),
+    prisma.contentItem.update({
+      where: { id: item.id },
+      data: {
+        deletedAt: new Date(),
+        dayOfWeek: parkedDay,
+      },
+    }),
+  ]);
+
+  revalidatePlanner();
+  redirect(`/planner?toast=deleted&undo=${item.id}`);
+}
+
+export async function restoreContentItemAction(
+  itemId: string,
+): Promise<PlannerActionState> {
+  const userId = await requireUserId();
+  if (!itemId) return { error: "Data tidak valid." };
+
+  try {
+    const result = await prisma.$transaction(async (tx) => {
+      const item = await tx.contentItem.findFirst({
+        where: {
+          id: itemId,
+          deletedAt: { not: null },
+          weekPlan: { userId },
+        },
+      });
+      if (!item) return { error: "Ide sudah tidak bisa diurungkan." } as const;
+      if (!isParkedSoftDeleteDay(item.dayOfWeek)) {
+        return { error: "Ide sudah tidak bisa diurungkan." } as const;
+      }
+
+      const restoreDay = unparkDayOfWeek(item.dayOfWeek);
+      const occupant = await tx.contentItem.findFirst({
+        where: {
+          weekPlanId: item.weekPlanId,
+          dayOfWeek: restoreDay,
+          deletedAt: null,
+          NOT: { id: item.id },
+        },
+      });
+      if (occupant) {
+        return { error: "Hari sudah terisi — tidak bisa urungkan." } as const;
+      }
+
+      await tx.contentItem.update({
+        where: { id: item.id },
+        data: {
+          deletedAt: null,
+          dayOfWeek: restoreDay,
+        },
+      });
+
+      return { success: "Ide dikembalikan." } as const;
+    });
+
+    if (result.success) revalidatePlanner();
+    return result;
+  } catch {
+    return { error: "Gagal mengembalikan ide. Coba lagi." };
+  }
+}
+
+export async function purgeDeletedContentItemAction(
+  itemId: string,
+): Promise<PlannerActionState> {
+  const userId = await requireUserId();
+  if (!itemId) return { error: "Data tidak valid." };
+
   await prisma.contentItem.deleteMany({
-    where: { id: itemId, weekPlan: { userId } },
+    where: {
+      id: itemId,
+      deletedAt: { not: null },
+      weekPlan: { userId },
+    },
   });
 
   revalidatePlanner();
-  redirect("/planner");
+  return {};
 }
 
 /** Move item to another day; swap if that day is occupied. */
@@ -161,7 +269,12 @@ export async function moveContentItemAction(
   try {
     const result = await prisma.$transaction(async (tx) => {
       const item = await tx.contentItem.findFirst({
-        where: { id: itemId, weekPlan: { userId } },
+        where: {
+          id: itemId,
+          deletedAt: null,
+          dayOfWeek: { gte: 0 },
+          weekPlan: { userId },
+        },
       });
       if (!item) return { error: "Konten tidak ditemukan." } as const;
 
@@ -180,6 +293,7 @@ export async function moveContentItemAction(
         where: {
           weekPlanId: item.weekPlanId,
           dayOfWeek: toDay,
+          deletedAt: null,
           NOT: { id: item.id },
         },
       });

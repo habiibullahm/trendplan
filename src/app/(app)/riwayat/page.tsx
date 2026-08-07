@@ -13,6 +13,8 @@ export default async function RiwayatPage() {
   const items = await prisma.contentItem.findMany({
     where: {
       status: "POSTED",
+      deletedAt: null,
+      dayOfWeek: { gte: 0 },
       weekPlan: { userId },
     },
     include: {
