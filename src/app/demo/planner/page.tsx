@@ -37,7 +37,7 @@ export default function DemoPlannerPage() {
         <p className="text-center text-sm font-semibold text-ink">
           {formatMonthLabel(selection.year, selection.month)}
         </p>
-        <div className="-mx-1 flex gap-2 overflow-x-auto px-1 pb-1">
+        <div className="tp-scroll-x -mx-1 flex gap-2 px-1">
           {selection.weekStarts.map((ws, i) => {
             const key = formatWeekStartParam(ws);
             const active = key === activeKey;

@@ -52,7 +52,7 @@ export function MonthWeekNav({ year, month, weekIndex, weeks }: Props) {
         </button>
       </div>
 
-      <div className="-mx-1 flex gap-2 overflow-x-auto px-1 pb-1">
+      <div className="tp-scroll-x -mx-1 flex gap-2 px-1">
         {weeks.map((w) => {
           const active = w.index === weekIndex;
           const href = `/planner?month=${formatMonthParam(year, month)}&week=${w.index}`;
