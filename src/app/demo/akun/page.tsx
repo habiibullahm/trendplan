@@ -7,17 +7,24 @@ export default function DemoAkunPage() {
         Akun
       </h1>
 
-      <div className="mt-6 flex items-center gap-3">
-        <div
-          className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full border border-border bg-paper text-base font-bold text-ink"
-          aria-hidden
-        >
-          D
+      <div className="mt-6 flex flex-col gap-3">
+        <div className="flex items-center gap-3">
+          <div
+            className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full border border-border bg-paper text-base font-bold text-ink"
+            aria-hidden
+          >
+            D
+          </div>
+          <div className="min-w-0">
+            <p className="truncate text-sm font-semibold text-ink">
+              Demo creator
+            </p>
+            <p className="truncate text-sm text-ink-muted">demo@trendplan.app</p>
+          </div>
         </div>
-        <div className="min-w-0">
-          <p className="truncate text-sm font-semibold text-ink">Demo creator</p>
-          <p className="truncate text-sm text-ink-muted">demo@trendplan.app</p>
-        </div>
+        <p className="text-xs text-ink-muted">
+          Ketuk foto/inisial untuk unggah; ubah atau hapus tersedia di app live.
+        </p>
       </div>
 
       <hr className="mt-6 border-border" />
@@ -37,7 +44,7 @@ export default function DemoAkunPage() {
           </div>
         </div>
         <p className="mt-2 text-xs text-ink-muted">
-          Ubah target tersedia setelah daftar / masuk.
+          Ubah target & foto profil tersedia setelah daftar / masuk.
         </p>
       </section>
 

@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { auth, signOut } from "@/auth";
+import { AkunAvatar } from "@/features/auth/components/akun-avatar";
 import { AkunGoalEditor } from "@/features/auth/components/akun-goal-editor";
 import { prisma } from "@/lib/prisma";
 
@@ -18,6 +19,7 @@ export default async function AkunPage() {
     select: {
       name: true,
       email: true,
+      imageUrl: true,
       niche: true,
       weeklyGoal: true,
     },
@@ -34,17 +36,13 @@ export default async function AkunPage() {
         Akun
       </h1>
 
-      <div className="mt-6 flex items-center gap-3">
-        <div
-          className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full border border-border bg-paper text-base font-bold text-ink"
-          aria-hidden
-        >
-          {initial}
-        </div>
-        <div className="min-w-0">
-          <p className="truncate text-sm font-semibold text-ink">{displayName}</p>
-          <p className="truncate text-sm text-ink-muted">{user.email}</p>
-        </div>
+      <div className="mt-6">
+        <AkunAvatar
+          imageUrl={user.imageUrl}
+          initialLetter={initial}
+          name={displayName}
+          email={user.email}
+        />
       </div>
 
       <hr className="mt-6 border-border" />
