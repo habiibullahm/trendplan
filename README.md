@@ -2,7 +2,7 @@
 
 Perencanaan konten TikTok mingguan berbasis tren — niche **Couple Date Ideas**. UI dalam Bahasa Indonesia.
 
-**Live:** [trendplan.vercel.app](https://trendplan.vercel.app) · **Demo embed (read-only):** [/demo](https://trendplan.vercel.app/demo)
+**Live:** [trendplan.vercel.app](https://trendplan.vercel.app) · **Demo tour (read-only):** [/demo](https://trendplan.vercel.app/demo)
 
 ## Stack
 
