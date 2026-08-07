@@ -91,7 +91,7 @@ export async function addTrendToPlannerAction(
   });
 
   revalidatePlanner();
-  return { success: "Ide ditambahkan ke planner." };
+  return { success: "Ide ditambahkan ke planner" };
 }
 
 export async function createContentItemAction(
@@ -258,7 +258,7 @@ export async function restoreContentItemAction(
         },
       });
 
-      return { success: "Ide dikembalikan." } as const;
+      return { success: "Ide dikembalikan" } as const;
     });
 
     if (result.success) revalidatePlanner();
@@ -337,7 +337,7 @@ export async function moveContentItemAction(
           where: { id: item.id },
           data: { dayOfWeek: toDay },
         });
-        return { success: "Ide dipindahkan." } as const;
+        return { success: "Ide dipindahkan" } as const;
       }
 
       // Unique (weekPlanId, dayOfWeek): park on temp day, then finish swap
@@ -355,7 +355,7 @@ export async function moveContentItemAction(
         data: { dayOfWeek: toDay },
       });
 
-      return { success: "Ide ditukar harinya." } as const;
+      return { success: "Ide ditukar harinya" } as const;
     });
 
     if (result.success) {

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { toast } from "sonner";
 import {
@@ -10,8 +10,8 @@ import {
 import { SOFT_DELETE_UNDO_MS } from "@/features/planner/lib/soft-delete";
 
 const MESSAGES: Record<string, string> = {
-  created: "Ide ditambahkan ke planner.",
-  saved: "Perubahan disimpan.",
+  created: "Ide ditambahkan ke planner",
+  saved: "Perubahan disimpan",
 };
 
 const DELETE_TOAST_ID = "planner-delete";
@@ -27,6 +27,53 @@ function DeleteCountdownBar({ durationMs }: { durationMs: number }) {
       aria-valuemax={100}
     >
       <span />
+    </div>
+  );
+}
+
+function DeleteUndoToast({
+  undoId,
+  durationMs,
+  skipPurgeRef,
+  onRestored,
+}: {
+  undoId: string;
+  durationMs: number;
+  skipPurgeRef: { current: boolean };
+  onRestored: () => void;
+}) {
+  const [pending, setPending] = useState(false);
+
+  async function undo() {
+    if (pending) return;
+    skipPurgeRef.current = true;
+    setPending(true);
+    const result = await restoreContentItemAction(undoId);
+    if (result.error) {
+      skipPurgeRef.current = false;
+      setPending(false);
+      toast.error(result.error, { id: DELETE_TOAST_ID });
+      await purgeDeletedContentItemAction(undoId);
+      return;
+    }
+    toast.success(result.success ?? "Ide dikembalikan", {
+      id: DELETE_TOAST_ID,
+    });
+    onRestored();
+  }
+
+  return (
+    <div className="tp-toast-delete-card" role="status">
+      <p className="tp-toast-delete-card__title">Dihapus dari planner</p>
+      <button
+        type="button"
+        className="tp-toast-delete-card__action"
+        disabled={pending}
+        onClick={() => void undo()}
+      >
+        Urungkan
+      </button>
+      <DeleteCountdownBar durationMs={durationMs} />
     </div>
   );
 }
@@ -63,48 +110,38 @@ export function PlannerToastFromQuery() {
       stripToastFromUrl();
 
       if (!undoId) {
-        toast.success("Dihapus dari planner.", { id: DELETE_TOAST_ID });
+        toast.success("Dihapus dari planner", { id: DELETE_TOAST_ID });
         return;
       }
 
-      // Sync flag — action click dismisses toast and would otherwise purge mid-restore.
-      let skipPurge = false;
+      const skipPurgeRef = { current: false };
 
       async function purgeIfNeeded() {
-        if (skipPurge) return;
+        if (skipPurgeRef.current) return;
         await purgeDeletedContentItemAction(undoId!);
       }
 
-      toast("Dihapus dari planner.", {
-        id: DELETE_TOAST_ID,
-        duration: SOFT_DELETE_UNDO_MS,
-        className: "tp-toast-delete",
-        description: <DeleteCountdownBar durationMs={SOFT_DELETE_UNDO_MS} />,
-        action: {
-          label: "Urungkan",
-          onClick: () => {
-            skipPurge = true;
-            void (async () => {
-              const result = await restoreContentItemAction(undoId!);
-              if (result.error) {
-                toast.error(result.error, { id: DELETE_TOAST_ID });
-                await purgeDeletedContentItemAction(undoId!);
-                return;
-              }
-              toast.success(result.success ?? "Ide dikembalikan.", {
-                id: DELETE_TOAST_ID,
-              });
-              router.refresh();
-            })();
+      toast.custom(
+        () => (
+          <DeleteUndoToast
+            undoId={undoId}
+            durationMs={SOFT_DELETE_UNDO_MS}
+            skipPurgeRef={skipPurgeRef}
+            onRestored={() => router.refresh()}
+          />
+        ),
+        {
+          id: DELETE_TOAST_ID,
+          duration: SOFT_DELETE_UNDO_MS,
+          className: "tp-toast-delete-host",
+          onAutoClose: () => {
+            void purgeIfNeeded();
+          },
+          onDismiss: () => {
+            void purgeIfNeeded();
           },
         },
-        onAutoClose: () => {
-          void purgeIfNeeded();
-        },
-        onDismiss: () => {
-          void purgeIfNeeded();
-        },
-      });
+      );
       return;
     }
 

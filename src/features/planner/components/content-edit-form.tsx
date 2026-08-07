@@ -95,7 +95,7 @@ export function ContentEditForm({
 
     setCaption(nextCaption);
     setHashtags(nextHashtags);
-    copyToastSuccess("Saran diisi.");
+    copyToastSuccess("Saran diisi");
   }
 
   async function salin() {
@@ -106,12 +106,12 @@ export function ContentEditForm({
       hashtags,
     });
     if (!text) {
-      copyToastError("Belum ada teks untuk disalin.");
+      copyToastError("Belum ada teks untuk disalin");
       return;
     }
     const ok = await copyText(text);
-    if (ok) copyToastSuccess("Disalin.");
-    else copyToastError("Gagal menyalin.");
+    if (ok) copyToastSuccess("Disalin");
+    else copyToastError("Gagal menyalin");
   }
 
   return (

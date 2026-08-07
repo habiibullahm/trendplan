@@ -6,11 +6,14 @@ export function AppToaster() {
   return (
     <Toaster
       theme="light"
-      position="top-center"
+      position="bottom-center"
       richColors={false}
       closeButton={false}
       duration={4000}
       gap={10}
+      offset={{ bottom: "1.5rem" }}
+      mobileOffset={{ bottom: "5.5rem" }}
+      style={{ ["--width" as string]: "max-content" }}
       toastOptions={{
         classNames: {
           toast:
