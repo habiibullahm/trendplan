@@ -1,3 +1,4 @@
+import { redirect } from "next/navigation";
 import { auth } from "@/auth";
 import { PlannerBoard } from "@/components/planner-board";
 import { getOrCreateWeekPlan } from "@/lib/planner";
@@ -6,7 +7,9 @@ import { prisma } from "@/lib/prisma";
 
 export default async function PlannerPage() {
   const session = await auth();
-  const userId = session!.user!.id;
+  // Layout also redirects, but page can render in parallel — never use session!.
+  if (!session?.user?.id) redirect("/login");
+  const userId = session.user.id;
   const user = await prisma.user.findUnique({
     where: { id: userId },
     select: { weeklyGoal: true },
@@ -30,7 +33,14 @@ export default async function PlannerPage() {
         </p>
       </div>
 
-      <PlannerBoard items={weekPlan.items} />
+      <PlannerBoard
+        items={weekPlan.items.map((item) => ({
+          id: item.id,
+          dayOfWeek: item.dayOfWeek,
+          title: item.title,
+          status: item.status,
+        }))}
+      />
     </main>
   );
 }
