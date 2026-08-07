@@ -2,10 +2,21 @@ import { redirect } from "next/navigation";
 import { auth } from "@/auth";
 import { CreatePlanForm } from "@/features/planner/components/create-plan-form";
 import { getOrCreateWeekPlan } from "@/features/planner/lib/planner";
-import { formatWeekRange } from "@/lib/week";
+import {
+  formatWeekRange,
+  formatWeekStartParam,
+  getWeekStart,
+  parseWeekStartParam,
+  plannerHref,
+} from "@/lib/week";
 
 type Props = {
-  searchParams: Promise<{ day?: string }>;
+  searchParams: Promise<{
+    day?: string;
+    weekStart?: string;
+    month?: string;
+    week?: string;
+  }>;
 };
 
 function parseDay(raw?: string): number {
@@ -17,8 +28,25 @@ export default async function PlannerNewPage({ searchParams }: Props) {
   const session = await auth();
   if (!session?.user?.id) redirect("/login");
 
-  const { day } = await searchParams;
-  const weekPlan = await getOrCreateWeekPlan(session.user.id);
+  const {
+    day,
+    weekStart: weekStartRaw,
+    month,
+    week,
+  } = await searchParams;
+  const weekStart =
+    parseWeekStartParam(weekStartRaw ?? null) ?? getWeekStart();
+  const weekPlan = await getOrCreateWeekPlan(session.user.id, weekStart);
+  const weekStartParam = formatWeekStartParam(weekPlan.weekStart);
+  const cancelHref = plannerHref({
+    weekStart: weekPlan.weekStart,
+    monthParam: month,
+    weekParam: week,
+  });
+  const cancelUrl = new URL(cancelHref, "http://local");
+  const returnMonth = cancelUrl.searchParams.get("month") ?? undefined;
+  const returnWeekRaw = cancelUrl.searchParams.get("week");
+  const returnWeek = returnWeekRaw ? Number(returnWeekRaw) : undefined;
 
   return (
     <main className="mx-auto flex w-full max-w-lg flex-1 flex-col">
@@ -30,7 +58,17 @@ export default async function PlannerNewPage({ searchParams }: Props) {
       </p>
 
       <div className="mt-6">
-        <CreatePlanForm defaultDay={parseDay(day)} />
+        <CreatePlanForm
+          defaultDay={parseDay(day)}
+          weekStartParam={weekStartParam}
+          returnMonth={returnMonth}
+          returnWeek={
+            returnWeek != null && Number.isInteger(returnWeek)
+              ? returnWeek
+              : undefined
+          }
+          cancelHref={cancelHref}
+        />
       </div>
     </main>
   );

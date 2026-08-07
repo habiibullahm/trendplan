@@ -3,8 +3,17 @@ import { Button } from "@/components/ui/button";
 import { ButtonLink } from "@/components/ui/button-link";
 import { ChipButton } from "@/components/ui/chip-button";
 import { DEMO_ITEMS, demoWeekLabel } from "@/features/planner/lib/demo-planner";
+import {
+  formatMonthLabel,
+  formatWeekRange,
+  formatWeekStartParam,
+  resolvePlannerSelection,
+} from "@/lib/week";
 
 export default function DemoPlannerPage() {
+  const selection = resolvePlannerSelection({});
+  const activeKey = formatWeekStartParam(selection.weekStart);
+
   return (
     <main className="flex w-full flex-1 flex-col">
       <div className="flex flex-wrap items-end justify-between gap-3">
@@ -13,7 +22,7 @@ export default function DemoPlannerPage() {
             Planner
           </h1>
           <p className="mt-2 text-sm text-ink-muted">
-            Minggu {demoWeekLabel()}
+            Minggu {selection.weekIndex} · {demoWeekLabel()}
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-3">
@@ -22,6 +31,38 @@ export default function DemoPlannerPage() {
           </p>
           <ChipButton disabled>Salin minggu</ChipButton>
         </div>
+      </div>
+
+      <div className="mt-4 flex flex-col gap-3">
+        <p className="text-center text-sm font-semibold text-ink">
+          {formatMonthLabel(selection.year, selection.month)}
+        </p>
+        <div className="tp-scroll-x -mx-1 flex gap-2 px-1">
+          {selection.weekStarts.map((ws, i) => {
+            const key = formatWeekStartParam(ws);
+            const active = key === activeKey;
+            const filled = active ? DEMO_ITEMS.length : 0;
+            return (
+              <div
+                key={key}
+                className={`min-w-[7.5rem] shrink-0 rounded-xl border px-3 py-2 ${
+                  active
+                    ? "border-coral bg-coral/10 text-coral"
+                    : "border-border bg-surface text-ink-muted"
+                }`}
+              >
+                <p className="text-xs font-semibold">Minggu {i + 1}</p>
+                <p className="mt-0.5 text-[11px] opacity-80">
+                  {formatWeekRange(ws)}
+                </p>
+                <p className="mt-1 text-[11px] font-medium">isi {filled}/7</p>
+              </div>
+            );
+          })}
+        </div>
+        <p className="text-xs text-ink-muted">
+          Demo baca saja — navigasi bulan/minggu aktif setelah daftar.
+        </p>
       </div>
 
       <ReadOnlyPlannerBoard items={DEMO_ITEMS} />
@@ -79,25 +120,19 @@ export default function DemoPlannerPage() {
               value="Take them to a bookstore and do this…"
               disabled
               readOnly
-              rows={2}
+              rows={3}
               className="mt-1 w-full rounded-xl border border-border bg-paper px-3 py-2 text-sm text-ink"
             />
           </label>
-          <Button disabled>Simpan ide</Button>
+          <div className="flex flex-wrap gap-2">
+            <Button type="button" disabled>
+              Simpan ide
+            </Button>
+            <ButtonLink href="/register" variant="secondary">
+              Daftar untuk memakai
+            </ButtonLink>
+          </div>
         </div>
-
-        <p className="mt-4 text-sm text-ink-muted">
-          Buat ide sendiri tersedia setelah daftar.
-        </p>
-        <ButtonLink
-          href="/register"
-          target="_top"
-          variant="secondary"
-          size="sm"
-          className="mt-3 bg-paper"
-        >
-          Daftar
-        </ButtonLink>
       </section>
     </main>
   );

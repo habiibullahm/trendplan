@@ -12,10 +12,33 @@ import {
   parkDayOfWeek,
   unparkDayOfWeek,
 } from "@/features/planner/lib/soft-delete";
+import { getWeekStart, parseWeekStartParam, plannerHref } from "@/lib/week";
 
 const daySchema = z.coerce.number().int().min(0).max(6);
 const statusSchema = z.enum(["IDE", "DRAFT", "READY", "POSTED"]);
 const titleSchema = z.string().trim().min(1).max(120);
+
+function resolveWeekStartFromForm(formData: FormData): Date {
+  return (
+    parseWeekStartParam(String(formData.get("weekStart") ?? "")) ??
+    getWeekStart()
+  );
+}
+
+/** Prefer viewed month/week from the form when the week belongs to that month. */
+function returnHref(
+  formData: FormData,
+  weekStart: Date,
+  extra?: { toast?: string; undo?: string },
+) {
+  return plannerHref({
+    weekStart,
+    monthParam: String(formData.get("returnMonth") ?? "") || null,
+    weekParam: String(formData.get("returnWeek") ?? "") || null,
+    toast: extra?.toast,
+    undo: extra?.undo,
+  });
+}
 
 function revalidatePlanner() {
   revalidatePath("/planner");
@@ -45,7 +68,10 @@ export async function addTrendToPlannerAction(
   const trend = await prisma.trend.findUnique({ where: { id: trendId } });
   if (!trend) return { error: "Tren tidak ditemukan." };
 
-  const weekPlan = await getOrCreateWeekPlan(userId);
+  const weekPlan = await getOrCreateWeekPlan(
+    userId,
+    resolveWeekStartFromForm(formData),
+  );
   const existing = weekPlan.items.find((i) => i.dayOfWeek === dayParsed.data);
   if (existing) {
     return { error: "Hari itu sudah ada ide — pilih hari lain." };
@@ -65,7 +91,7 @@ export async function addTrendToPlannerAction(
   });
 
   revalidatePlanner();
-  return { success: "Ide ditambahkan ke planner." };
+  return { success: "Ide ditambahkan ke planner" };
 }
 
 export async function createContentItemAction(
@@ -84,8 +110,9 @@ export async function createContentItemAction(
   }
 
   const hook = String(formData.get("hook") ?? "").trim() || null;
+  const weekStart = resolveWeekStartFromForm(formData);
 
-  const weekPlan = await getOrCreateWeekPlan(userId);
+  const weekPlan = await getOrCreateWeekPlan(userId, weekStart);
   const existing = weekPlan.items.find((i) => i.dayOfWeek === dayParsed.data);
   if (existing) {
     return { error: "Hari itu sudah ada ide — pilih hari lain." };
@@ -104,7 +131,7 @@ export async function createContentItemAction(
   });
 
   revalidatePlanner();
-  redirect("/planner?toast=created");
+  redirect(returnHref(formData, weekStart, { toast: "created" }));
 }
 
 export async function updateContentItemAction(
@@ -121,6 +148,7 @@ export async function updateContentItemAction(
 
   const item = await prisma.contentItem.findFirst({
     where: { id: itemId, deletedAt: null, weekPlan: { userId } },
+    include: { weekPlan: { select: { weekStart: true } } },
   });
   if (!item) return { error: "Konten tidak ditemukan." };
 
@@ -137,7 +165,7 @@ export async function updateContentItemAction(
 
   revalidatePlanner();
   revalidatePath(`/planner/${itemId}`);
-  redirect("/planner?toast=saved");
+  redirect(returnHref(formData, item.weekPlan.weekStart, { toast: "saved" }));
 }
 
 /** Soft-park for undo toast; hard-purge after toast window. */
@@ -153,9 +181,10 @@ export async function softDeleteContentItemAction(formData: FormData) {
       dayOfWeek: { gte: 0 },
       weekPlan: { userId },
     },
+    include: { weekPlan: { select: { weekStart: true } } },
   });
   if (!item) {
-    redirect("/planner");
+    redirect(returnHref(formData, getWeekStart()));
   }
 
   const parkedDay = parkDayOfWeek(item.dayOfWeek);
@@ -180,7 +209,12 @@ export async function softDeleteContentItemAction(formData: FormData) {
   ]);
 
   revalidatePlanner();
-  redirect(`/planner?toast=deleted&undo=${item.id}`);
+  redirect(
+    returnHref(formData, item.weekPlan.weekStart, {
+      toast: "deleted",
+      undo: item.id,
+    }),
+  );
 }
 
 export async function restoreContentItemAction(
@@ -224,7 +258,7 @@ export async function restoreContentItemAction(
         },
       });
 
-      return { success: "Ide dikembalikan." } as const;
+      return { success: "Ide dikembalikan" } as const;
     });
 
     if (result.success) revalidatePlanner();
@@ -303,7 +337,7 @@ export async function moveContentItemAction(
           where: { id: item.id },
           data: { dayOfWeek: toDay },
         });
-        return { success: "Ide dipindahkan." } as const;
+        return { success: "Ide dipindahkan" } as const;
       }
 
       // Unique (weekPlanId, dayOfWeek): park on temp day, then finish swap
@@ -321,7 +355,7 @@ export async function moveContentItemAction(
         data: { dayOfWeek: toDay },
       });
 
-      return { success: "Ide ditukar harinya." } as const;
+      return { success: "Ide ditukar harinya" } as const;
     });
 
     if (result.success) {

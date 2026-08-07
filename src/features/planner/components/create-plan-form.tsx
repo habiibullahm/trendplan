@@ -16,7 +16,19 @@ import { DAY_LABELS } from "@/lib/week";
 
 const initial: PlannerActionState = {};
 
-export function CreatePlanForm({ defaultDay }: { defaultDay: number }) {
+export function CreatePlanForm({
+  defaultDay,
+  weekStartParam,
+  returnMonth,
+  returnWeek,
+  cancelHref = "/planner",
+}: {
+  defaultDay: number;
+  weekStartParam?: string;
+  returnMonth?: string;
+  returnWeek?: number;
+  cancelHref?: string;
+}) {
   const [state, action, pending] = useActionState(
     createContentItemAction,
     initial,
@@ -25,6 +37,16 @@ export function CreatePlanForm({ defaultDay }: { defaultDay: number }) {
 
   return (
     <form action={action} className="flex flex-col gap-4">
+      {weekStartParam ? (
+        <input type="hidden" name="weekStart" value={weekStartParam} />
+      ) : null}
+      {returnMonth ? (
+        <input type="hidden" name="returnMonth" value={returnMonth} />
+      ) : null}
+      {returnWeek != null ? (
+        <input type="hidden" name="returnWeek" value={String(returnWeek)} />
+      ) : null}
+
       <FormField label="Hari">
         <Select name="dayOfWeek" defaultValue={String(defaultDay)}>
           {DAY_LABELS.map((label, index) => (
@@ -56,7 +78,7 @@ export function CreatePlanForm({ defaultDay }: { defaultDay: number }) {
         <Button type="submit" loading={pending} loadingText="Menyimpan...">
           Simpan ide
         </Button>
-        <ButtonLink href="/planner" variant="secondary">
+        <ButtonLink href={cancelHref} variant="secondary">
           Batal
         </ButtonLink>
       </div>
