@@ -77,6 +77,25 @@ Opsional: Postgres terisolasi via Docker — lihat `docker-compose.yml` (pastika
 | `npm run db:studio` | Prisma Studio |
 | `npm run smoke` | Happy-path smoke test |
 | `npm run db:copy-to-prod` | Copy data lokal → Neon (butuh `TARGET_DATABASE_URL`) |
+| `npm test` | Unit tests (`src/**/*.test.ts`) — juga di pre-push |
+
+## Git hooks (Husky)
+
+Setelah `npm install`, Husky aktif otomatis (`prepare`).
+
+| Hook | Isi | Tujuan |
+|------|-----|--------|
+| **pre-commit** | Block staged `.env`/credential filenames + `lint-staged` → ESLint **hanya** file staged `*.{ts,tsx,js,mjs}` | Commit cepat (~detik) |
+| **pre-push** | `npm test` | Cek ringan sebelum push |
+
+Tidak dijalankan di pre-commit: `eslint .`, full smoke, `prisma generate`, `next build`.
+
+Darurat (skip hooks):
+
+```bash
+HUSKY=0 git commit -m "…"
+HUSKY=0 git push
+```
 
 Copy ke production:
 
