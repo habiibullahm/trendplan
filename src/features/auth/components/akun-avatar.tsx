@@ -256,6 +256,7 @@ export function AkunAvatar({
       },
       cancel: {
         label: "Batal",
+        onClick: () => undefined,
       },
     });
   }

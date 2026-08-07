@@ -3,10 +3,8 @@
 import { del, put } from "@vercel/blob";
 import { revalidatePath } from "next/cache";
 import { auth } from "@/auth";
-import {
-  AVATAR_MAX_BYTES,
-  prepareAvatarUpload,
-} from "@/features/auth/lib/avatar-image";
+import { AVATAR_MAX_BYTES } from "@/features/auth/lib/avatar-image";
+import { prepareAvatarUpload } from "@/features/auth/lib/prepare-avatar-upload";
 import { prisma } from "@/lib/prisma";
 
 export type ProfileImageActionState = {

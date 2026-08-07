@@ -5,12 +5,12 @@ import {
   AVATAR_MAX_BYTES,
   AVATAR_MAX_EDGE,
   canSubmitAvatarUpdate,
-  prepareAvatarUpload,
   removeButtonMode,
   shouldDiscardPendingOnModalClose,
   sniffImageKind,
   validateAvatarFileClient,
 } from "./avatar-image";
+import { prepareAvatarUpload } from "./prepare-avatar-upload";
 
 describe("validateAvatarFileClient", () => {
   it("rejects unsupported MIME", () => {
@@ -90,6 +90,7 @@ describe("prepareAvatarUpload", () => {
         width: 1200,
         height: 800,
         channels: 3,
+        background: { r: 128, g: 128, b: 128 },
         noise: { type: "gaussian", mean: 128, sigma: 30 },
       },
     })

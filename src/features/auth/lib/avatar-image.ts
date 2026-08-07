@@ -1,5 +1,3 @@
-import sharp from "sharp";
-
 export const AVATAR_MAX_BYTES = 2 * 1024 * 1024;
 export const AVATAR_MAX_EDGE = 512;
 export const AVATAR_WEBP_QUALITY = 82;
@@ -58,10 +56,7 @@ export function sniffImageKind(bytes: Uint8Array): ImageKind | null {
   return null;
 }
 
-export type ClientAvatarFileError =
-  | "format"
-  | "size"
-  | null;
+export type ClientAvatarFileError = "format" | "size" | null;
 
 /** Client-side gate before preview / upload (server still sniffs magic bytes). */
 export function validateAvatarFileClient(file: {
@@ -94,32 +89,4 @@ export function canSubmitAvatarUpdate(
  */
 export function shouldDiscardPendingOnModalClose(): boolean {
   return false;
-}
-
-export type PreparedAvatar = {
-  buffer: Buffer;
-  contentType: "image/webp";
-  ext: "webp";
-};
-
-/**
- * Normalize avatar uploads: EXIF orient, cover-crop to max edge, WebP encode.
- * Keeps display payloads small for 48–112px avatars served unoptimized from Blob.
- */
-export async function prepareAvatarUpload(
-  input: Buffer,
-): Promise<PreparedAvatar | { error: "format" }> {
-  const kind = sniffImageKind(input.subarray(0, 16));
-  if (!kind) return { error: "format" };
-
-  const buffer = await sharp(input)
-    .rotate()
-    .resize(AVATAR_MAX_EDGE, AVATAR_MAX_EDGE, {
-      fit: "cover",
-      withoutEnlargement: true,
-    })
-    .webp({ quality: AVATAR_WEBP_QUALITY })
-    .toBuffer();
-
-  return { buffer, contentType: "image/webp", ext: "webp" };
 }

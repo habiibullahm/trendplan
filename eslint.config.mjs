@@ -13,6 +13,38 @@ const eslintConfig = defineConfig([
     "build/**",
     "next-env.d.ts",
   ]),
+  {
+    files: [
+      "src/**/components/**/*.{ts,tsx}",
+      "src/features/**/components/**/*.{ts,tsx}",
+    ],
+    rules: {
+      "no-restricted-imports": [
+        "error",
+        {
+          paths: [
+            {
+              name: "@/features/auth/lib/prepare-avatar-upload",
+              message:
+                "prepare-avatar-upload uses sharp (Node-only). Import only from Server Actions.",
+            },
+            {
+              name: "sharp",
+              message:
+                "Do not import sharp from Client Components — it pulls Node builtins (child_process).",
+            },
+          ],
+          patterns: [
+            {
+              group: ["**/prepare-avatar-upload", "**/prepare-avatar-upload.*"],
+              message:
+                "prepare-avatar-upload uses sharp (Node-only). Import only from Server Actions.",
+            },
+          ],
+        },
+      ],
+    },
+  },
 ]);
 
 export default eslintConfig;

@@ -18,7 +18,7 @@
     "db:seed": "tsx prisma/seed.ts",
     "db:copy-to-prod": "tsx scripts/copy-local-to-prod.ts",
     "smoke": "tsx scripts/smoke-happy-path.ts",
-    "test": "tsx --test src/**/*.test.ts",
+    "test": "tsx --import ./scripts/stub-server-only.ts --test src/**/*.test.ts",
     "prepare": "husky"
   },
   "lint-staged": {
@@ -41,6 +41,7 @@
     "prisma": "^7.9.1",
     "react": "19.2.8",
     "react-dom": "19.2.8",
+    "server-only": "^0.0.1",
     "sharp": "^0.34.4",
     "sonner": "^2.0.7",
     "tailwind-merge": "^3.6.0",
