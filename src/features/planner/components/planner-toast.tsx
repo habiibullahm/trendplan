@@ -6,8 +6,8 @@ import { toast } from "sonner";
 import {
   purgeDeletedContentItemAction,
   restoreContentItemAction,
-} from "@/app/actions/planner";
-import { SOFT_DELETE_UNDO_MS } from "@/lib/soft-delete";
+} from "@/features/planner/actions";
+import { SOFT_DELETE_UNDO_MS } from "@/features/planner/lib/soft-delete";
 
 const MESSAGES: Record<string, string> = {
   created: "Ide ditambahkan ke planner.",

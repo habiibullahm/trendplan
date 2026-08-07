@@ -9,7 +9,7 @@ import {
   DEMO_USER_NAME,
   DEMO_WEEKLY_GOAL,
   demoWeekLabel,
-} from "@/lib/demo-planner";
+} from "@/features/planner/lib/demo-planner";
 
 export default function DemoDashboardPage() {
   const scheduled = DEMO_ITEMS.length;

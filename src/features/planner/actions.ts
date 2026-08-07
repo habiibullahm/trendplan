@@ -5,13 +5,13 @@ import { redirect } from "next/navigation";
 import { z } from "zod";
 import { ContentStatus } from "@/generated/prisma/client";
 import { prisma } from "@/lib/prisma";
-import { getOrCreateWeekPlan, requireUserId } from "@/lib/planner";
-import { suggestCaption, suggestHashtags } from "@/lib/export-text";
+import { getOrCreateWeekPlan, requireUserId } from "@/features/planner/lib/planner";
+import { suggestCaption, suggestHashtags } from "@/features/planner/lib/export-text";
 import {
   isParkedSoftDeleteDay,
   parkDayOfWeek,
   unparkDayOfWeek,
-} from "@/lib/soft-delete";
+} from "@/features/planner/lib/soft-delete";
 
 const daySchema = z.coerce.number().int().min(0).max(6);
 const statusSchema = z.enum(["IDE", "DRAFT", "READY", "POSTED"]);

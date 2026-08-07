@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 import { completeOnboardingAction } from "@/app/actions/onboarding";
-import { OnboardingForm } from "@/components/onboarding-form";
+import { OnboardingForm } from "@/features/auth/components/onboarding-form";
 import { prisma } from "@/lib/prisma";
 import { getSafeSession } from "@/lib/session";
 

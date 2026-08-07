@@ -3,8 +3,9 @@ import { redirect } from "next/navigation";
 import { auth } from "@/auth";
 import { FadeIn, ProgressBar, Stagger } from "@/components/motion";
 import { ButtonLink } from "@/components/ui/button-link";
+import { EmptyState } from "@/components/ui/empty-state";
 import { prisma } from "@/lib/prisma";
-import { getOrCreateWeekPlan, getRecommendations } from "@/lib/planner";
+import { getOrCreateWeekPlan, getRecommendations } from "@/features/planner/lib/planner";
 import { formatWeekRange } from "@/lib/week";
 import { STATUS_LABEL } from "@/lib/labels";
 
@@ -94,9 +95,9 @@ export default async function DashboardPage() {
             </FadeIn>
           ))}
           {topRecs.length === 0 ? (
-            <li className="text-sm text-ink-muted">
+            <EmptyState as="li" variant="plain">
               Belum ada tren. Jalankan <code>npm run db:seed</code>.
-            </li>
+            </EmptyState>
           ) : null}
         </Stagger>
       </section>

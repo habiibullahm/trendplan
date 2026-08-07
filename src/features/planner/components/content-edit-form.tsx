@@ -6,18 +6,22 @@ import {
   updateContentItemAction,
   softDeleteContentItemAction,
   type PlannerActionState,
-} from "@/app/actions/planner";
+} from "@/features/planner/actions";
 import { ChipButton } from "@/components/ui/chip-button";
 import { Button } from "@/components/ui/button";
+import { FormField } from "@/components/ui/form-field";
+import { Input } from "@/components/ui/input";
+import { LabelText } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import { useActionToasts } from "@/hooks/use-action-toasts";
 import { ALL_STATUSES, STATUS_LABEL } from "@/lib/labels";
-import { copyText } from "@/lib/clipboard";
-import { copyToastError, copyToastSuccess } from "@/lib/copy-toast";
+import { copyText } from "@/features/planner/lib/clipboard";
+import { copyToastError, copyToastSuccess } from "@/features/planner/lib/copy-toast";
 import {
   formatItemPaste,
   suggestCaption,
   suggestHashtags,
-} from "@/lib/export-text";
+} from "@/features/planner/lib/export-text";
 import type { ContentStatus } from "@/generated/prisma/client";
 
 const initial: PlannerActionState = {};
@@ -89,7 +93,7 @@ export function ContentEditForm({ item }: Props) {
         <input type="hidden" name="itemId" value={item.id} />
 
         <div>
-          <p className="text-sm font-medium text-ink">Status</p>
+          <LabelText>Status</LabelText>
           <div className="mt-2 grid grid-cols-2 gap-2 sm:grid-cols-4">
             {ALL_STATUSES.map((status) => (
               <label
@@ -109,48 +113,44 @@ export function ContentEditForm({ item }: Props) {
           </div>
         </div>
 
-        <div>
-          <div className="flex flex-wrap items-center justify-between gap-2">
-            <span className="text-sm font-medium text-ink">Caption</span>
+        <FormField
+          label="Caption"
+          htmlFor="caption-field"
+          action={
             <ChipButton variant="ghost" onClick={isiSaran}>
               Isi saran
             </ChipButton>
-          </div>
-          <textarea
+          }
+        >
+          <Textarea
+            id="caption-field"
             name="caption"
             rows={4}
             value={caption}
             onChange={(e) => setCaption(e.target.value)}
             placeholder="Tulis caption draft…"
-            className="mt-1 w-full rounded-xl border border-border bg-surface px-3 py-2 text-sm text-ink outline-none focus:border-coral"
           />
-        </div>
+        </FormField>
 
-        <div>
-          <span className="text-sm font-medium text-ink">Hashtag</span>
-          <input
+        <FormField label="Hashtag">
+          <Input
             name="hashtags"
             value={hashtags}
             onChange={(e) => setHashtags(e.target.value)}
-            className="min-touch mt-1 w-full rounded-xl border border-border bg-surface px-3 text-sm text-ink outline-none focus:border-coral"
           />
-        </div>
+        </FormField>
 
-        <label className="block">
-          <span className="text-sm font-medium text-ink">
-            Catatan performa (opsional)
-          </span>
-          <input
+        <FormField label="Catatan performa (opsional)">
+          <Input
             name="performanceNote"
             defaultValue={item.performanceNote ?? ""}
             placeholder="Contoh: 12k views, hook kuat"
-            className="min-touch mt-1 w-full rounded-xl border border-border bg-surface px-3 text-sm text-ink outline-none focus:border-coral"
           />
-        </label>
+        </FormField>
 
         <div className="flex flex-wrap items-center gap-2">
-          <Button type="submit" disabled={pending}>
-            {pending ? "Menyimpan..." : "Simpan"}
+          <Button type="submit" loading={pending} loadingText="Menyimpan...">
+            Simpan
           </Button>
           <ChipButton onClick={salin}>Salin</ChipButton>
         </div>
@@ -165,12 +165,9 @@ export function ContentEditForm({ item }: Props) {
         </Link>
         <form action={softDeleteContentItemAction}>
           <input type="hidden" name="itemId" value={item.id} />
-          <button
-            type="submit"
-            className="text-sm font-semibold text-ink-muted hover:text-coral hover:underline"
-          >
+          <Button type="submit" variant="danger">
             Hapus
-          </button>
+          </Button>
         </form>
       </div>
     </div>

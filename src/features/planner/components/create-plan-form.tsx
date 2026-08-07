@@ -4,9 +4,13 @@ import { useActionState } from "react";
 import {
   createContentItemAction,
   type PlannerActionState,
-} from "@/app/actions/planner";
+} from "@/features/planner/actions";
 import { Button } from "@/components/ui/button";
 import { ButtonLink } from "@/components/ui/button-link";
+import { FormField } from "@/components/ui/form-field";
+import { Input } from "@/components/ui/input";
+import { Select } from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
 import { useActionToasts } from "@/hooks/use-action-toasts";
 import { DAY_LABELS } from "@/lib/week";
 
@@ -21,45 +25,36 @@ export function CreatePlanForm({ defaultDay }: { defaultDay: number }) {
 
   return (
     <form action={action} className="flex flex-col gap-4">
-      <label className="block">
-        <span className="text-sm font-medium text-ink">Hari</span>
-        <select
-          name="dayOfWeek"
-          defaultValue={String(defaultDay)}
-          className="min-touch mt-1 w-full rounded-xl border border-border bg-surface px-3 text-sm text-ink outline-none focus:border-coral"
-        >
+      <FormField label="Hari">
+        <Select name="dayOfWeek" defaultValue={String(defaultDay)}>
           {DAY_LABELS.map((label, index) => (
             <option key={label} value={index}>
               {label}
             </option>
           ))}
-        </select>
-      </label>
+        </Select>
+      </FormField>
 
-      <label className="block">
-        <span className="text-sm font-medium text-ink">Judul</span>
-        <input
+      <FormField label="Judul">
+        <Input
           name="title"
           required
           maxLength={120}
           placeholder="Contoh: Bookstore date aesthetic"
-          className="min-touch mt-1 w-full rounded-xl border border-border bg-surface px-3 text-sm text-ink outline-none focus:border-coral"
         />
-      </label>
+      </FormField>
 
-      <label className="block">
-        <span className="text-sm font-medium text-ink">Hook (opsional)</span>
-        <textarea
+      <FormField label="Hook (opsional)">
+        <Textarea
           name="hook"
           rows={3}
           placeholder="Take them to a bookstore and do this…"
-          className="mt-1 w-full rounded-xl border border-border bg-surface px-3 py-2 text-sm text-ink outline-none focus:border-coral"
         />
-      </label>
+      </FormField>
 
       <div className="flex flex-wrap items-center gap-2">
-        <Button type="submit" disabled={pending}>
-          {pending ? "Menyimpan..." : "Simpan ide"}
+        <Button type="submit" loading={pending} loadingText="Menyimpan...">
+          Simpan ide
         </Button>
         <ButtonLink href="/planner" variant="secondary">
           Batal

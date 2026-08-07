@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { AppShell } from "@/components/app-shell";
+import { AppShell } from "@/components/layout/app-shell";
 import { ButtonLink } from "@/components/ui/button-link";
 
 export const metadata = {
