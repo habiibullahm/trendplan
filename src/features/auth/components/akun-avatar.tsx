@@ -16,6 +16,7 @@ import {
   type ProfileImageActionState,
 } from "@/app/actions/profile";
 import { Modal } from "@/components/ui/modal";
+import { Spinner } from "@/components/ui/spinner";
 import {
   canSubmitAvatarUpdate,
   removeButtonMode,
@@ -118,6 +119,7 @@ export function AkunAvatar({
   );
   const pending = uploadPending || removePending;
   const shownUrl = localPreview ?? imageUrl;
+  const modalOpen = Boolean(menuOpen && shownUrl);
   const canUpdate = canSubmitAvatarUpdate(hasPendingFile, Boolean(localPreview));
   const removeMode = removeButtonMode(hasPendingFile);
 
@@ -299,7 +301,7 @@ export function AkunAvatar({
         onClick={onAvatarClick}
         disabled={pending}
         aria-haspopup={shownUrl ? "dialog" : undefined}
-        aria-expanded={shownUrl ? menuOpen : undefined}
+        aria-expanded={modalOpen || undefined}
         aria-label={
           shownUrl ? "Lihat, ubah, atau hapus foto profil" : "Unggah foto profil"
         }
@@ -329,9 +331,10 @@ export function AkunAvatar({
             {initialLetter}
           </span>
         )}
-        {pending ? (
-          <span className="absolute inset-0 flex items-center justify-center bg-ink/40 text-[10px] font-semibold text-paper">
-            …
+        {/* Only when modal is closed — avoid stacking with preview spinner. */}
+        {pending && !modalOpen ? (
+          <span className="absolute inset-0 flex items-center justify-center bg-ink/40 text-paper">
+            <Spinner className="size-4" />
           </span>
         ) : null}
       </button>
@@ -342,7 +345,7 @@ export function AkunAvatar({
       </div>
 
       <Modal
-        open={Boolean(menuOpen && shownUrl)}
+        open={modalOpen}
         onClose={onModalClose}
         title="Foto profil"
         description={
@@ -381,8 +384,8 @@ export function AkunAvatar({
             </span>
           ) : null}
           {pending ? (
-            <span className="absolute inset-0 flex items-center justify-center rounded-full bg-ink/45 text-xs font-semibold text-paper">
-              …
+            <span className="absolute inset-0 flex items-center justify-center rounded-full bg-ink/45 text-paper">
+              <Spinner className="size-5" />
             </span>
           ) : null}
         </div>

@@ -10,12 +10,15 @@ export function AppToaster() {
       richColors={false}
       closeButton={false}
       duration={4000}
+      expand
+      visibleToasts={3}
       gap={10}
-      offset={{ bottom: "1.5rem" }}
+      offset={{ bottom: "var(--tp-toast-offset-desktop)" }}
       mobileOffset={{
-        bottom: "calc(3.5rem + env(safe-area-inset-bottom, 0px) + 0.75rem)",
+        bottom: "var(--tp-bottom-nav-clearance)",
       }}
       style={{ ["--width" as string]: "max-content" }}
+      className="pointer-events-none [&_[data-sonner-toast]]:pointer-events-auto"
       toastOptions={{
         classNames: {
           toast:

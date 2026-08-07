@@ -28,10 +28,43 @@ function SaveGoalButton() {
   );
 }
 
+function GoalPicker({
+  goal,
+  onSelect,
+}: {
+  goal: number;
+  onSelect: (value: number) => void;
+}) {
+  const { pending } = useFormStatus();
+
+  return (
+    <div className="grid grid-cols-7 gap-2">
+      {GOAL_OPTIONS.map((value) => {
+        const active = value === goal;
+        return (
+          <button
+            key={value}
+            type="button"
+            disabled={pending}
+            onClick={() => onSelect(value)}
+            className={`min-touch rounded-xl border text-sm font-semibold transition-colors disabled:opacity-60 ${
+              active
+                ? "border-coral bg-coral text-white"
+                : "border-border bg-paper text-ink"
+            }`}
+          >
+            {value}
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
 export function AkunGoalEditor({ weeklyGoal }: { weeklyGoal: number }) {
   const [open, setOpen] = useState(false);
   const [goal, setGoal] = useState(weeklyGoal);
-  const [state, action] = useActionState(
+  const [state, action, pending] = useActionState(
     async (prev: WeeklyGoalActionState, formData: FormData) => {
       const next = await updateWeeklyGoalAction(prev, formData);
       if (next.success) setOpen(false);
@@ -41,6 +74,11 @@ export function AkunGoalEditor({ weeklyGoal }: { weeklyGoal: number }) {
   );
   useActionToasts(state);
 
+  function onClose() {
+    if (pending) return;
+    setOpen(false);
+  }
+
   return (
     <>
       <div className="flex items-center justify-between gap-3 py-2.5">
@@ -49,6 +87,7 @@ export function AkunGoalEditor({ weeklyGoal }: { weeklyGoal: number }) {
           <span className="text-sm font-semibold text-ink">{weeklyGoal} ide</span>
           <ChipButton
             variant="ghost"
+            disabled={pending}
             onClick={() => {
               setGoal(weeklyGoal);
               setOpen(true);
@@ -61,32 +100,14 @@ export function AkunGoalEditor({ weeklyGoal }: { weeklyGoal: number }) {
 
       <Modal
         open={open}
-        onClose={() => setOpen(false)}
+        onClose={onClose}
         title="Target per minggu"
         description="Berapa ide yang ingin kamu rencanakan tiap minggu?"
         size="sm"
       >
         <form action={action} className="flex flex-col gap-4">
           <input type="hidden" name="weeklyGoal" value={goal} />
-          <div className="grid grid-cols-7 gap-2">
-            {GOAL_OPTIONS.map((value) => {
-              const active = value === goal;
-              return (
-                <button
-                  key={value}
-                  type="button"
-                  onClick={() => setGoal(value)}
-                  className={`min-touch rounded-xl border text-sm font-semibold transition-colors ${
-                    active
-                      ? "border-coral bg-coral text-white"
-                      : "border-border bg-paper text-ink"
-                  }`}
-                >
-                  {value}
-                </button>
-              );
-            })}
-          </div>
+          <GoalPicker goal={goal} onSelect={setGoal} />
           <p className="text-center text-sm text-ink-muted">
             Target:{" "}
             <span className="font-semibold text-ink">{goal} ide / minggu</span>
