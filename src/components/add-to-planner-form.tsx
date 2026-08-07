@@ -22,7 +22,7 @@ export function AddToPlannerForm({ trendId }: { trendId: string }) {
     <form action={action} className="mt-3 flex flex-col gap-2">
       <input type="hidden" name="trendId" value={trendId} />
       <p className="text-xs font-medium text-ink-muted">Tambah ke hari</p>
-      <div className="flex flex-wrap items-end gap-2">
+      <div className="flex flex-wrap items-end justify-between gap-3">
         <label className="shrink-0">
           <span className="sr-only">Hari</span>
           <select
