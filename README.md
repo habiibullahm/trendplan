@@ -130,10 +130,11 @@ DATABASE_URL="<neon-url>" npm run db:seed
 Jika migrate gagal dengan **P1002** (advisory lock timeout): pastikan `DIRECT_URL` mengarah ke koneksi **direct** (bukan `-pooler`), lalu:
 
 ```bash
-npm run db:clear-lock
+DIRECT_URL="<neon-direct-url>" npm run db:clear-lock
 DIRECT_URL="<neon-direct-url>" npm run db:deploy
 ```
 
+Vercel build memakai `npm run db:deploy:retry` (retry otomatis saat P1002 dari deploy bersamaan).
 Redeploy **tidak** wajib setelah seed.
 
 ## Branching strategy
