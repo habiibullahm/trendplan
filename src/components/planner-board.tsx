@@ -278,7 +278,13 @@ function BoardLayout({
 }
 
 /** Static SSR/first-paint board without DnD (avoids wrong layout flash). */
-function StaticBoard({ items }: { items: PlannerBoardItem[] }) {
+function StaticBoard({
+  items,
+  readOnly = false,
+}: {
+  items: PlannerBoardItem[];
+  readOnly?: boolean;
+}) {
   const byDay = buildByDay(items);
   return (
     <>
@@ -288,24 +294,47 @@ function StaticBoard({ items }: { items: PlannerBoardItem[] }) {
           return (
             <li key={label} className="min-w-0">
               {item ? (
-                <Link
-                  href={`/planner/${item.id}`}
-                  className="min-touch flex items-center justify-between gap-3 rounded-2xl border border-border bg-surface px-4 py-3"
-                >
-                  <div className="min-w-0">
-                    <p className="text-xs font-semibold text-ink-muted">
-                      {label}
-                    </p>
-                    <p className="truncate text-sm font-semibold text-ink">
-                      {item.title}
-                    </p>
+                readOnly ? (
+                  <div className="min-touch flex items-center justify-between gap-3 rounded-2xl border border-border bg-surface px-4 py-3">
+                    <div className="min-w-0">
+                      <p className="text-xs font-semibold text-ink-muted">
+                        {label}
+                      </p>
+                      <p className="truncate text-sm font-semibold text-ink">
+                        {item.title}
+                      </p>
+                    </div>
+                    <span
+                      className={`shrink-0 rounded-full border px-2 py-1 text-xs font-semibold ${STATUS_CLASS[item.status]}`}
+                    >
+                      {STATUS_LABEL[item.status]}
+                    </span>
                   </div>
-                  <span
-                    className={`shrink-0 rounded-full border px-2 py-1 text-xs font-semibold ${STATUS_CLASS[item.status]}`}
+                ) : (
+                  <Link
+                    href={`/planner/${item.id}`}
+                    className="min-touch flex items-center justify-between gap-3 rounded-2xl border border-border bg-surface px-4 py-3"
                   >
-                    {STATUS_LABEL[item.status]}
-                  </span>
-                </Link>
+                    <div className="min-w-0">
+                      <p className="text-xs font-semibold text-ink-muted">
+                        {label}
+                      </p>
+                      <p className="truncate text-sm font-semibold text-ink">
+                        {item.title}
+                      </p>
+                    </div>
+                    <span
+                      className={`shrink-0 rounded-full border px-2 py-1 text-xs font-semibold ${STATUS_CLASS[item.status]}`}
+                    >
+                      {STATUS_LABEL[item.status]}
+                    </span>
+                  </Link>
+                )
+              ) : readOnly ? (
+                <div className="min-touch flex items-center gap-3 rounded-2xl border border-dashed border-border px-4 py-3">
+                  <p className="text-xs font-semibold text-ink-muted">{label}</p>
+                  <p className="text-sm text-ink-muted">Kosong</p>
+                </div>
               ) : (
                 <Link
                   href="/rekomendasi"
@@ -333,16 +362,31 @@ function StaticBoard({ items }: { items: PlannerBoardItem[] }) {
             >
               <p className="text-xs font-semibold text-ink-muted">{label}</p>
               {item ? (
-                <Link href={`/planner/${item.id}`} className="mt-2 block min-w-0">
-                  <p className="line-clamp-3 break-words text-sm font-semibold leading-snug text-ink">
-                    {item.title}
-                  </p>
-                  <span
-                    className={`mt-2 inline-flex max-w-full rounded-full border px-2 py-0.5 text-[11px] font-semibold ${STATUS_CLASS[item.status]}`}
-                  >
-                    {STATUS_LABEL[item.status]}
-                  </span>
-                </Link>
+                readOnly ? (
+                  <div className="mt-2 block min-w-0">
+                    <p className="line-clamp-3 break-words text-sm font-semibold leading-snug text-ink">
+                      {item.title}
+                    </p>
+                    <span
+                      className={`mt-2 inline-flex max-w-full rounded-full border px-2 py-0.5 text-[11px] font-semibold ${STATUS_CLASS[item.status]}`}
+                    >
+                      {STATUS_LABEL[item.status]}
+                    </span>
+                  </div>
+                ) : (
+                  <Link href={`/planner/${item.id}`} className="mt-2 block min-w-0">
+                    <p className="line-clamp-3 break-words text-sm font-semibold leading-snug text-ink">
+                      {item.title}
+                    </p>
+                    <span
+                      className={`mt-2 inline-flex max-w-full rounded-full border px-2 py-0.5 text-[11px] font-semibold ${STATUS_CLASS[item.status]}`}
+                    >
+                      {STATUS_LABEL[item.status]}
+                    </span>
+                  </Link>
+                )
+              ) : readOnly ? (
+                <p className="mt-3 text-sm text-ink-muted">Kosong</p>
               ) : (
                 <Link
                   href="/rekomendasi"
@@ -525,4 +569,9 @@ export function PlannerBoard({ items }: { items: PlannerBoardItem[] }) {
       <PlannerHint />
     </>
   );
+}
+
+/** Public demo / embed: static week board with no auth links. */
+export function ReadOnlyPlannerBoard({ items }: { items: PlannerBoardItem[] }) {
+  return <StaticBoard items={items} readOnly />;
 }
