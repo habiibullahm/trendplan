@@ -1,0 +1,23 @@
+---
+description: Use personal Gmail for GitHub/Vercel commits (avoid work email)
+alwaysApply: true
+---
+
+# GitHub commit identity (TrendPlan)
+
+For all git commits in this repo (and when pushing to GitHub for Vercel):
+
+- **Author email:** `mr.habiibullahm@gmail.com`
+- **Author name:** `habibullahm`
+
+Do **not** use the work email `muhammad.habiibullah@dansmultipro.com` for commits. Vercel blocks deploys when GitHub cannot verify that account for the team.
+
+When creating commits, set author via env for that commit if local config still has the work email:
+
+```bash
+GIT_AUTHOR_NAME="habibullahm" GIT_AUTHOR_EMAIL="mr.habiibullahm@gmail.com" \
+GIT_COMMITTER_NAME="habibullahm" GIT_COMMITTER_EMAIL="mr.habiibullahm@gmail.com" \
+git commit ...
+```
+
+Prefer setting **local** (repo-only) `user.email` / `user.name` to the values above — never change global git config unless the user explicitly asks.
