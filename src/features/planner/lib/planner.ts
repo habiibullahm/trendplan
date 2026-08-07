@@ -1,5 +1,5 @@
 import { prisma } from "@/lib/prisma";
-import { softDeleteStaleBefore } from "@/lib/soft-delete";
+import { softDeleteStaleBefore } from "@/features/planner/lib/soft-delete";
 import { getWeekStart } from "@/lib/week";
 
 /** Hard-delete soft-parked rows past the undo window (owned by this user). */

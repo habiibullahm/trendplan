@@ -28,9 +28,10 @@ import {
 } from "@dnd-kit/core";
 import { CSS } from "@dnd-kit/utilities";
 import { toast } from "sonner";
-import { moveContentItemAction } from "@/app/actions/planner";
+import { moveContentItemAction } from "@/features/planner/actions";
 import { usePlannerLayout } from "@/components/motion";
-import { dragId, dropId, parseDropDay } from "@/lib/planner-dnd";
+import { dragId, dropId, parseDropDay } from "@/features/planner/lib/planner-dnd";
+import { Badge } from "@/components/ui/badge";
 import { STATUS_CLASS, STATUS_LABEL } from "@/lib/labels";
 import { DAY_SHORT } from "@/lib/week";
 import type { ContentStatus } from "@/generated/prisma/client";
@@ -183,11 +184,9 @@ function DraggableCard({
               {item.title}
             </p>
           </div>
-          <span
-            className={`max-w-full shrink-0 rounded-full border px-2 py-1 text-xs font-semibold ${STATUS_CLASS[item.status]}`}
-          >
+          <Badge className={`max-w-full shrink-0 ${STATUS_CLASS[item.status]}`}>
             {STATUS_LABEL[item.status]}
-          </span>
+          </Badge>
         </Link>
       </div>
     );
@@ -210,11 +209,8 @@ function DraggableCard({
         <p className="line-clamp-3 break-words text-sm font-semibold leading-snug text-ink">
           {item.title}
         </p>
-        <span
-          className={`mt-2 inline-flex max-w-full rounded-full border px-2 py-0.5 text-[11px] font-semibold ${STATUS_CLASS[item.status]}`}
-        >
-          {STATUS_LABEL[item.status]}
-        </span>
+        <Badge
+          size="sm" className={`mt-2 inline-flex max-w-full ${STATUS_CLASS[item.status]}`}>{STATUS_LABEL[item.status]}</Badge>
       </Link>
     </div>
   );
@@ -226,11 +222,8 @@ function OverlayCard({ item }: { item: PlannerBoardItem }) {
       <p className="line-clamp-3 break-words text-sm font-semibold leading-snug text-ink">
         {item.title}
       </p>
-      <span
-        className={`mt-2 inline-flex rounded-full border px-2 py-0.5 text-[11px] font-semibold ${STATUS_CLASS[item.status]}`}
-      >
-        {STATUS_LABEL[item.status]}
-      </span>
+      <Badge
+        size="sm" className={`mt-2 inline-flex ${STATUS_CLASS[item.status]}`}>{STATUS_LABEL[item.status]}</Badge>
     </div>
   );
 }
@@ -304,11 +297,9 @@ function StaticBoard({
                         {item.title}
                       </p>
                     </div>
-                    <span
-                      className={`shrink-0 rounded-full border px-2 py-1 text-xs font-semibold ${STATUS_CLASS[item.status]}`}
-                    >
-                      {STATUS_LABEL[item.status]}
-                    </span>
+                    <Badge className={`shrink-0 ${STATUS_CLASS[item.status]}`}>
+            {STATUS_LABEL[item.status]}
+          </Badge>
                   </div>
                 ) : (
                   <Link
@@ -323,11 +314,9 @@ function StaticBoard({
                         {item.title}
                       </p>
                     </div>
-                    <span
-                      className={`shrink-0 rounded-full border px-2 py-1 text-xs font-semibold ${STATUS_CLASS[item.status]}`}
-                    >
-                      {STATUS_LABEL[item.status]}
-                    </span>
+                    <Badge className={`shrink-0 ${STATUS_CLASS[item.status]}`}>
+            {STATUS_LABEL[item.status]}
+          </Badge>
                   </Link>
                 )
               ) : readOnly ? (
@@ -367,22 +356,16 @@ function StaticBoard({
                     <p className="line-clamp-3 break-words text-sm font-semibold leading-snug text-ink">
                       {item.title}
                     </p>
-                    <span
-                      className={`mt-2 inline-flex max-w-full rounded-full border px-2 py-0.5 text-[11px] font-semibold ${STATUS_CLASS[item.status]}`}
-                    >
-                      {STATUS_LABEL[item.status]}
-                    </span>
+                    <Badge
+                      size="sm" className={`mt-2 inline-flex max-w-full ${STATUS_CLASS[item.status]}`}>{STATUS_LABEL[item.status]}</Badge>
                   </div>
                 ) : (
                   <Link href={`/planner/${item.id}`} className="mt-2 block min-w-0">
                     <p className="line-clamp-3 break-words text-sm font-semibold leading-snug text-ink">
                       {item.title}
                     </p>
-                    <span
-                      className={`mt-2 inline-flex max-w-full rounded-full border px-2 py-0.5 text-[11px] font-semibold ${STATUS_CLASS[item.status]}`}
-                    >
-                      {STATUS_LABEL[item.status]}
-                    </span>
+                    <Badge
+                      size="sm" className={`mt-2 inline-flex max-w-full ${STATUS_CLASS[item.status]}`}>{STATUS_LABEL[item.status]}</Badge>
                   </Link>
                 )
               ) : readOnly ? (

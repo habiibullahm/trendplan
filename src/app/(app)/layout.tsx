@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
 import { redirect } from "next/navigation";
 import { signOut } from "@/auth";
-import { AppShell } from "@/components/app-shell";
+import { AppShell } from "@/components/layout/app-shell";
 import { prisma } from "@/lib/prisma";
 import { getSafeSession } from "@/lib/session";
 

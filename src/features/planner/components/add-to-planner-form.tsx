@@ -4,8 +4,9 @@ import { useActionState } from "react";
 import {
   addTrendToPlannerAction,
   type PlannerActionState,
-} from "@/app/actions/planner";
+} from "@/features/planner/actions";
 import { Button } from "@/components/ui/button";
+import { Select } from "@/components/ui/select";
 import { useActionToasts } from "@/hooks/use-action-toasts";
 import { DAY_SHORT } from "@/lib/week";
 
@@ -25,20 +26,26 @@ export function AddToPlannerForm({ trendId }: { trendId: string }) {
       <div className="flex flex-wrap items-end justify-between gap-3">
         <label className="shrink-0">
           <span className="sr-only">Hari</span>
-          <select
+          <Select
             name="dayOfWeek"
             defaultValue="0"
-            className="min-touch w-[5.25rem] rounded-xl border border-border bg-surface px-3 text-sm text-ink"
+            className="mt-0 w-[5.25rem]"
           >
             {DAY_SHORT.map((label, index) => (
               <option key={label} value={index}>
                 {label}
               </option>
             ))}
-          </select>
+          </Select>
         </label>
-        <Button type="submit" size="sm" className="shrink-0" disabled={pending}>
-          {pending ? "…" : "Tambah"}
+        <Button
+          type="submit"
+          size="sm"
+          className="shrink-0"
+          loading={pending}
+          loadingText="…"
+        >
+          Tambah
         </Button>
       </div>
     </form>

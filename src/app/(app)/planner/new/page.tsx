@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
 import { auth } from "@/auth";
-import { CreatePlanForm } from "@/components/create-plan-form";
-import { getOrCreateWeekPlan } from "@/lib/planner";
+import { CreatePlanForm } from "@/features/planner/components/create-plan-form";
+import { getOrCreateWeekPlan } from "@/features/planner/lib/planner";
 import { formatWeekRange } from "@/lib/week";
 
 type Props = {

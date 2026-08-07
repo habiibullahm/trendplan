@@ -1,6 +1,6 @@
 import { FadeIn, Stagger } from "@/components/motion";
 import { FORMAT_LABEL } from "@/lib/labels";
-import { DEMO_TRENDS } from "@/lib/demo-planner";
+import { DEMO_TRENDS } from "@/features/planner/lib/demo-planner";
 
 export default function DemoRekomendasiPage() {
   return (

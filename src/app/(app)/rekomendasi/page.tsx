@@ -1,7 +1,8 @@
-import { AddToPlannerForm } from "@/components/add-to-planner-form";
+import { AddToPlannerForm } from "@/features/planner/components/add-to-planner-form";
 import { FadeIn, Stagger } from "@/components/motion";
+import { EmptyState } from "@/components/ui/empty-state";
 import { FORMAT_LABEL } from "@/lib/labels";
-import { getRecommendations } from "@/lib/planner";
+import { getRecommendations } from "@/features/planner/lib/planner";
 
 export default async function RekomendasiPage() {
   const trends = await getRecommendations(12);
@@ -42,9 +43,9 @@ export default async function RekomendasiPage() {
           </FadeIn>
         ))}
         {trends.length === 0 ? (
-          <li className="text-sm text-ink-muted">
+          <EmptyState as="li" variant="plain">
             Belum ada rekomendasi. Jalankan <code>npm run db:seed</code>.
-          </li>
+          </EmptyState>
         ) : null}
       </Stagger>
     </main>

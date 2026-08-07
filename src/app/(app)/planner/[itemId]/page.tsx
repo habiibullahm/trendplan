@@ -1,6 +1,6 @@
 import { notFound, redirect } from "next/navigation";
 import { auth } from "@/auth";
-import { ContentEditForm } from "@/components/content-edit-form";
+import { ContentEditForm } from "@/features/planner/components/content-edit-form";
 import { DAY_LABELS } from "@/lib/week";
 import { prisma } from "@/lib/prisma";
 

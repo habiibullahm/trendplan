@@ -1,8 +1,8 @@
-import { ReadOnlyPlannerBoard } from "@/components/planner-board";
+import { ReadOnlyPlannerBoard } from "@/features/planner/components/planner-board";
 import { Button } from "@/components/ui/button";
 import { ButtonLink } from "@/components/ui/button-link";
 import { ChipButton } from "@/components/ui/chip-button";
-import { DEMO_ITEMS, demoWeekLabel } from "@/lib/demo-planner";
+import { DEMO_ITEMS, demoWeekLabel } from "@/features/planner/lib/demo-planner";
 
 export default function DemoPlannerPage() {
   return (

@@ -1,9 +1,9 @@
 "use client";
 
 import { ChipButton } from "@/components/ui/chip-button";
-import { copyText } from "@/lib/clipboard";
-import { copyToastError, copyToastSuccess } from "@/lib/copy-toast";
-import { formatWeekPaste, type WeekPasteItem } from "@/lib/export-text";
+import { copyText } from "@/features/planner/lib/clipboard";
+import { copyToastError, copyToastSuccess } from "@/features/planner/lib/copy-toast";
+import { formatWeekPaste, type WeekPasteItem } from "@/features/planner/lib/export-text";
 
 export function CopyWeekButton({
   weekLabel,

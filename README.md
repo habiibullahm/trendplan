@@ -108,14 +108,14 @@ Redeploy **tidak** wajib setelah seed.
 ## Struktur singkat
 
 ```
-src/app/(app)/     # Dashboard, tren, rekomendasi, planner, riwayat
-src/app/actions/   # Auth + planner server actions
-src/components/    # UI (nav, forms, toaster, planner board)
-prisma/            # Schema, migrations, seed
-scripts/           # Smoke + copy-local-to-prod
+src/app/(app)/              # Routes: dashboard, tren, rekomendasi, planner, riwayat
+src/app/actions/            # Auth + onboarding server actions
+src/components/layout/      # App shell, nav, toaster
+src/components/motion/      # Shared motion helpers
+src/components/ui/          # Primitives (Button, FormField, Input, Badge, …)
+src/features/planner/       # Planner components, lib, server actions
+src/features/auth/          # Auth + onboarding forms
+src/lib/                    # Shared (db, prisma, session, week, labels, cn)
+prisma/                     # Schema, migrations, seed
+scripts/                    # Smoke + copy-local-to-prod
 ```
-
-## Catatan
-
-- Session JWT: jika ganti `AUTH_SECRET`, cookie lama invalid (app membersihkan stale cookie).
-- `prisma/dev.db` adalah SQLite lama — app memakai PostgreSQL.

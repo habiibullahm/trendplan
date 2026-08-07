@@ -2,6 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { auth } from "@/auth";
 import { FadeIn, Stagger } from "@/components/motion";
+import { EmptyState } from "@/components/ui/empty-state";
 import { prisma } from "@/lib/prisma";
 import { DAY_SHORT } from "@/lib/week";
 
@@ -50,10 +51,10 @@ export default async function RiwayatPage() {
           </FadeIn>
         ))}
         {items.length === 0 ? (
-          <li className="rounded-2xl border border-dashed border-border px-4 py-6 text-sm text-ink-muted">
+          <EmptyState as="li">
             Belum ada yang diposting. Ubah status konten di Planner menjadi{" "}
             <span className="font-semibold text-ink">Posted</span>.
-          </li>
+          </EmptyState>
         ) : null}
       </Stagger>
     </main>

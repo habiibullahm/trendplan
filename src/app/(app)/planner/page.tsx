@@ -1,11 +1,11 @@
 import { Suspense } from "react";
 import { redirect } from "next/navigation";
 import { auth } from "@/auth";
-import { CopyWeekButton } from "@/components/copy-week-button";
-import { PlannerBoard } from "@/components/planner-board";
-import { PlannerToastFromQuery } from "@/components/planner-toast";
+import { CopyWeekButton } from "@/features/planner/components/copy-week-button";
+import { PlannerBoard } from "@/features/planner/components/planner-board";
+import { PlannerToastFromQuery } from "@/features/planner/components/planner-toast";
 import { STATUS_LABEL } from "@/lib/labels";
-import { getOrCreateWeekPlan } from "@/lib/planner";
+import { getOrCreateWeekPlan } from "@/features/planner/lib/planner";
 import { DAY_SHORT, formatWeekRange } from "@/lib/week";
 import { prisma } from "@/lib/prisma";
 

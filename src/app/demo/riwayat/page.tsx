@@ -1,5 +1,6 @@
 import { FadeIn, Stagger } from "@/components/motion";
-import { demoPostedItems, demoWeekLabel } from "@/lib/demo-planner";
+import { EmptyState } from "@/components/ui/empty-state";
+import { demoPostedItems, demoWeekLabel } from "@/features/planner/lib/demo-planner";
 import { DAY_SHORT } from "@/lib/week";
 
 export default function DemoRiwayatPage() {
@@ -29,9 +30,7 @@ export default function DemoRiwayatPage() {
           </FadeIn>
         ))}
         {items.length === 0 ? (
-          <li className="rounded-2xl border border-dashed border-border px-4 py-6 text-sm text-ink-muted">
-            Belum ada yang diposting.
-          </li>
+          <EmptyState as="li">Belum ada yang diposting.</EmptyState>
         ) : null}
       </Stagger>
     </main>

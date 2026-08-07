@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { TopNav, BottomNav } from "@/components/app-nav";
+import { TopNav, BottomNav } from "@/components/layout/app-nav";
 
 export function AppShell({
   children,
