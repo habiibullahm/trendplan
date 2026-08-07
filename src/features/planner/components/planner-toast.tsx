@@ -15,6 +15,8 @@ const MESSAGES: Record<string, string> = {
 };
 
 const DELETE_TOAST_ID = "planner-delete";
+/** Same id as useActionToasts success — spam replaces, doesn't stack duplicates. */
+const FEEDBACK_TOAST_ID = "action-success";
 
 function DeleteCountdownBar({ durationMs }: { durationMs: number }) {
   return (
@@ -149,7 +151,7 @@ export function PlannerToastFromQuery() {
     if (!message) return;
     if (shownKey.current === key) return;
     shownKey.current = key;
-    toast.success(message);
+    toast.success(message, { id: FEEDBACK_TOAST_ID });
     stripToastFromUrl();
   }, [searchParams, pathname, router]);
 

@@ -5,6 +5,7 @@ import {
   type ButtonVariant,
   type ButtonWidth,
 } from "@/components/ui/button-styles";
+import { Spinner } from "@/components/ui/spinner";
 
 type Props = ButtonHTMLAttributes<HTMLButtonElement> & {
   variant?: ButtonVariant;
@@ -35,7 +36,14 @@ export function Button({
       disabled={isDisabled}
       aria-busy={loading || undefined}
     >
-      {loading ? (loadingText ?? children) : children}
+      {loading ? (
+        <span className="inline-flex items-center justify-center gap-2">
+          <Spinner className="size-3.5 shrink-0" />
+          {loadingText ?? children}
+        </span>
+      ) : (
+        children
+      )}
     </button>
   );
 }

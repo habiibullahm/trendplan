@@ -44,53 +44,73 @@ body {
   display: none;
 }
 
-/* Bottom nav (md:hidden) — keep toasts clear of it */
+/* Bottom nav (md:hidden) — toast sits above it on small screens */
 :root {
-  --tp-bottom-nav-clearance: calc(3.5rem + env(safe-area-inset-bottom, 0px) + 0.75rem);
+  --tp-toast-offset-desktop: 1.5rem;
+  /* nav (~min-touch row) + safe area + breathing room */
+  --tp-bottom-nav-clearance: calc(
+    3.5rem + env(safe-area-inset-bottom, 0px) + 0.75rem
+  );
 }
 
-/* Sonner — bottom-center, hug content (absolute toasts don't size the toaster) */
+/*
+  Sonner bottom-center: use a full-width toaster and center each toast with the
+  CSS `translate` property. Do NOT use transform:translateX(-50%) on the toaster —
+  Sonner sets transform:none on mobile / lifted, which leaves left:50% unshifted.
+*/
 [data-sonner-toaster][data-x-position="center"] {
-  --width: max-content;
+  left: 0 !important;
+  right: 0 !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  transform: none !important;
+}
+
+[data-sonner-toaster][data-y-position="bottom"] {
+  top: auto !important;
+  bottom: var(--tp-toast-offset-desktop) !important;
+}
+
+[data-sonner-toaster][data-x-position="center"] [data-sonner-toast] {
   left: 50% !important;
   right: auto !important;
   width: max-content !important;
-  max-width: calc(100vw - 2rem);
-  transform: translateX(-50%) !important;
+  max-width: min(24rem, calc(100vw - 2rem)) !important;
+  /* Independent of Sonner's transform: var(--y) stacking */
+  translate: -50% 0;
 }
 
 /* Match BottomNav visibility (Tailwind md = 768px), not Sonner's 600px mobile */
 @media (max-width: 767px) {
   [data-sonner-toaster][data-y-position="bottom"] {
     bottom: var(--tp-bottom-nav-clearance) !important;
-    top: auto !important;
   }
 }
 
 @media (max-width: 600px) {
   [data-sonner-toaster][data-x-position="center"] {
-    left: 50% !important;
-    right: auto !important;
-    width: max-content !important;
-    max-width: calc(100vw - 2rem);
-    transform: translateX(-50%) !important;
+    left: 0 !important;
+    right: 0 !important;
+    width: 100% !important;
+    transform: none !important;
   }
 
   [data-sonner-toaster][data-y-position="bottom"][data-x-position="center"] {
     bottom: var(--tp-bottom-nav-clearance) !important;
     top: auto !important;
-    transform: translateX(-50%) !important;
   }
 
   [data-sonner-toaster][data-x-position="center"] [data-sonner-toast] {
-    left: auto !important;
+    left: 50% !important;
     right: auto !important;
     width: max-content !important;
     max-width: min(24rem, calc(100vw - 2rem)) !important;
+    translate: -50% 0;
   }
 }
 
-/* Sonner — left accent bar, surface body, ink text */
+/* Sonner — left accent bar, surface body, ink text.
+   Do NOT set position:relative — Sonner stacks with position:absolute + --y. */
 [data-sonner-toaster] [data-sonner-toast].tp-toast {
   --width: max-content;
   width: max-content !important;
@@ -98,7 +118,6 @@ body {
   --border-radius: 16px;
   padding: 0.75rem 0.875rem 0.75rem 1rem !important;
   gap: 0.75rem !important;
-  position: relative;
   overflow: hidden;
   box-shadow: 0 8px 24px rgb(28 25 23 / 0.1) !important;
 }

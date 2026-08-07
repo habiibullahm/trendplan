@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useFormStatus } from "react-dom";
 import { Button } from "@/components/ui/button";
 
 const GOAL_OPTIONS = [1, 2, 3, 4, 5, 6, 7] as const;
@@ -11,6 +12,54 @@ type OnboardingFormProps = {
   userName?: string | null;
   trendCount: number;
 };
+
+function GoalPicker({
+  goal,
+  onSelect,
+}: {
+  goal: number;
+  onSelect: (value: number) => void;
+}) {
+  const { pending } = useFormStatus();
+
+  return (
+    <div className="mt-3 grid grid-cols-7 gap-2">
+      {GOAL_OPTIONS.map((value) => {
+        const active = value === goal;
+        return (
+          <button
+            key={value}
+            type="button"
+            disabled={pending}
+            onClick={() => onSelect(value)}
+            className={`min-touch rounded-xl border text-sm font-semibold transition-colors disabled:opacity-60 ${
+              active
+                ? "border-coral bg-coral text-white"
+                : "border-border bg-surface text-ink"
+            }`}
+          >
+            {value}
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
+function SubmitButton() {
+  const { pending } = useFormStatus();
+
+  return (
+    <Button
+      type="submit"
+      width="full"
+      loading={pending}
+      loadingText="Menyimpan..."
+    >
+      Simpan & lanjut ke dashboard
+    </Button>
+  );
+}
 
 export function OnboardingForm({
   action,
@@ -53,33 +102,14 @@ export function OnboardingForm({
         <p className="mt-1 text-sm text-ink-muted">
           Pilih target yang realistis supaya planner minggu ini terisi.
         </p>
-        <div className="mt-3 grid grid-cols-7 gap-2">
-          {GOAL_OPTIONS.map((value) => {
-            const active = value === goal;
-            return (
-              <button
-                key={value}
-                type="button"
-                onClick={() => setGoal(value)}
-                className={`min-touch rounded-xl border text-sm font-semibold transition-colors ${
-                  active
-                    ? "border-coral bg-coral text-white"
-                    : "border-border bg-surface text-ink"
-                }`}
-              >
-                {value}
-              </button>
-            );
-          })}
-        </div>
+        <GoalPicker goal={goal} onSelect={setGoal} />
         <p className="mt-3 text-center text-sm text-ink-muted">
-          Target: <span className="font-semibold text-ink">{goal} konten / minggu</span>
+          Target:{" "}
+          <span className="font-semibold text-ink">{goal} konten / minggu</span>
         </p>
       </section>
 
-      <Button type="submit" width="full">
-        Simpan & lanjut ke dashboard
-      </Button>
+      <SubmitButton />
     </form>
   );
 }

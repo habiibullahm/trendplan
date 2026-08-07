@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { auth, signOut } from "@/auth";
 import { AkunAvatar } from "@/features/auth/components/akun-avatar";
 import { AkunGoalEditor } from "@/features/auth/components/akun-goal-editor";
+import { LogoutButton } from "@/features/auth/components/logout-button";
 import { prisma } from "@/lib/prisma";
 
 function initialFrom(name: string | null | undefined, email: string): string {
@@ -93,12 +94,7 @@ export default async function AkunPage() {
           await signOut({ redirectTo: "/" });
         }}
       >
-        <button
-          type="submit"
-          className="min-touch flex w-full items-center justify-center rounded-2xl border border-border bg-surface px-4 text-sm font-semibold text-coral"
-        >
-          Keluar
-        </button>
+        <LogoutButton />
       </form>
     </main>
   );

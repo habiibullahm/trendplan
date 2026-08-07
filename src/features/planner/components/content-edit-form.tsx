@@ -66,12 +66,20 @@ export function ContentEditForm({
   returnWeek,
   backHref = "/planner",
 }: Props) {
-  const [state, action, pending] = useActionState(
+  const [state, action, savePending] = useActionState(
     updateContentItemAction,
     initial,
   );
+  const [, deleteAction, deletePending] = useActionState(
+    async (_prev: null, formData: FormData) => {
+      await softDeleteContentItemAction(formData);
+      return null;
+    },
+    null,
+  );
   useActionToasts(state);
 
+  const busy = savePending || deletePending;
   const [caption, setCaption] = useState(item.caption ?? "");
   const [hashtags, setHashtags] = useState(item.hashtags ?? "");
 
@@ -126,13 +134,18 @@ export function ContentEditForm({
             {ALL_STATUSES.map((status) => (
               <label
                 key={status}
-                className="min-touch flex cursor-pointer items-center justify-center rounded-xl border border-border bg-surface px-2 text-center text-xs font-semibold has-[:checked]:border-coral has-[:checked]:bg-coral/10 has-[:checked]:text-coral"
+                className={`min-touch flex items-center justify-center rounded-xl border border-border bg-surface px-2 text-center text-xs font-semibold has-[:checked]:border-coral has-[:checked]:bg-coral/10 has-[:checked]:text-coral ${
+                  busy
+                    ? "cursor-not-allowed opacity-60"
+                    : "cursor-pointer"
+                }`}
               >
                 <input
                   type="radio"
                   name="status"
                   value={status}
                   defaultChecked={item.status === status}
+                  disabled={busy}
                   className="sr-only"
                 />
                 {STATUS_LABEL[status]}
@@ -145,7 +158,7 @@ export function ContentEditForm({
           label="Caption"
           htmlFor="caption-field"
           action={
-            <ChipButton variant="ghost" onClick={isiSaran}>
+            <ChipButton variant="ghost" onClick={isiSaran} disabled={busy}>
               Isi saran
             </ChipButton>
           }
@@ -157,6 +170,7 @@ export function ContentEditForm({
             value={caption}
             onChange={(e) => setCaption(e.target.value)}
             placeholder="Tulis caption draft…"
+            disabled={busy}
           />
         </FormField>
 
@@ -165,6 +179,7 @@ export function ContentEditForm({
             name="hashtags"
             value={hashtags}
             onChange={(e) => setHashtags(e.target.value)}
+            disabled={busy}
           />
         </FormField>
 
@@ -173,14 +188,22 @@ export function ContentEditForm({
             name="performanceNote"
             defaultValue={item.performanceNote ?? ""}
             placeholder="Contoh: 12k views, hook kuat"
+            disabled={busy}
           />
         </FormField>
 
         <div className="flex flex-wrap items-center gap-2">
-          <Button type="submit" loading={pending} loadingText="Menyimpan...">
+          <Button
+            type="submit"
+            loading={savePending}
+            disabled={deletePending}
+            loadingText="Menyimpan..."
+          >
             Simpan
           </Button>
-          <ChipButton onClick={salin}>Salin</ChipButton>
+          <ChipButton onClick={salin} disabled={busy}>
+            Salin
+          </ChipButton>
         </div>
       </form>
 
@@ -191,10 +214,16 @@ export function ContentEditForm({
         >
           Kembali ke planner
         </Link>
-        <form action={softDeleteContentItemAction}>
+        <form action={deleteAction}>
           <input type="hidden" name="itemId" value={item.id} />
           <ReturnFields returnMonth={returnMonth} returnWeek={returnWeek} />
-          <Button type="submit" variant="danger">
+          <Button
+            type="submit"
+            variant="danger"
+            disabled={savePending}
+            loading={deletePending}
+            loadingText="Menghapus..."
+          >
             Hapus
           </Button>
         </form>
