@@ -9,6 +9,7 @@ import { getOrCreateWeekPlan, requireUserId } from "@/lib/planner";
 
 const daySchema = z.coerce.number().int().min(0).max(6);
 const statusSchema = z.enum(["IDE", "DRAFT", "READY", "POSTED"]);
+const titleSchema = z.string().trim().min(1).max(120);
 
 function revalidatePlanner() {
   revalidatePath("/planner");
@@ -60,6 +61,43 @@ export async function addTrendToPlannerAction(
   return { success: "Ide ditambahkan ke planner." };
 }
 
+export async function createContentItemAction(
+  _prev: PlannerActionState,
+  formData: FormData,
+): Promise<PlannerActionState> {
+  const userId = await requireUserId();
+  const dayParsed = daySchema.safeParse(formData.get("dayOfWeek"));
+  const titleParsed = titleSchema.safeParse(formData.get("title"));
+
+  if (!dayParsed.success) {
+    return { error: "Pilih hari yang valid." };
+  }
+  if (!titleParsed.success) {
+    return { error: "Judul wajib diisi." };
+  }
+
+  const hook = String(formData.get("hook") ?? "").trim() || null;
+
+  const weekPlan = await getOrCreateWeekPlan(userId);
+  const existing = weekPlan.items.find((i) => i.dayOfWeek === dayParsed.data);
+  if (existing) {
+    return { error: "Hari itu sudah ada ide — pilih hari lain." };
+  }
+
+  await prisma.contentItem.create({
+    data: {
+      weekPlanId: weekPlan.id,
+      dayOfWeek: dayParsed.data,
+      title: titleParsed.data,
+      hook,
+      status: ContentStatus.IDE,
+    },
+  });
+
+  revalidatePlanner();
+  redirect("/planner?toast=created");
+}
+
 export async function updateContentItemAction(
   _prev: PlannerActionState,
   formData: FormData,
@@ -90,7 +128,7 @@ export async function updateContentItemAction(
 
   revalidatePlanner();
   revalidatePath(`/planner/${itemId}`);
-  return { success: "Perubahan disimpan." };
+  redirect("/planner?toast=saved");
 }
 
 export async function deleteContentItemAction(formData: FormData) {

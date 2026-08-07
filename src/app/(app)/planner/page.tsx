@@ -1,6 +1,8 @@
+import { Suspense } from "react";
 import { redirect } from "next/navigation";
 import { auth } from "@/auth";
 import { PlannerBoard } from "@/components/planner-board";
+import { PlannerToastFromQuery } from "@/components/planner-toast";
 import { getOrCreateWeekPlan } from "@/lib/planner";
 import { formatWeekRange } from "@/lib/week";
 import { prisma } from "@/lib/prisma";
@@ -19,6 +21,9 @@ export default async function PlannerPage() {
 
   return (
     <main className="flex flex-1 flex-col">
+      <Suspense fallback={null}>
+        <PlannerToastFromQuery />
+      </Suspense>
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
           <h1 className="font-[family-name:var(--font-fraunces)] text-3xl font-semibold text-ink">
