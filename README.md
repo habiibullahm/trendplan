@@ -106,16 +106,36 @@ DATABASE_URL="<neon-url>" npm run db:seed
 
 Redeploy **tidak** wajib setelah seed.
 
+## Branching strategy
+
+Kerjakan fitur di branch terpisah, lalu merge lewat PR ke `main` (jangan push langsung ke `main`).
+
+```bash
+git checkout main
+git pull origin main
+git checkout -b feature/nama-fitur
+# …edit, commit…
+git push -u origin HEAD
+gh pr create --base main
+```
+
+Catatan penting:
+
+- **Base** branch dari `main` yang sudah up to date.
+- **Upstream** harus `origin/feature/…`, bukan `origin/main`. Hindari `git checkout -b feature/x origin/main` bila itu membuat branch track `main` — `git push` tanpa argumen bisa mendorong commit ke `main`.
+- Setelah `git push -u origin HEAD`, buka PR ke `main` dan merge lewat GitHub/Vercel.
+- Satu PR ≈ satu fitur/perbaikan yang bisa di-review sendiri.
+
 ## Struktur singkat
 
 ```
-src/app/(app)/              # Routes: dashboard, tren, rekomendasi, planner, riwayat
+src/app/(app)/              # Routes: dashboard, tren, rekomendasi, planner, riwayat, akun
 src/app/actions/            # Auth + onboarding server actions
 src/components/layout/      # App shell, nav, toaster
 src/components/motion/      # Shared motion helpers
 src/components/ui/          # Primitives (Button, FormField, Input, Badge, …)
 src/features/planner/       # Planner components, lib, server actions
-src/features/auth/          # Auth + onboarding forms
+src/features/auth/          # Auth + onboarding forms + Akun goal editor
 src/lib/                    # Shared (db, prisma, session, week, labels, cn)
 prisma/                     # Schema, migrations, seed
 scripts/                    # Smoke + copy-local-to-prod
