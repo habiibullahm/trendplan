@@ -9,7 +9,8 @@ export const STATUS_LABEL: Record<ContentStatus, string> = {
 
 export const STATUS_CLASS: Record<ContentStatus, string> = {
   IDE: "border-border bg-paper text-ink-muted",
-  DRAFT: "border-[#fde68a] bg-[#fffbeb] text-[#92400e]",
+  DRAFT:
+    "border-amber-500/40 bg-amber-500/15 text-amber-800 dark:text-amber-200",
   READY: "border-sage/30 bg-sage/10 text-sage",
   POSTED: "border-coral/30 bg-coral/10 text-coral",
 };

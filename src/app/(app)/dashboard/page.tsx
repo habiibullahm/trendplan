@@ -4,6 +4,7 @@ import { auth } from "@/auth";
 import { FadeIn, ProgressBar, Stagger } from "@/components/motion";
 import { ButtonLink } from "@/components/ui/button-link";
 import { EmptyState } from "@/components/ui/empty-state";
+import { ThemeToggle } from "@/features/auth/components/theme-toggle";
 import { prisma } from "@/lib/prisma";
 import { getOrCreateWeekPlan, getRecommendations } from "@/features/planner/lib/planner";
 import { formatWeekRange } from "@/lib/week";
@@ -27,16 +28,21 @@ export default async function DashboardPage() {
 
   return (
     <main className="flex w-full flex-1 flex-col">
-      <p className="text-sm text-ink-muted">
-        Halo, {user?.name ?? session?.user?.name ?? "creator"}
-      </p>
-      <h1 className="mt-1 font-[family-name:var(--font-fraunces)] text-3xl font-semibold text-ink">
-        Beranda
-      </h1>
-      <p className="mt-2 text-sm text-ink-muted">
-        Minggu {formatWeekRange(weekPlan.weekStart)} · Niche{" "}
-        {user?.niche ?? "Couple Date Ideas"}
-      </p>
+      <div className="flex items-start justify-between gap-3">
+        <div className="min-w-0">
+          <p className="text-sm text-ink-muted">
+            Halo, {user?.name ?? session?.user?.name ?? "creator"}
+          </p>
+          <h1 className="mt-1 font-[family-name:var(--font-fraunces)] text-3xl font-semibold text-ink">
+            Beranda
+          </h1>
+          <p className="mt-2 text-sm text-ink-muted">
+            Minggu {formatWeekRange(weekPlan.weekStart)} · Niche{" "}
+            {user?.niche ?? "Couple Date Ideas"}
+          </p>
+        </div>
+        <ThemeToggle />
+      </div>
 
       <section className="mt-6 rounded-2xl border border-border bg-surface p-4">
         <p className="text-sm text-ink-muted">Progress minggu ini</p>

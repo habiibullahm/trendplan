@@ -1,11 +1,14 @@
 "use client";
 
 import { Toaster } from "sonner";
+import { useTheme } from "@/components/theme/theme-provider";
 
 export function AppToaster() {
+  const { resolvedTheme } = useTheme();
+
   return (
     <Toaster
-      theme="light"
+      theme={resolvedTheme}
       position="bottom-center"
       richColors={false}
       closeButton={false}
