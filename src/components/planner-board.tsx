@@ -87,11 +87,11 @@ function DaySlot({
           />
         ) : (
           <Link
-            href="/rekomendasi"
+            href={`/planner/new?day=${day}`}
             className="min-touch flex items-center gap-3 rounded-2xl border border-dashed border-border px-4 py-3 transition-colors hover:border-coral/50 hover:bg-coral/5"
           >
             <p className="text-xs font-semibold text-ink-muted">{label}</p>
-            <p className="text-sm text-ink-muted">+ Tambah ide</p>
+            <p className="text-sm text-ink-muted">+ Buat ide</p>
           </Link>
         )}
       </li>
@@ -117,10 +117,10 @@ function DaySlot({
         />
       ) : (
         <Link
-          href="/rekomendasi"
+          href={`/planner/new?day=${day}`}
           className="mt-3 block text-sm text-ink-muted transition-colors hover:text-coral"
         >
-          + Ide
+          + Buat ide
         </Link>
       )}
     </div>
@@ -337,11 +337,11 @@ function StaticBoard({
                 </div>
               ) : (
                 <Link
-                  href="/rekomendasi"
+                  href={`/planner/new?day=${day}`}
                   className="min-touch flex items-center gap-3 rounded-2xl border border-dashed border-border px-4 py-3"
                 >
                   <p className="text-xs font-semibold text-ink-muted">{label}</p>
-                  <p className="text-sm text-ink-muted">+ Tambah ide</p>
+                  <p className="text-sm text-ink-muted">+ Buat ide</p>
                 </Link>
               )}
             </li>
@@ -389,10 +389,10 @@ function StaticBoard({
                 <p className="mt-3 text-sm text-ink-muted">Kosong</p>
               ) : (
                 <Link
-                  href="/rekomendasi"
+                  href={`/planner/new?day=${day}`}
                   className="mt-3 block text-sm text-ink-muted"
                 >
-                  + Ide
+                  + Buat ide
                 </Link>
               )}
             </div>
