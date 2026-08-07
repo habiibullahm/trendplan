@@ -1,6 +1,6 @@
-import Link from "next/link";
 import type { ReactNode } from "react";
 import { AppShell } from "@/components/app-shell";
+import { ButtonLink } from "@/components/ui/button-link";
 
 export const metadata = {
   title: "Demo · TrendPlan",
@@ -18,21 +18,19 @@ function DemoBanner() {
           {" — "}
           jelajahi tab aplikasi. Seret & edit butuh akun.
         </p>
-        <div className="flex flex-wrap gap-3">
-          <Link
-            href="/register"
-            target="_top"
-            className="min-touch inline-flex items-center justify-center rounded-xl bg-coral px-4 py-2 text-sm font-semibold text-white"
-          >
+        <div className="flex flex-wrap gap-2">
+          <ButtonLink href="/register" target="_top" size="sm">
             Daftar
-          </Link>
-          <Link
+          </ButtonLink>
+          <ButtonLink
             href="/"
             target="_top"
-            className="min-touch inline-flex items-center justify-center rounded-xl border border-border bg-paper px-4 py-2 text-sm font-semibold text-ink"
+            variant="secondary"
+            size="sm"
+            className="bg-paper"
           >
             Buka Live
-          </Link>
+          </ButtonLink>
         </div>
       </div>
     </div>

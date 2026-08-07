@@ -2,6 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { auth } from "@/auth";
 import { FadeIn, ProgressBar, Stagger } from "@/components/motion";
+import { ButtonLink } from "@/components/ui/button-link";
 import { prisma } from "@/lib/prisma";
 import { getOrCreateWeekPlan, getRecommendations } from "@/lib/planner";
 import { formatWeekRange } from "@/lib/week";
@@ -65,19 +66,11 @@ export default async function DashboardPage() {
         ) : null}
       </section>
 
-      <div className="mt-4 flex flex-col gap-3 sm:flex-row">
-        <Link
-          href="/planner"
-          className="min-touch inline-flex items-center justify-center rounded-xl bg-coral px-5 py-3 text-sm font-semibold text-white transition-transform active:scale-[0.98]"
-        >
-          Lanjut ke Planner
-        </Link>
-        <Link
-          href="/tren"
-          className="min-touch inline-flex items-center justify-center rounded-xl border border-border bg-surface px-5 py-3 text-sm font-semibold text-ink transition-colors hover:bg-paper active:scale-[0.98]"
-        >
-          Lihat tren minggu ini
-        </Link>
+      <div className="mt-4 flex flex-wrap items-center gap-2">
+        <ButtonLink href="/planner">Lanjut ke Planner</ButtonLink>
+        <ButtonLink href="/tren" variant="secondary">
+          Lihat tren
+        </ButtonLink>
       </div>
 
       <section className="mt-8">

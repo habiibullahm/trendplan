@@ -1,11 +1,12 @@
 "use client";
 
-import Link from "next/link";
 import { useActionState } from "react";
 import {
   createContentItemAction,
   type PlannerActionState,
 } from "@/app/actions/planner";
+import { Button } from "@/components/ui/button";
+import { ButtonLink } from "@/components/ui/button-link";
 import { useActionToasts } from "@/hooks/use-action-toasts";
 import { DAY_LABELS } from "@/lib/week";
 
@@ -56,20 +57,13 @@ export function CreatePlanForm({ defaultDay }: { defaultDay: number }) {
         />
       </label>
 
-      <div className="flex flex-col gap-3 sm:flex-row">
-        <button
-          type="submit"
-          disabled={pending}
-          className="min-touch inline-flex items-center justify-center rounded-xl bg-coral px-5 text-sm font-semibold text-white disabled:opacity-60"
-        >
+      <div className="flex flex-wrap items-center gap-2">
+        <Button type="submit" disabled={pending}>
           {pending ? "Menyimpan..." : "Simpan ide"}
-        </button>
-        <Link
-          href="/planner"
-          className="min-touch inline-flex items-center justify-center rounded-xl border border-border bg-surface px-5 text-sm font-semibold text-ink"
-        >
+        </Button>
+        <ButtonLink href="/planner" variant="secondary">
           Batal
-        </Link>
+        </ButtonLink>
       </div>
     </form>
   );

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { Button } from "@/components/ui/button";
 
 const GOAL_OPTIONS = [1, 2, 3, 4, 5, 6, 7] as const;
 
@@ -76,12 +77,9 @@ export function OnboardingForm({
         </p>
       </section>
 
-      <button
-        type="submit"
-        className="min-touch inline-flex items-center justify-center rounded-xl bg-coral px-5 py-3 text-sm font-semibold text-white"
-      >
+      <Button type="submit" width="full">
         Simpan & lanjut ke dashboard
-      </button>
+      </Button>
     </form>
   );
 }

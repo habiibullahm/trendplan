@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import { ButtonLink } from "@/components/ui/button-link";
 import { getSafeSession } from "@/lib/session";
 
 export default async function Home() {
@@ -18,18 +19,12 @@ export default async function Home() {
           Rencana konten TikTok kamu, tiap minggu — niche Couple Date Ideas.
         </p>
         <div className="mt-8 flex flex-col gap-3">
-          <Link
-            href="/login"
-            className="min-touch inline-flex items-center justify-center rounded-xl bg-coral px-5 py-3 text-sm font-semibold text-white"
-          >
+          <ButtonLink href="/login" width="full">
             Masuk
-          </Link>
-          <Link
-            href="/register"
-            className="min-touch inline-flex items-center justify-center rounded-xl border border-border bg-surface px-5 py-3 text-sm font-semibold text-ink"
-          >
+          </ButtonLink>
+          <ButtonLink href="/register" variant="secondary" width="full">
             Daftar
-          </Link>
+          </ButtonLink>
         </div>
       </div>
     </main>
