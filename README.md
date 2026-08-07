@@ -15,14 +15,15 @@ Perencanaan konten TikTok mingguan berbasis tren — niche **Couple Date Ideas**
 ## Fitur MVP
 
 - Daftar / masuk, onboarding niche & target mingguan
-- Tren & rekomendasi (seed mock Couple Date Ideas)
-- Planner mingguan (1 slot per hari), buat ide sendiri, edit caption / status / hashtag
+- Tren & rekomendasi (seed mock Couple Date Ideas) → caption & hashtag saran
+- Planner mingguan (1 slot per hari), buat ide sendiri, edit caption / status / hashtag, salin ke TikTok
 - Dashboard progress + riwayat
 - Toast sukses/error (Bahasa Indonesia)
 
 ## User stories
 
 - [Buat ide sendiri di planner](docs/user-stories/create-content-plan.md)
+- [Rekomendasi konten, caption, hashtags (+ salin)](docs/user-stories/rekomendasi-caption-hashtags.md)
 
 ## Setup lokal
 

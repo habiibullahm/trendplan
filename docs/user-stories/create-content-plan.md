@@ -16,6 +16,7 @@ Week plan sudah dibuat otomatis lewat `getOrCreateWeekPlan`. Sebelumnya hari kos
 - Validasi: judul kosong → "Judul wajib diisi."; hari sudah terisi → "Hari itu sudah ada ide — pilih hari lain." (tetap di form).
 - Sukses buat → toast "Ide ditambahkan ke planner." lalu diarahkan ke `/planner` sehingga kartu baru terlihat.
 - Setelah **Simpan** di `/planner/[id]` → toast "Perubahan disimpan." lalu diarahkan ke `/planner` agar board memperlihatkan perubahan status/judul.
+- **Hapus** soft-delete singkat: redirect ke planner dengan toast **"Dihapus dari planner."** + aksi **Urungkan** (~8 detik). Urungkan mengembalikan ke hari semula; jika hari sudah terisi → error lalu hapus permanen. Tanpa undo / setelah timeout → hard-delete.
 - Hanya user login; `/planner/new` tetap di-gate oleh layout `(app)` (guest → `/login`).
 
 ## Out of scope
