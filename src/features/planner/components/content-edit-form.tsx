@@ -36,9 +36,36 @@ type Props = {
     performanceNote: string | null;
     status: ContentStatus;
   };
+  returnMonth?: string;
+  returnWeek?: number;
+  backHref?: string;
 };
 
-export function ContentEditForm({ item }: Props) {
+function ReturnFields({
+  returnMonth,
+  returnWeek,
+}: {
+  returnMonth?: string;
+  returnWeek?: number;
+}) {
+  return (
+    <>
+      {returnMonth ? (
+        <input type="hidden" name="returnMonth" value={returnMonth} />
+      ) : null}
+      {returnWeek != null ? (
+        <input type="hidden" name="returnWeek" value={String(returnWeek)} />
+      ) : null}
+    </>
+  );
+}
+
+export function ContentEditForm({
+  item,
+  returnMonth,
+  returnWeek,
+  backHref = "/planner",
+}: Props) {
   const [state, action, pending] = useActionState(
     updateContentItemAction,
     initial,
@@ -91,6 +118,7 @@ export function ContentEditForm({ item }: Props) {
     <div className="flex flex-col gap-5">
       <form action={action} className="flex flex-col gap-4">
         <input type="hidden" name="itemId" value={item.id} />
+        <ReturnFields returnMonth={returnMonth} returnWeek={returnWeek} />
 
         <div>
           <LabelText>Status</LabelText>
@@ -158,13 +186,14 @@ export function ContentEditForm({ item }: Props) {
 
       <div className="flex flex-wrap items-center justify-between gap-3">
         <Link
-          href="/planner"
+          href={backHref}
           className="text-sm font-semibold text-coral hover:underline"
         >
           Kembali ke planner
         </Link>
         <form action={softDeleteContentItemAction}>
           <input type="hidden" name="itemId" value={item.id} />
+          <ReturnFields returnMonth={returnMonth} returnWeek={returnWeek} />
           <Button type="submit" variant="danger">
             Hapus
           </Button>

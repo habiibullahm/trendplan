@@ -31,7 +31,7 @@ function DeleteCountdownBar({ durationMs }: { durationMs: number }) {
   );
 }
 
-/** Fires a one-shot Sonner toast from ?toast= then strips it from the URL. */
+/** Fires a one-shot Sonner toast from ?toast= then strips toast params only. */
 export function PlannerToastFromQuery() {
   const router = useRouter();
   const pathname = usePathname();
@@ -47,12 +47,20 @@ export function PlannerToastFromQuery() {
       return;
     }
 
+    function stripToastFromUrl() {
+      const next = new URLSearchParams(searchParams.toString());
+      next.delete("toast");
+      next.delete("undo");
+      const qs = next.toString();
+      router.replace(qs ? `${pathname}?${qs}` : pathname);
+    }
+
     if (key === "deleted") {
       const undoId = searchParams.get("undo");
       const eventKey = `deleted:${undoId ?? "none"}`;
       if (shownKey.current === eventKey) return;
       shownKey.current = eventKey;
-      router.replace(pathname);
+      stripToastFromUrl();
 
       if (!undoId) {
         toast.success("Dihapus dari planner.", { id: DELETE_TOAST_ID });
@@ -105,7 +113,7 @@ export function PlannerToastFromQuery() {
     if (shownKey.current === key) return;
     shownKey.current = key;
     toast.success(message);
-    router.replace(pathname);
+    stripToastFromUrl();
   }, [searchParams, pathname, router]);
 
   return null;
