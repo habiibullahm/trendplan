@@ -3,62 +3,16 @@
 import { del, put } from "@vercel/blob";
 import { revalidatePath } from "next/cache";
 import { auth } from "@/auth";
+import {
+  AVATAR_MAX_BYTES,
+  prepareAvatarUpload,
+} from "@/features/auth/lib/avatar-image";
 import { prisma } from "@/lib/prisma";
 
 export type ProfileImageActionState = {
   error?: string;
   success?: string;
 };
-
-const MAX_BYTES = 2 * 1024 * 1024;
-
-type ImageKind = "image/jpeg" | "image/png" | "image/webp";
-
-const EXT: Record<ImageKind, string> = {
-  "image/jpeg": "jpg",
-  "image/png": "png",
-  "image/webp": "webp",
-};
-
-/** Detect real image type from magic bytes (do not trust client MIME). */
-function sniffImageKind(bytes: Uint8Array): ImageKind | null {
-  if (
-    bytes.length >= 3 &&
-    bytes[0] === 0xff &&
-    bytes[1] === 0xd8 &&
-    bytes[2] === 0xff
-  ) {
-    return "image/jpeg";
-  }
-  if (
-    bytes.length >= 8 &&
-    bytes[0] === 0x89 &&
-    bytes[1] === 0x50 &&
-    bytes[2] === 0x4e &&
-    bytes[3] === 0x47 &&
-    bytes[4] === 0x0d &&
-    bytes[5] === 0x0a &&
-    bytes[6] === 0x1a &&
-    bytes[7] === 0x0a
-  ) {
-    return "image/png";
-  }
-  // RIFF....WEBP
-  if (
-    bytes.length >= 12 &&
-    bytes[0] === 0x52 &&
-    bytes[1] === 0x49 &&
-    bytes[2] === 0x46 &&
-    bytes[3] === 0x46 &&
-    bytes[8] === 0x57 &&
-    bytes[9] === 0x45 &&
-    bytes[10] === 0x42 &&
-    bytes[11] === 0x50
-  ) {
-    return "image/webp";
-  }
-  return null;
-}
 
 function isOurAvatarBlob(url: string, userId: string): boolean {
   try {
@@ -102,19 +56,23 @@ export async function uploadProfileImageAction(
   if (!(file instanceof File) || file.size === 0) {
     return { error: "Pilih foto terlebih dahulu." };
   }
-  if (file.size > MAX_BYTES) {
+  if (file.size > AVATAR_MAX_BYTES) {
     return { error: "Ukuran maksimal 2 MB." };
   }
 
-  const header = new Uint8Array(await file.slice(0, 16).arrayBuffer());
-  const kind = sniffImageKind(header);
-  if (!kind) {
+  const raw = Buffer.from(await file.arrayBuffer());
+  let prepared: Awaited<ReturnType<typeof prepareAvatarUpload>>;
+  try {
+    prepared = await prepareAvatarUpload(raw);
+  } catch {
+    return { error: "Gagal memproses foto. Coba lagi." };
+  }
+  if ("error" in prepared) {
     return { error: "Format harus JPEG, PNG, atau WebP." };
   }
 
   const userId = session.user.id;
-  const ext = EXT[kind];
-  const pathname = `avatars/${userId}/${crypto.randomUUID()}.${ext}`;
+  const pathname = `avatars/${userId}/${crypto.randomUUID()}.${prepared.ext}`;
 
   const existing = await prisma.user.findUnique({
     where: { id: userId },
@@ -123,10 +81,10 @@ export async function uploadProfileImageAction(
 
   let blobUrl: string;
   try {
-    const blob = await put(pathname, file, {
+    const blob = await put(pathname, prepared.buffer, {
       access: "public",
       addRandomSuffix: false,
-      contentType: kind,
+      contentType: prepared.contentType,
     });
     blobUrl = blob.url;
   } catch {

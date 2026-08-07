@@ -2,12 +2,12 @@
 
 import Image from "next/image";
 import {
+  startTransition,
   useActionState,
   useEffect,
   useRef,
   useState,
   type ChangeEvent,
-  type FormEvent,
 } from "react";
 import { toast } from "sonner";
 import {
@@ -16,11 +16,16 @@ import {
   type ProfileImageActionState,
 } from "@/app/actions/profile";
 import { Modal } from "@/components/ui/modal";
+import {
+  canSubmitAvatarUpdate,
+  removeButtonMode,
+  shouldDiscardPendingOnModalClose,
+  validateAvatarFileClient,
+} from "@/features/auth/lib/avatar-image";
 import { useActionToasts } from "@/hooks/use-action-toasts";
 
 const emptyState: ProfileImageActionState = {};
-const MAX_BYTES = 2 * 1024 * 1024;
-const ALLOWED = new Set(["image/jpeg", "image/png", "image/webp"]);
+const DELETE_CONFIRM_TOAST_ID = "avatar-delete-confirm";
 
 function PencilIcon({ className }: { className?: string }) {
   return (
@@ -36,6 +41,25 @@ function PencilIcon({ className }: { className?: string }) {
     >
       <path d="M12 20h9" />
       <path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z" />
+    </svg>
+  );
+}
+
+function UploadIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+      aria-hidden
+    >
+      <path d="M12 16V4" />
+      <path d="m7 9 5-5 5 5" />
+      <path d="M4 16v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2" />
     </svg>
   );
 }
@@ -61,8 +85,11 @@ function TrashIcon({ className }: { className?: string }) {
   );
 }
 
-const iconBtnClass =
-  "flex h-8 w-8 items-center justify-center rounded-full border border-border bg-surface shadow-sm outline-none ring-coral/40 transition enabled:active:scale-95 focus-visible:ring-2 disabled:opacity-60";
+const actionBtnClass =
+  "flex flex-col items-center gap-1.5 outline-none disabled:opacity-50";
+
+const actionIconClass =
+  "flex h-11 w-11 items-center justify-center rounded-full border bg-surface shadow-sm transition enabled:active:scale-95 focus-visible:ring-2 focus-visible:ring-coral/40";
 
 export function AkunAvatar({
   imageUrl,
@@ -79,6 +106,7 @@ export function AkunAvatar({
   const uploadFormRef = useRef<HTMLFormElement>(null);
   const [menuOpen, setMenuOpen] = useState(false);
   const [localPreview, setLocalPreview] = useState<string | null>(null);
+  const [hasPendingFile, setHasPendingFile] = useState(false);
   const [openingPicker, setOpeningPicker] = useState(false);
   const [uploadState, uploadAction, uploadPending] = useActionState(
     uploadProfileImageAction,
@@ -90,6 +118,8 @@ export function AkunAvatar({
   );
   const pending = uploadPending || removePending;
   const shownUrl = localPreview ?? imageUrl;
+  const canUpdate = canSubmitAvatarUpdate(hasPendingFile, Boolean(localPreview));
+  const removeMode = removeButtonMode(hasPendingFile);
 
   useActionToasts(uploadState);
   useActionToasts(removeState);
@@ -103,6 +133,8 @@ export function AkunAvatar({
   useEffect(() => {
     if (uploadState.success && inputRef.current) {
       inputRef.current.value = "";
+      setHasPendingFile(false);
+      setMenuOpen(false);
     }
   }, [uploadState.success]);
 
@@ -113,6 +145,7 @@ export function AkunAvatar({
     queueMicrotask(() => {
       URL.revokeObjectURL(url);
       setLocalPreview((prev) => (prev === url ? null : prev));
+      setHasPendingFile(false);
       if (inputRef.current) inputRef.current.value = "";
     });
   }, [uploadState.error, localPreview]);
@@ -127,6 +160,7 @@ export function AkunAvatar({
     queueMicrotask(() => {
       URL.revokeObjectURL(url);
       setLocalPreview((prev) => (prev === url ? null : prev));
+      setHasPendingFile(false);
     });
   }, [imageUrl, localPreview]);
 
@@ -141,6 +175,12 @@ export function AkunAvatar({
   }, [menuOpen, openingPicker]);
 
   function openPicker() {
+    // Keep modal open when replacing from preview; close first only when
+    // starting from the empty avatar (no dialog yet).
+    if (menuOpen) {
+      inputRef.current?.click();
+      return;
+    }
     setOpeningPicker(true);
     setMenuOpen(false);
   }
@@ -158,12 +198,13 @@ export function AkunAvatar({
     const input = e.currentTarget;
     const file = input.files?.[0];
     if (!file) return;
-    if (!ALLOWED.has(file.type)) {
+    const invalid = validateAvatarFileClient(file);
+    if (invalid === "format") {
       toast.error("Format harus JPEG, PNG, atau WebP.");
       input.value = "";
       return;
     }
-    if (file.size > MAX_BYTES) {
+    if (invalid === "size") {
       toast.error("Ukuran maksimal 2 MB.");
       input.value = "";
       return;
@@ -172,21 +213,66 @@ export function AkunAvatar({
       if (prev) URL.revokeObjectURL(prev);
       return URL.createObjectURL(file);
     });
-    setMenuOpen(false);
+    setHasPendingFile(true);
+    setMenuOpen(true);
+  }
+
+  function onUpdate() {
+    if (!canUpdate || pending) return;
     uploadFormRef.current?.requestSubmit();
   }
 
-  function onRemoveSubmit(e: FormEvent<HTMLFormElement>) {
-    if (!window.confirm("Hapus foto profil?")) {
-      e.preventDefault();
-      return;
-    }
-    setMenuOpen(false);
+  function discardPendingPick() {
     setLocalPreview((prev) => {
       if (prev) URL.revokeObjectURL(prev);
       return null;
     });
+    setHasPendingFile(false);
+    if (inputRef.current) inputRef.current.value = "";
   }
+
+  function onRemoveClick() {
+    if (pending) return;
+    if (removeMode === "discard-pending") {
+      discardPendingPick();
+      if (!imageUrl) setMenuOpen(false);
+      return;
+    }
+
+    setMenuOpen(false);
+    toast("Hapus foto profil?", {
+      id: DELETE_CONFIRM_TOAST_ID,
+      description: "Tindakan ini tidak bisa dibatalkan.",
+      className: "tp-toast tp-toast-delete",
+      duration: 8_000,
+      action: {
+        label: "Hapus",
+        onClick: () => {
+          discardPendingPick();
+          startTransition(() => {
+            removeAction(new FormData());
+          });
+        },
+      },
+      cancel: {
+        label: "Batal",
+      },
+    });
+  }
+
+  function onModalClose() {
+    if (pending) return;
+    if (shouldDiscardPendingOnModalClose() && hasPendingFile) {
+      discardPendingPick();
+    }
+    setMenuOpen(false);
+  }
+
+  useEffect(() => {
+    return () => {
+      toast.dismiss(DELETE_CONFIRM_TOAST_ID);
+    };
+  }, []);
 
   return (
     <div className="flex items-center gap-3">
@@ -232,6 +318,8 @@ export function AkunAvatar({
               alt=""
               width={48}
               height={48}
+              // Public Blob CDN — skip /_next/image proxy (slow on local: full download + sharp).
+              unoptimized
               className="h-full w-full object-cover"
             />
           )
@@ -254,15 +342,20 @@ export function AkunAvatar({
 
       <Modal
         open={Boolean(menuOpen && shownUrl)}
-        onClose={() => setMenuOpen(false)}
+        onClose={onModalClose}
         title="Foto profil"
+        description={
+          canUpdate
+            ? "Ketuk Perbarui untuk menyimpan foto baru."
+            : "Ubah, perbarui, atau hapus foto profil."
+        }
         titleAlign="center"
         size="xs"
-        bodyClassName="flex justify-center"
+        bodyClassName="flex flex-col items-center gap-5"
         restoreFocus={!openingPicker}
       >
-        <div className="relative h-20 w-20">
-          <div className="h-full w-full overflow-hidden rounded-full border-2 border-border bg-paper">
+        <div className="relative h-28 w-28">
+          <div className="h-full w-full overflow-hidden rounded-full border-2 border-border bg-paper shadow-sm">
             {localPreview ? (
               // eslint-disable-next-line @next/next/no-img-element -- blob: preview
               <img
@@ -274,34 +367,84 @@ export function AkunAvatar({
               <Image
                 src={shownUrl}
                 alt={`Foto ${name}`}
-                width={80}
-                height={80}
+                width={112}
+                height={112}
+                unoptimized
                 className="h-full w-full object-cover"
               />
             ) : null}
           </div>
-          <form
-            action={removeAction}
-            className="absolute -bottom-0.5 -left-0.5"
-            onSubmit={onRemoveSubmit}
-          >
-            <button
-              type="submit"
-              disabled={pending}
-              aria-label="Hapus foto"
-              className={`${iconBtnClass} text-coral`}
-            >
-              <TrashIcon className="h-3.5 w-3.5" />
-            </button>
-          </form>
+          {canUpdate ? (
+            <span className="absolute -top-1 -right-1 rounded-full bg-coral px-1.5 py-0.5 text-[10px] font-semibold text-white shadow-sm">
+              Baru
+            </span>
+          ) : null}
+          {pending ? (
+            <span className="absolute inset-0 flex items-center justify-center rounded-full bg-ink/45 text-xs font-semibold text-paper">
+              …
+            </span>
+          ) : null}
+        </div>
+
+        <div className="flex w-full items-start justify-center gap-6">
           <button
             type="button"
             onClick={openPicker}
             disabled={pending}
-            aria-label="Ubah foto"
-            className={`absolute -bottom-0.5 -right-0.5 ${iconBtnClass} text-ink`}
+            className={actionBtnClass}
           >
-            <PencilIcon className="h-3.5 w-3.5" />
+            <span className={`${actionIconClass} border-border text-ink`}>
+              <PencilIcon className="h-4 w-4" />
+            </span>
+            <span className="text-[11px] font-medium text-ink-muted">Ubah</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={onUpdate}
+            disabled={pending || !canUpdate}
+            aria-label={
+              canUpdate
+                ? "Perbarui foto profil"
+                : "Pilih foto baru terlebih dahulu"
+            }
+            className={actionBtnClass}
+          >
+            <span
+              className={`${actionIconClass} ${
+                canUpdate
+                  ? "border-coral bg-coral/10 text-coral"
+                  : "border-border text-ink-muted"
+              }`}
+            >
+              <UploadIcon className="h-4 w-4" />
+            </span>
+            <span
+              className={`text-[11px] font-medium ${
+                canUpdate ? "text-coral" : "text-ink-muted"
+              }`}
+            >
+              Perbarui
+            </span>
+          </button>
+
+          <button
+            type="button"
+            onClick={onRemoveClick}
+            disabled={pending}
+            aria-label={
+              removeMode === "discard-pending"
+                ? "Buang pilihan foto"
+                : "Hapus foto"
+            }
+            className={actionBtnClass}
+          >
+            <span className={`${actionIconClass} border-coral/30 text-coral`}>
+              <TrashIcon className="h-4 w-4" />
+            </span>
+            <span className="text-[11px] font-medium text-coral">
+              {removeMode === "discard-pending" ? "Batal" : "Hapus"}
+            </span>
           </button>
         </div>
       </Modal>
