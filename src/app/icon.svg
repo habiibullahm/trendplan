@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" fill="none">
+  <rect width="32" height="32" rx="8" fill="#E24E3B"/>
+  <!-- Week slots: planned days solid, open days soft -->
+  <rect x="4" y="6.5" width="3.2" height="3.2" rx="1" fill="#FFF5F2"/>
+  <rect x="9" y="6.5" width="3.2" height="3.2" rx="1" fill="#FFF5F2"/>
+  <rect x="14" y="6.5" width="3.2" height="3.2" rx="1" fill="#FFF5F2" fill-opacity="0.4"/>
+  <rect x="19" y="6.5" width="3.2" height="3.2" rx="1" fill="#FFF5F2"/>
+  <rect x="24" y="6.5" width="3.2" height="3.2" rx="1" fill="#FFF5F2" fill-opacity="0.4"/>
+  <!-- Rising trend line -->
+  <path
+    d="M5.5 24 L12 17.5 L17 20 L26.5 11"
+    stroke="#FFF5F2"
+    stroke-width="2.5"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+  />
+  <circle cx="26.5" cy="11" r="2.25" fill="#FFF5F2"/>
+</svg>
