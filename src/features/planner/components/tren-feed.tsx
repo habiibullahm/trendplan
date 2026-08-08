@@ -68,7 +68,7 @@ export function TrenFeed({
             key={trend.id}
             as="li"
             id={trend.id}
-            className="scroll-mt-24 rounded-2xl border border-border bg-surface p-4"
+            className="scroll-mt-24 rounded-2xl bg-card p-4 ring-1 ring-border"
           >
             <TrendMediaBlock
               media={{

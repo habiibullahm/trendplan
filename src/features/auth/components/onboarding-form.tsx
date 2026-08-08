@@ -113,26 +113,28 @@ export function OnboardingForm({
       <input type="hidden" name="weeklyGoal" value={goal} />
       <input type="hidden" name="niche" value={niche ?? ""} />
 
-      <section className="rounded-2xl border border-border bg-paper p-4">
-        <p className="text-xs font-medium uppercase tracking-wide text-ink-muted">
+      <section className="rounded-2xl bg-muted p-4 ring-1 ring-border">
+        <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
           Profil konten
         </p>
-        <ul className="mt-3 space-y-2 text-sm text-ink">
+        <ul className="mt-3 space-y-2 text-sm text-foreground">
           <li className="flex justify-between gap-3">
-            <span className="text-ink-muted">Creator</span>
+            <span className="text-muted-foreground">Creator</span>
             <span className="font-medium">{userName ?? "Kamu"}</span>
           </li>
           <li className="flex justify-between gap-3">
-            <span className="text-ink-muted">Platform</span>
+            <span className="text-muted-foreground">Platform</span>
             <span className="font-medium">TikTok</span>
           </li>
           <li className="flex justify-between gap-3">
-            <span className="text-ink-muted">Niche</span>
+            <span className="text-muted-foreground">Niche</span>
             <span className="font-medium">{niche ?? "—"}</span>
           </li>
           <li className="flex justify-between gap-3">
-            <span className="text-ink-muted">Tren mock siap</span>
-            <span className="font-medium text-sage">{trendCount} ide</span>
+            <span className="text-muted-foreground">Tren mock siap</span>
+            <span className="font-medium text-accent-foreground">
+              {trendCount} ide
+            </span>
           </li>
         </ul>
       </section>

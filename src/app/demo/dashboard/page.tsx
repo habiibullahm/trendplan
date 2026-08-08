@@ -54,7 +54,7 @@ export default function DemoDashboardPage() {
           </div>
           <Stagger
             as="ul"
-            className="mt-3 divide-y divide-border overflow-hidden rounded-2xl border border-border bg-surface"
+            className="mt-3 divide-y divide-border overflow-hidden rounded-2xl bg-card ring-1 ring-border"
           >
             {inProgressItems.map((item) => (
               <FadeIn key={item.id} as="li">
@@ -90,7 +90,7 @@ export default function DemoDashboardPage() {
         <Stagger as="ul" className="mt-3 space-y-2">
           {topRecs.map((trend) => (
             <FadeIn key={trend.id} as="li">
-              <div className="rounded-2xl border border-border bg-surface px-4 py-3">
+              <div className="rounded-2xl bg-card px-4 py-3 ring-1 ring-border">
                 <CompactTrendMedia
                   title={trend.title}
                   titleHref={`/demo/tren#${trend.id}`}

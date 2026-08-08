@@ -9,6 +9,8 @@ import { AkunToastFromQuery } from "@/features/auth/components/akun-toast-from-q
 import { ChangePasswordForm } from "@/features/auth/components/change-password-form";
 import { LogoutButton } from "@/features/auth/components/logout-button";
 import { UpdateLog } from "@/features/auth/components/update-log";
+import { Card } from "@/components/ui/card";
+import { Separator } from "@/components/ui/separator";
 import { prisma } from "@/lib/prisma";
 
 function initialFrom(name: string | null | undefined, email: string): string {
@@ -52,50 +54,52 @@ export default async function AkunPage() {
         />
       </div>
 
-      <hr className="mt-6 border-border" />
+      <Separator className="mt-6" />
 
       <section className="mt-2">
-        <p className="text-sm font-semibold text-ink">Preferensi konten</p>
+        <p className="text-sm font-semibold text-foreground">Preferensi konten</p>
         <div className="mt-1 divide-y divide-border">
           <AkunNicheEditor key={user.niche} niche={user.niche} />
           <AkunGoalEditor key={user.weeklyGoal} weeklyGoal={user.weeklyGoal} />
         </div>
       </section>
 
-      <hr className="mt-2 border-border" />
+      <Separator className="mt-2" />
 
       <section id="password" className="mt-2 scroll-mt-24">
-        <p className="text-sm font-semibold text-ink">Keamanan</p>
+        <p className="text-sm font-semibold text-foreground">Keamanan</p>
         <div className="mt-1 divide-y divide-border">
           <ChangePasswordForm />
         </div>
       </section>
 
-      <hr className="mt-6 border-border" />
+      <Separator className="mt-6" />
 
       <section className="mt-4 space-y-3">
-        <p className="text-sm font-semibold text-ink">Pintasan</p>
-        <Link
-          href="/riwayat"
-          className="min-touch flex items-center justify-between rounded-2xl border border-border bg-surface px-4 py-3"
-        >
-          <span>
-            <span className="block text-sm font-semibold text-ink">Riwayat</span>
-            <span className="text-xs text-ink-muted">Konten yang sudah Posted</span>
-          </span>
-          <span className="text-ink-muted">→</span>
-        </Link>
-        <Link
-          href="/rekomendasi"
-          className="min-touch flex items-center justify-between rounded-2xl border border-border bg-surface px-4 py-3"
-        >
-          <span>
-            <span className="block text-sm font-semibold text-ink">
-              Rekomendasi
+        <p className="text-sm font-semibold text-foreground">Pintasan</p>
+        <Link href="/riwayat" className="block">
+          <Card className="min-touch flex flex-row items-center justify-between gap-0 rounded-2xl px-4 py-3 ring-border">
+            <span>
+              <span className="block text-sm font-semibold text-foreground">
+                Riwayat
+              </span>
+              <span className="text-xs text-muted-foreground">
+                Konten yang sudah Posted
+              </span>
             </span>
-            <span className="text-xs text-ink-muted">Ide dari tren</span>
-          </span>
-          <span className="text-ink-muted">→</span>
+            <span className="text-muted-foreground">→</span>
+          </Card>
+        </Link>
+        <Link href="/rekomendasi" className="block">
+          <Card className="min-touch flex flex-row items-center justify-between gap-0 rounded-2xl px-4 py-3 ring-border">
+            <span>
+              <span className="block text-sm font-semibold text-foreground">
+                Rekomendasi
+              </span>
+              <span className="text-xs text-muted-foreground">Ide dari tren</span>
+            </span>
+            <span className="text-muted-foreground">→</span>
+          </Card>
         </Link>
         <UpdateLog />
       </section>

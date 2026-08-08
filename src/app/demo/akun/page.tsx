@@ -53,7 +53,7 @@ export default function DemoAkunPage() {
         <p className="text-sm font-semibold text-ink">Pintasan</p>
         <Link
           href="/demo/riwayat"
-          className="min-touch flex items-center justify-between rounded-2xl border border-border bg-surface px-4 py-3"
+          className="min-touch flex items-center justify-between rounded-2xl bg-card px-4 py-3 ring-1 ring-border"
         >
           <span>
             <span className="block text-sm font-semibold text-ink">Riwayat</span>
@@ -63,7 +63,7 @@ export default function DemoAkunPage() {
         </Link>
         <Link
           href="/demo/rekomendasi"
-          className="min-touch flex items-center justify-between rounded-2xl border border-border bg-surface px-4 py-3"
+          className="min-touch flex items-center justify-between rounded-2xl bg-card px-4 py-3 ring-1 ring-border"
         >
           <span>
             <span className="block text-sm font-semibold text-ink">
