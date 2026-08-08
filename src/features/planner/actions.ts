@@ -153,6 +153,10 @@ export async function updateContentItemAction(
   });
   if (!item) return { error: "Konten tidak ditemukan." };
 
+  if (item.status === "POSTED") {
+    return { error: "Konten Posted hanya bisa dibaca." };
+  }
+
   await prisma.contentItem.update({
     where: { id: itemId },
     data: {
@@ -186,6 +190,14 @@ export async function softDeleteContentItemAction(formData: FormData) {
   });
   if (!item) {
     redirect(returnHref(formData, getWeekStart()));
+  }
+
+  if (item.status === "POSTED") {
+    redirect(
+      returnHref(formData, item.weekPlan.weekStart, {
+        toast: "posted_locked",
+      }),
+    );
   }
 
   const parkedDay = parkDayOfWeek(item.dayOfWeek);
@@ -313,6 +325,12 @@ export async function moveContentItemAction(
       });
       if (!item) return { error: "Konten tidak ditemukan." } as const;
 
+      if (item.status === "POSTED") {
+        return {
+          error: "Konten Posted tidak bisa dipindahkan.",
+        } as const;
+      }
+
       const fromDay = item.dayOfWeek;
       if (expectedFromDay !== undefined && expectedFromDay !== fromDay) {
         return {
@@ -332,6 +350,12 @@ export async function moveContentItemAction(
           NOT: { id: item.id },
         },
       });
+
+      if (occupant?.status === "POSTED") {
+        return {
+          error: "Slot Posted tidak bisa digeser. Pilih hari lain.",
+        } as const;
+      }
 
       if (!occupant) {
         await tx.contentItem.update({

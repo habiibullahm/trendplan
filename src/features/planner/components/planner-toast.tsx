@@ -14,6 +14,10 @@ const MESSAGES: Record<string, string> = {
   saved: "Perubahan disimpan",
 };
 
+const ERROR_MESSAGES: Record<string, string> = {
+  posted_locked: "Konten Posted hanya bisa dibaca.",
+};
+
 const DELETE_TOAST_ID = "planner-delete";
 /** Same id as useActionToasts success — spam replaces, doesn't stack duplicates. */
 const FEEDBACK_TOAST_ID = "action-success";
@@ -144,6 +148,15 @@ export function PlannerToastFromQuery() {
           },
         },
       );
+      return;
+    }
+
+    const errorMessage = ERROR_MESSAGES[key];
+    if (errorMessage) {
+      if (shownKey.current === key) return;
+      shownKey.current = key;
+      toast.error(errorMessage, { id: FEEDBACK_TOAST_ID });
+      stripToastFromUrl();
       return;
     }
 

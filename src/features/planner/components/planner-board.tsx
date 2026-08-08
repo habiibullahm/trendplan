@@ -100,7 +100,7 @@ function DaySlot({
   const { setNodeRef, isOver } = useDroppable({
     id: dropId(layout, day),
     data: { day, layout },
-    disabled: pending,
+    disabled: pending || item?.status === "POSTED",
   });
 
   const overRing = isOver
@@ -179,6 +179,7 @@ function DraggableCard({
   returnWeek?: number;
 }) {
   const skipClickRef = useContext(SkipClickContext);
+  const posted = item.status === "POSTED";
   const { attributes, listeners, setNodeRef, transform, isDragging } =
     useDraggable({
       id: dragId(layout, item.id),
@@ -187,7 +188,7 @@ function DraggableCard({
         dayOfWeek: item.dayOfWeek,
         layout,
       },
-      disabled: pending,
+      disabled: pending || posted,
     });
 
   const style = {
@@ -202,14 +203,18 @@ function DraggableCard({
     }
   };
 
+  const shellClass = posted
+    ? "cursor-default"
+    : "cursor-grab active:cursor-grabbing";
+
   if (layout === "list") {
     return (
       <div
         ref={setNodeRef}
         style={style}
-        className="min-touch min-w-0 cursor-grab touch-none overflow-hidden rounded-2xl border border-border bg-surface active:cursor-grabbing"
-        {...listeners}
-        {...attributes}
+        className={`min-touch min-w-0 touch-none overflow-hidden rounded-2xl border border-border bg-surface ${shellClass}`}
+        {...(posted ? {} : listeners)}
+        {...(posted ? {} : attributes)}
       >
         <Link
           href={itemHref(item.id, returnMonth, returnWeek)}
@@ -235,9 +240,9 @@ function DraggableCard({
     <div
       ref={setNodeRef}
       style={style}
-      className="mt-2 min-w-0 cursor-grab touch-none overflow-hidden active:cursor-grabbing"
-      {...listeners}
-      {...attributes}
+      className={`mt-2 min-w-0 touch-none overflow-hidden ${shellClass}`}
+      {...(posted ? {} : listeners)}
+      {...(posted ? {} : attributes)}
     >
       <Link
         href={itemHref(item.id, returnMonth, returnWeek)}
@@ -249,7 +254,11 @@ function DraggableCard({
           {item.title}
         </p>
         <Badge
-          size="sm" className={`mt-2 inline-flex max-w-full ${STATUS_CLASS[item.status]}`}>{STATUS_LABEL[item.status]}</Badge>
+          size="sm"
+          className={`mt-2 inline-flex max-w-full ${STATUS_CLASS[item.status]}`}
+        >
+          {STATUS_LABEL[item.status]}
+        </Badge>
       </Link>
     </div>
   );
@@ -553,11 +562,21 @@ function InteractiveBoard({
 
       const moving = localItems.find((i) => i.id === itemId);
       if (!moving || moving.dayOfWeek === toDay) return;
+      if (moving.status === "POSTED") {
+        toast.error("Konten Posted tidak bisa dipindahkan.", { id: TOAST_ID });
+        return;
+      }
 
       const fromDay = moving.dayOfWeek;
       const occupant = localItems.find(
         (i) => i.dayOfWeek === toDay && i.id !== moving.id,
       );
+      if (occupant?.status === "POSTED") {
+        toast.error("Slot Posted tidak bisa digeser. Pilih hari lain.", {
+          id: TOAST_ID,
+        });
+        return;
+      }
 
       const previous = localItems;
       setLocalItems(
@@ -637,7 +656,9 @@ export function PlannerBoard({
   returnWeek?: number;
 }) {
   const layout = usePlannerLayout();
-  const boardKey = items.map((i) => `${i.id}:${i.dayOfWeek}`).join("|");
+  const boardKey = items
+    .map((i) => `${i.id}:${i.dayOfWeek}:${i.status}`)
+    .join("|");
 
   return (
     <>

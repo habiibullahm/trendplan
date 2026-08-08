@@ -1,7 +1,13 @@
+import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { auth } from "@/auth";
 import { ContentEditForm } from "@/features/planner/components/content-edit-form";
-import { DAY_LABELS, plannerHref } from "@/lib/week";
+import { RiwayatPostedCard } from "@/features/planner/components/riwayat-posted-card";
+import {
+  DAY_LABELS,
+  formatWeekRange,
+  plannerHref,
+} from "@/lib/week";
 import { prisma } from "@/lib/prisma";
 
 type Props = {
@@ -39,11 +45,46 @@ export default async function PlannerItemPage({ params, searchParams }: Props) {
   const returnMonth = backUrl.searchParams.get("month") ?? undefined;
   const returnWeekRaw = backUrl.searchParams.get("week");
   const returnWeek = returnWeekRaw ? Number(returnWeekRaw) : undefined;
+  const dayLabel = DAY_LABELS[item.dayOfWeek] ?? "Hari";
+  const weekLabel = formatWeekRange(item.weekPlan.weekStart);
+  const isPosted = item.status === "POSTED";
+
+  if (isPosted) {
+    return (
+      <main className="mx-auto flex w-full max-w-lg flex-1 flex-col">
+        <p className="text-sm text-ink-muted">
+          {dayLabel} · Posted · hanya baca
+        </p>
+        <h1 className="mt-1 font-[family-name:var(--font-fraunces)] text-2xl font-semibold text-ink">
+          Preview konten
+        </h1>
+        <p className="mt-2 text-sm text-ink-muted">
+          Konten Posted tidak bisa diedit dari sini.
+        </p>
+        <div className="mt-6">
+          <RiwayatPostedCard
+            title={item.title}
+            meta={`${dayLabel} · ${weekLabel}`}
+            trendTitle={item.trend?.title}
+            hook={item.hook}
+            caption={item.caption}
+            hashtags={item.hashtags}
+          />
+        </div>
+        <Link
+          href={backHref}
+          className="mt-6 text-sm font-semibold text-coral hover:underline"
+        >
+          ← Kembali ke Planner
+        </Link>
+      </main>
+    );
+  }
 
   return (
     <main className="mx-auto flex w-full max-w-lg flex-1 flex-col">
       <p className="text-sm text-ink-muted">
-        {DAY_LABELS[item.dayOfWeek]} · slot konten
+        {dayLabel} · slot konten
       </p>
       <h1 className="mt-1 font-[family-name:var(--font-fraunces)] text-2xl font-semibold text-ink">
         {item.title}
