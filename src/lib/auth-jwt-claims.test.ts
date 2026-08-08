@@ -3,6 +3,7 @@ import { describe, it } from "node:test";
 import {
   dbSecurityClaims,
   isPasswordVersionCurrent,
+  shouldInvalidateForPasswordVersion,
 } from "./auth-jwt-claims";
 
 describe("dbSecurityClaims", () => {
@@ -52,5 +53,16 @@ describe("isPasswordVersionCurrent", () => {
   it("rejects stale versions after reset", () => {
     assert.equal(isPasswordVersionCurrent(1, 2), false);
     assert.equal(isPasswordVersionCurrent(2, 2), true);
+  });
+});
+
+describe("shouldInvalidateForPasswordVersion", () => {
+  it("keeps session on update after passwordVersion bump", () => {
+    assert.equal(shouldInvalidateForPasswordVersion("update", 0, 1), false);
+  });
+
+  it("invalidates other sessions when version diverges", () => {
+    assert.equal(shouldInvalidateForPasswordVersion(undefined, 0, 1), true);
+    assert.equal(shouldInvalidateForPasswordVersion("signIn", 1, 1), false);
   });
 });

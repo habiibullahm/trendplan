@@ -10,7 +10,7 @@ import {
 } from "@/lib/auth-rate-limits";
 import {
   dbSecurityClaims,
-  isPasswordVersionCurrent,
+  shouldInvalidateForPasswordVersion,
 } from "@/lib/auth-jwt-claims";
 import { passwordSchema } from "@/lib/auth-validation";
 import { checkRateLimit } from "@/lib/rate-limit";
@@ -115,7 +115,16 @@ export const { handlers, auth, signIn, signOut, unstable_update } = NextAuth({
       });
       if (!row) return null;
 
-      if (!isPasswordVersionCurrent(token.passwordVersion, row.passwordVersion)) {
+      // Normal requests: bump passwordVersion → invalidate other sessions.
+      // trigger "update": current session just changed password / verified email
+      // — sync claims from DB instead of wiping the JWT (Akun redirect bug).
+      if (
+        shouldInvalidateForPasswordVersion(
+          params.trigger,
+          token.passwordVersion,
+          row.passwordVersion,
+        )
+      ) {
         return null;
       }
 

@@ -39,3 +39,17 @@ export function isPasswordVersionCurrent(
   const v = typeof tokenVersion === "number" ? tokenVersion : 0;
   return v === dbVersion;
 }
+
+/**
+ * Kill stale JWTs after password change/reset — except session `update`,
+ * which refreshes claims from the DB for the session that just changed
+ * the password (Akun → Ubah password + unstable_update).
+ */
+export function shouldInvalidateForPasswordVersion(
+  trigger: string | undefined,
+  tokenVersion: unknown,
+  dbVersion: number,
+): boolean {
+  if (trigger === "update") return false;
+  return !isPasswordVersionCurrent(tokenVersion, dbVersion);
+}
