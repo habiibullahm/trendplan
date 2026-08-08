@@ -148,6 +148,21 @@ export async function getRecommendations(
     where: niche ? { niche } : undefined,
     orderBy: { score: "desc" },
     take: limit,
+    // Explicit scalars so media fields stay selected even if client/schema drift.
+    select: {
+      id: true,
+      title: true,
+      hook: true,
+      format: true,
+      score: true,
+      reason: true,
+      niche: true,
+      coverUrl: true,
+      videoUrl: true,
+      audioTitle: true,
+      audioUrl: true,
+      createdAt: true,
+    },
   });
 }
 
