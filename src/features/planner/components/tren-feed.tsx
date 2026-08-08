@@ -3,6 +3,10 @@
 import type { ContentFormat } from "@/generated/prisma/client";
 import { useMemo, useState } from "react";
 import { AddToPlannerForm } from "@/features/planner/components/add-to-planner-form";
+import {
+  TrendMediaBlock,
+  type TrendMediaFields,
+} from "@/features/planner/components/trend-media";
 import { FadeIn, Stagger } from "@/components/motion";
 import { EmptyState } from "@/components/ui/empty-state";
 import { FORMAT_LABEL } from "@/lib/labels";
@@ -15,7 +19,7 @@ export type TrenFeedItem = {
   format: ContentFormat;
   score: number;
   niche: string;
-};
+} & TrendMediaFields;
 
 type Filter = "all" | Niche;
 
@@ -55,7 +59,7 @@ export function TrenFeed({
         ))}
       </div>
 
-      <Stagger as="ul" className="mt-6 space-y-3">
+      <Stagger as="ul" className="mt-6 space-y-4">
         {visible.map((trend) => (
           <FadeIn
             key={trend.id}
@@ -63,7 +67,17 @@ export function TrenFeed({
             id={trend.id}
             className="scroll-mt-24 rounded-2xl border border-border bg-surface p-4"
           >
-            <p className="text-xs font-semibold text-ink-muted">{trend.niche}</p>
+            <TrendMediaBlock
+              media={{
+                coverUrl: trend.coverUrl,
+                videoUrl: trend.videoUrl,
+                audioTitle: trend.audioTitle,
+                audioUrl: trend.audioUrl,
+              }}
+            />
+            <p className="mt-3 text-xs font-semibold text-ink-muted">
+              {trend.niche}
+            </p>
             <p className="mt-1 font-semibold text-ink">{trend.title}</p>
             <p className="mt-1 text-sm italic text-ink-muted">{trend.hook}</p>
             <p className="mt-2 text-xs text-ink-muted">
@@ -83,10 +97,11 @@ export function TrenFeed({
               </>
             ) : (
               <>
-                <p className="font-medium text-ink">Tidak ada tren di filter ini</p>
+                <p className="font-medium text-ink">
+                  Tidak ada tren di filter ini
+                </p>
                 <p className="mt-1">
-                  Coba{" "}
-                  <span className="font-semibold text-ink">Semua</span> atau
+                  Coba <span className="font-semibold text-ink">Semua</span> atau
                   niche lain.
                 </p>
               </>
