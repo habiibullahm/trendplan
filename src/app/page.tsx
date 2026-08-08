@@ -1,10 +1,14 @@
 import { redirect } from "next/navigation";
 import { ButtonLink } from "@/components/ui/button-link";
+import { isEmailVerificationRequired } from "@/lib/auth-env";
 import { getSafeSession } from "@/lib/session";
 
 export default async function Home() {
   const session = await getSafeSession();
   if (session?.user) {
+    if (isEmailVerificationRequired() && !session.user.emailVerified) {
+      redirect("/verify-email");
+    }
     redirect(session.user.onboardingComplete ? "/dashboard" : "/onboarding");
   }
 

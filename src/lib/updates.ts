@@ -13,6 +13,12 @@ export type UpdateEntry = {
 
 export const UPDATE_LOG: UpdateEntry[] = [
   {
+    id: "2026-08-08-auth-security",
+    date: "8 Agu 2026",
+    title: "Akun lebih aman",
+    body: "Lupa password lewat email, ubah password di Akun, dan verifikasi email (saat diwajibkan). Sesi lama otomatis tidak berlaku setelah reset password.",
+  },
+  {
     id: "2026-08-08-update-log",
     date: "8 Agu 2026",
     title: "Catatan update di Akun",

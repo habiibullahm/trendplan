@@ -102,26 +102,16 @@ export const { handlers, auth, signIn, signOut, unstable_update } = NextAuth({
       if (params.user) return token;
       if (typeof token.id !== "string") return token;
 
-      // Per-request passwordVersion check is intentional (invalidates sessions after
-      // reset). Only load full security claims when refreshing via unstable_update.
-      if (params.trigger === "update") {
-        const row = await prisma.user.findUnique({
-          where: { id: token.id },
-          select: {
-            onboardingComplete: true,
-            passwordNeedsUpgrade: true,
-            passwordVersion: true,
-            emailVerified: true,
-          },
-        });
-        if (!row) return null;
-        Object.assign(token, dbSecurityClaims(row));
-        return token;
-      }
-
+      // Always reload security claims from DB so edge soft-gates match Node
+      // (stale emailVerified after verify caused dashboard ↔ verify redirect loops).
       const row = await prisma.user.findUnique({
         where: { id: token.id },
-        select: { passwordVersion: true },
+        select: {
+          onboardingComplete: true,
+          passwordNeedsUpgrade: true,
+          passwordVersion: true,
+          emailVerified: true,
+        },
       });
       if (!row) return null;
 
@@ -129,6 +119,7 @@ export const { handlers, auth, signIn, signOut, unstable_update } = NextAuth({
         return null;
       }
 
+      Object.assign(token, dbSecurityClaims(row));
       return token;
     },
     async session(params) {
