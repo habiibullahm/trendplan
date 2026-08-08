@@ -12,10 +12,11 @@ import {
   parkDayOfWeek,
   unparkDayOfWeek,
 } from "@/features/planner/lib/soft-delete";
+import { resolveStatusUpdate } from "@/lib/labels";
 import { getWeekStart, parseWeekStartParam, plannerHref } from "@/lib/week";
 
 const daySchema = z.coerce.number().int().min(0).max(6);
-const statusSchema = z.enum(["IDE", "DRAFT", "READY", "POSTED"]);
+const statusSchema = z.enum(["IDE", "POSTED"]);
 const titleSchema = z.string().trim().min(1).max(120);
 
 function resolveWeekStartFromForm(formData: FormData): Date {
@@ -157,9 +158,9 @@ export async function updateContentItemAction(
     data: {
       caption: String(formData.get("caption") ?? "").trim() || null,
       hashtags: String(formData.get("hashtags") ?? "").trim() || null,
-      performanceNote:
-        String(formData.get("performanceNote") ?? "").trim() || null,
-      status: statusParsed.data,
+      status: resolveStatusUpdate(item.status, statusParsed.data),
+      // Legacy field — no longer editable in UI; clear leftovers on save.
+      performanceNote: null,
     },
   });
 

@@ -6,7 +6,6 @@ export type DemoPlannerItem = {
   dayOfWeek: number;
   title: string;
   status: ContentStatus;
-  performanceNote?: string;
 };
 
 export type DemoTrend = {
@@ -31,13 +30,13 @@ export const DEMO_ITEMS: DemoPlannerItem[] = [
     id: "demo-sen",
     dayOfWeek: 0,
     title: "Caption picnic taman — revisi 2",
-    status: "READY",
+    status: "IDE",
   },
   {
     id: "demo-sel",
     dayOfWeek: 1,
     title: "POV hujan: board game night",
-    status: "DRAFT",
+    status: "IDE",
   },
   {
     id: "demo-rab",
@@ -50,13 +49,12 @@ export const DEMO_ITEMS: DemoPlannerItem[] = [
     dayOfWeek: 4,
     title: "Masak bareng malam minggu",
     status: "POSTED",
-    performanceNote: "12.4k views · save rate bagus",
   },
   {
     id: "demo-sab",
     dayOfWeek: 5,
     title: "Anniversary hemat di rumah",
-    status: "READY",
+    status: "IDE",
   },
 ];
 

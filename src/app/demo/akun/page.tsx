@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { UpdateLog } from "@/features/auth/components/update-log";
 
 export default function DemoAkunPage() {
   return (
@@ -58,7 +59,7 @@ export default function DemoAkunPage() {
         >
           <span>
             <span className="block text-sm font-semibold text-ink">Riwayat</span>
-            <span className="text-xs text-ink-muted">Posting & performa</span>
+            <span className="text-xs text-ink-muted">Konten yang sudah Posted</span>
           </span>
           <span className="text-ink-muted">→</span>
         </Link>
@@ -74,6 +75,7 @@ export default function DemoAkunPage() {
           </span>
           <span className="text-ink-muted">→</span>
         </Link>
+        <UpdateLog />
       </section>
 
       <p className="mt-6 min-touch flex w-full items-center justify-center rounded-2xl border border-dashed border-border bg-surface px-4 text-sm font-semibold text-ink-muted">
