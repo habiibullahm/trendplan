@@ -29,6 +29,10 @@ export default async function TrenPage() {
           format: t.format,
           score: t.score,
           niche: t.niche,
+          coverUrl: t.coverUrl,
+          videoUrl: t.videoUrl,
+          audioTitle: t.audioTitle,
+          audioUrl: t.audioUrl,
         }))}
       />
     </main>
