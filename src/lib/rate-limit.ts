@@ -19,6 +19,7 @@ export type RateLimitResult =
 
 /**
  * Fixed-window rate limit backed by Postgres (shared across Vercel instances).
+ * Serializes per-key updates with a transaction-scoped advisory lock.
  */
 export async function checkRateLimit(
   key: string,
@@ -27,6 +28,9 @@ export async function checkRateLimit(
   const now = Date.now();
 
   return prisma.$transaction(async (tx) => {
+    // Serialize concurrent increments for the same key (fixes read-then-upsert races).
+    await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtext(${key}))`;
+
     const row = await tx.rateLimitBucket.findUnique({ where: { key } });
     const existing: FixedWindowBucket | null = row
       ? { count: row.count, resetAt: row.resetAt.getTime() }

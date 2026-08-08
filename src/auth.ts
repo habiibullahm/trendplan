@@ -3,6 +3,12 @@ import Credentials from "next-auth/providers/credentials";
 import { compare } from "bcryptjs";
 import { z } from "zod";
 import { authConfig } from "@/auth.config";
+import { getClientIp } from "@/lib/action-middleware";
+import {
+  LOGIN_EMAIL_LIMIT,
+  LOGIN_IP_LIMIT,
+} from "@/lib/auth-rate-limits";
+import { checkRateLimit } from "@/lib/rate-limit";
 import { prisma } from "@/lib/prisma";
 
 const credentialsSchema = z.object({
@@ -39,6 +45,16 @@ export const { handlers, auth, signIn, signOut, unstable_update } = NextAuth({
         if (!parsed.success) return null;
 
         const email = parsed.data.email.toLowerCase().trim();
+        const ip = await getClientIp();
+        // Same buckets as loginAction — covers direct /api/auth/callback/credentials.
+        const ipLimit = await checkRateLimit(`login:ip:${ip}`, LOGIN_IP_LIMIT);
+        if (!ipLimit.ok) return null;
+        const emailLimit = await checkRateLimit(
+          `login:email:${email}`,
+          LOGIN_EMAIL_LIMIT,
+        );
+        if (!emailLimit.ok) return null;
+
         const user = await prisma.user.findUnique({ where: { email } });
         const hash = user?.passwordHash ?? DUMMY_PASSWORD_HASH;
         const valid = await compare(parsed.data.password, hash);
