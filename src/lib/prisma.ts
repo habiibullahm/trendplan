@@ -2,7 +2,7 @@ import { PrismaClient } from "@/generated/prisma/client";
 import { createPrismaClientFromEnv } from "@/lib/db";
 
 /** Bump when Prisma schema fields change so the dev singleton is not stale. */
-const PRISMA_SCHEMA_REV = "contentitem-deletedAt-v1";
+const PRISMA_SCHEMA_REV = "ratelimit-bucket-v1";
 
 const globalForPrisma = globalThis as unknown as {
   prisma: PrismaClient | undefined;

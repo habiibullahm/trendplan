@@ -10,6 +10,17 @@ const SESSION_COOKIES = [
   "__Host-authjs.session-token",
 ] as const;
 
+type SessionCookieName = (typeof SESSION_COOKIES)[number];
+
+/** Match Set-Cookie attributes so Secure-/Host-prefixed cookies actually clear. */
+function clearCookieOptions(name: SessionCookieName) {
+  const base = { path: "/" as const, maxAge: 0 };
+  if (name.startsWith("__Host-") || name.startsWith("__Secure-")) {
+    return { ...base, secure: true };
+  }
+  return base;
+}
+
 /** Clear stale JWT cookies (e.g. after AUTH_SECRET change) so auth() stops failing. */
 export const proxy = auth((req) => {
   if (req.auth) return;
@@ -20,7 +31,7 @@ export const proxy = auth((req) => {
   const res = NextResponse.next();
   for (const name of SESSION_COOKIES) {
     if (req.cookies.has(name)) {
-      res.cookies.set(name, "", { path: "/", maxAge: 0 });
+      res.cookies.set(name, "", clearCookieOptions(name));
     }
   }
   return res;

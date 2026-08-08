@@ -6,6 +6,8 @@ export const authConfig = {
   },
   session: {
     strategy: "jwt",
+    // Absolute session lifetime (Auth.js default is 30 days).
+    maxAge: 7 * 24 * 60 * 60,
   },
   logger: {
     error(error) {
