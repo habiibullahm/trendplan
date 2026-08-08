@@ -2,102 +2,117 @@
 
 import { hash } from "bcryptjs";
 import { AuthError } from "next-auth";
-import { z } from "zod";
 import { signIn } from "@/auth";
-import { prisma } from "@/lib/prisma";
+import {
+  ActionErrors,
+  actionError,
+  actionSuccess,
+  type ActionResult,
+} from "@/lib/action-result";
+import {
+  assertRateLimits,
+  getClientIp,
+  withValidation,
+} from "@/lib/action-middleware";
+import { loginSchema, registerSchema } from "@/lib/auth-validation";
 import { DEFAULT_NICHE } from "@/lib/niches";
+import { prisma } from "@/lib/prisma";
 
-const registerSchema = z.object({
-  name: z.string().trim().min(1, "Nama wajib diisi").max(80),
-  email: z.email("Email tidak valid"),
-  password: z.string().min(6, "Password minimal 6 karakter"),
-});
+const LOGIN_IP_LIMIT = { limit: 10, windowMs: 15 * 60 * 1000 };
+const LOGIN_EMAIL_LIMIT = { limit: 10, windowMs: 15 * 60 * 1000 };
+const REGISTER_IP_LIMIT = { limit: 5, windowMs: 60 * 60 * 1000 };
+const REGISTER_EMAIL_LIMIT = { limit: 5, windowMs: 60 * 60 * 1000 };
 
-const loginSchema = z.object({
-  email: z.email("Email tidak valid"),
-  password: z.string().min(1, "Password wajib diisi"),
-});
-
-export type AuthFormState = {
-  error?: string;
-  fieldErrors?: Record<string, string[]>;
-};
+export type AuthFormState = ActionResult;
 
 export async function registerAction(
   _prev: AuthFormState,
   formData: FormData,
 ): Promise<AuthFormState> {
-  const parsed = registerSchema.safeParse({
-    name: formData.get("name"),
-    email: formData.get("email"),
-    password: formData.get("password"),
-  });
+  return withValidation(
+    registerSchema,
+    formData,
+    (fd) => ({
+      name: fd.get("name"),
+      email: fd.get("email"),
+      password: fd.get("password"),
+    }),
+    async (data) => {
+      const email = data.email.toLowerCase().trim();
+      const ip = await getClientIp();
+      const limited = await assertRateLimits(
+        { key: `register:ip:${ip}`, options: REGISTER_IP_LIMIT },
+        { key: `register:email:${email}`, options: REGISTER_EMAIL_LIMIT },
+      );
+      if (limited) return limited;
 
-  if (!parsed.success) {
-    return { fieldErrors: parsed.error.flatten().fieldErrors };
-  }
+      const existing = await prisma.user.findUnique({
+        where: { email },
+        select: { id: true },
+      });
 
-  const email = parsed.data.email.toLowerCase().trim();
-  const existing = await prisma.user.findUnique({ where: { email } });
-  if (existing) {
-    return { error: "Email sudah terdaftar. Silakan masuk." };
-  }
+      if (existing) {
+        // Same work factor as create path — no sign-in (avoids redirect/error oracle).
+        await hash(data.password, 10);
+      } else {
+        const passwordHash = await hash(data.password, 10);
+        await prisma.user.create({
+          data: {
+            email,
+            name: data.name,
+            passwordHash,
+            niche: DEFAULT_NICHE,
+            weeklyGoal: 3,
+            onboardingComplete: false,
+          },
+        });
+      }
 
-  const passwordHash = await hash(parsed.data.password, 10);
-  await prisma.user.create({
-    data: {
-      email,
-      name: parsed.data.name,
-      passwordHash,
-      niche: DEFAULT_NICHE,
-      weeklyGoal: 3,
-      onboardingComplete: false,
+      // Identical client outcome whether the email was new or already taken.
+      return actionSuccess(ActionErrors.registerNeutral);
     },
-  });
-
-  try {
-    await signIn("credentials", {
-      email,
-      password: parsed.data.password,
-      redirectTo: "/onboarding",
-    });
-  } catch (error) {
-    if (error instanceof AuthError) {
-      return { error: "Akun dibuat, tapi gagal masuk otomatis. Coba masuk manual." };
-    }
-    throw error;
-  }
-
-  return {};
+  );
 }
 
 export async function loginAction(
   _prev: AuthFormState,
   formData: FormData,
 ): Promise<AuthFormState> {
-  const parsed = loginSchema.safeParse({
-    email: formData.get("email"),
-    password: formData.get("password"),
-  });
+  return withValidation(
+    loginSchema,
+    formData,
+    (fd) => ({
+      email: fd.get("email"),
+      password: fd.get("password"),
+    }),
+    async (data) => {
+      const email = data.email.toLowerCase().trim();
+      const ip = await getClientIp();
+      const limited = await assertRateLimits(
+        { key: `login:ip:${ip}`, options: LOGIN_IP_LIMIT },
+        { key: `login:email:${email}`, options: LOGIN_EMAIL_LIMIT },
+      );
+      if (limited) return limited;
 
-  if (!parsed.success) {
-    return { fieldErrors: parsed.error.flatten().fieldErrors };
-  }
+      const user = await prisma.user.findUnique({
+        where: { email },
+        select: { onboardingComplete: true },
+      });
 
-  const email = parsed.data.email.toLowerCase().trim();
+      try {
+        await signIn("credentials", {
+          email,
+          password: data.password,
+          redirectTo: user?.onboardingComplete ? "/dashboard" : "/onboarding",
+        });
+      } catch (error) {
+        if (error instanceof AuthError) {
+          return actionError(ActionErrors.loginFailed);
+        }
+        throw error;
+      }
 
-  try {
-    await signIn("credentials", {
-      email,
-      password: parsed.data.password,
-      redirectTo: "/dashboard",
-    });
-  } catch (error) {
-    if (error instanceof AuthError) {
-      return { error: "Email atau password salah." };
-    }
-    throw error;
-  }
-
-  return {};
+      return {};
+    },
+  );
 }

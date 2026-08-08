@@ -83,3 +83,12 @@ model ContentItem {
   @@index([status])
   @@index([deletedAt])
 }
+
+/** Shared auth abuse buckets (works across serverless instances). */
+model RateLimitBucket {
+  key     String   @id
+  count   Int
+  resetAt DateTime
+
+  @@index([resetAt])
+}

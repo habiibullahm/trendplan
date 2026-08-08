@@ -47,6 +47,10 @@ AUTH_SECRET="generate-a-long-random-string"
 AUTH_TRUST_HOST="true"
 ```
 
+`AUTH_TRUST_HOST=true` dibutuhkan untuk Auth.js lokal tanpa `AUTH_URL`. Di production, set `AUTH_URL` ke URL kanonis; `trustHost` aktif otomatis di Vercel (`VERCEL=1`) atau saat `AUTH_TRUST_HOST=true`. Self-hosted: andalkan `AUTH_URL` dan jangan percaya `X-Forwarded-Host` kecuali reverse proxy menimpa header itu.
+
+Rate limit login/register disimpan di Postgres (`RateLimitBucket`) supaya berlaku lintas instance serverless (bukan hanya in-memory per proses).
+
 Buat database/user `trendplan` di Postgres lokal jika belum ada.
 
 ### 3. Migrate + seed
@@ -116,8 +120,8 @@ TARGET_DATABASE_URL="postgresql://...@....neon.tech/neondb?sslmode=require" npm 
 | `DATABASE_URL` | Neon pooled URL (`…-pooler…`) for the app |
 | `DIRECT_URL` | Neon direct URL (no `-pooler`) for `prisma migrate` |
 | `AUTH_SECRET` | `openssl rand -base64 32` |
-| `AUTH_URL` | `https://trendplan.vercel.app` |
-| `AUTH_TRUST_HOST` | `true` |
+| `AUTH_URL` | `https://trendplan.vercel.app` (URL kanonis; lebih aman daripada mengandalkan Host header) |
+| `AUTH_TRUST_HOST` | `true` (opsional di Vercel — `VERCEL=1` sudah mengaktifkan `trustHost`) |
 | `BLOB_READ_WRITE_TOKEN` | (dari Vercel Blob store) |
 
 4. Deploy — build menjalankan `prisma migrate deploy` (`vercel.json`).

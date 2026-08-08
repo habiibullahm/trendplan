@@ -35,8 +35,9 @@ export function LoginForm() {
           name="password"
           type="password"
           required
+          maxLength={128}
           autoComplete="current-password"
-          placeholder="Minimal 6 karakter"
+          placeholder="Password"
         />
       </FormField>
 
@@ -91,9 +92,10 @@ export function RegisterForm() {
           name="password"
           type="password"
           required
-          minLength={6}
+          minLength={8}
+          maxLength={12}
           autoComplete="new-password"
-          placeholder="Minimal 6 karakter"
+          placeholder="8–12 karakter, huruf besar, angka, simbol"
         />
       </FormField>
 
