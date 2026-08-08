@@ -16,12 +16,10 @@ export default function DemoPlannerPage() {
 
   return (
     <main className="flex w-full flex-1 flex-col">
+      <h1 className="sr-only">Planner</h1>
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
-          <h1 className="font-[family-name:var(--font-fraunces)] text-2xl font-semibold text-ink md:text-3xl">
-            Planner
-          </h1>
-          <p className="mt-2 text-sm text-ink-muted">
+          <p className="text-sm text-ink-muted">
             Minggu {selection.weekIndex} · {demoWeekLabel()}
           </p>
         </div>

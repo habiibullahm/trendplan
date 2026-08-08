@@ -4,11 +4,9 @@ import { UpdateLog } from "@/features/auth/components/update-log";
 export default function DemoAkunPage() {
   return (
     <main className="mx-auto flex w-full max-w-lg flex-1 flex-col">
-      <h1 className="font-[family-name:var(--font-fraunces)] text-3xl font-semibold text-ink">
-        Akun
-      </h1>
+      <h1 className="sr-only">Akun</h1>
 
-      <div className="mt-6 flex flex-col gap-3">
+      <div className="mt-0 flex flex-col gap-3">
         <div className="flex items-center gap-3">
           <div
             className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full border border-border bg-paper text-base font-bold text-ink"

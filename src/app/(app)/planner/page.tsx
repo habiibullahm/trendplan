@@ -59,12 +59,10 @@ export default async function PlannerPage({ searchParams }: Props) {
       <Suspense fallback={null}>
         <PlannerToastFromQuery />
       </Suspense>
+      <h1 className="sr-only">Planner</h1>
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
-          <h1 className="font-[family-name:var(--font-fraunces)] text-3xl font-semibold text-ink">
-            Planner
-          </h1>
-          <p className="mt-2 text-sm text-ink-muted">
+          <p className="text-sm text-ink-muted">
             Minggu {selection.weekIndex} · {weekLabel}
           </p>
         </div>
