@@ -31,3 +31,16 @@ export const FORMAT_LABEL: Record<ContentFormat, string> = {
 export function normalizeStatus(status: ContentStatus): "IDE" | "POSTED" {
   return status === "POSTED" ? "POSTED" : "IDE";
 }
+
+/**
+ * Map form Draft|Posted to a DB write.
+ * If the user-facing status did not change, keep the existing enum
+ * (avoids silently rewriting DRAFT/READY → IDE on caption-only saves).
+ */
+export function resolveStatusUpdate(
+  current: ContentStatus,
+  submitted: "IDE" | "POSTED",
+): ContentStatus {
+  if (normalizeStatus(current) === submitted) return current;
+  return submitted;
+}

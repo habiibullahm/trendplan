@@ -1,9 +1,8 @@
 /**
  * In-app update log for end users.
- * Bump `APP_UPDATE_ID` when you ship something users should notice.
- * Add a matching entry at the top of `UPDATE_LOG`.
+ * Prepend a new entry at the top of `UPDATE_LOG` when you ship something
+ * users should notice. `APP_UPDATE_ID` always tracks the latest entry id.
  */
-export const APP_UPDATE_ID = "2026-08-08-update-log";
 
 export type UpdateEntry = {
   id: string;
@@ -24,6 +23,18 @@ export const UPDATE_LOG: UpdateEntry[] = [
     date: "8 Agu 2026",
     title: "Status lebih sederhana",
     body: "Ide di planner cukup Draft atau Posted. Form edit tidak lagi meminta catatan performa.",
+  },
+  {
+    id: "2026-08-08-multi-niche",
+    date: "8 Agu 2026",
+    title: "Multi-niche FYP",
+    body: "Tren menampilkan semua niche dengan filter. Rekomendasi untukmu mengikuti niche kamu — ubah kapan saja di Akun.",
+  },
+  {
+    id: "2026-08-08-beranda",
+    date: "8 Agu 2026",
+    title: "Beranda lebih jelas",
+    body: "Target minggu ini lebih menonjol, dan Pakai di Tren mengarah ke form planner — bukan ke halaman lain.",
   },
   {
     id: "2026-08-08-dark-mode",
@@ -68,5 +79,7 @@ export const UPDATE_LOG: UpdateEntry[] = [
     body: "Coba alur Beranda → Tren → Planner → Akun lewat /demo sebelum daftar.",
   },
 ];
+
+export const APP_UPDATE_ID = UPDATE_LOG[0]!.id;
 
 export const UPDATE_STORAGE_KEY = "trendplan-seen-update";

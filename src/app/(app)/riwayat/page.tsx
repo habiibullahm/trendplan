@@ -45,7 +45,7 @@ export default async function RiwayatPage() {
               <p className="font-semibold text-ink">{item.title}</p>
               <p className="mt-1 text-sm text-ink-muted">
                 {DAY_SHORT[item.dayOfWeek]}
-                {item.performanceNote ? ` · ${item.performanceNote}` : ""}
+                {item.trend ? ` · ${item.trend.title}` : ""}
               </p>
             </Link>
           </FadeIn>

@@ -12,6 +12,7 @@ import {
   parkDayOfWeek,
   unparkDayOfWeek,
 } from "@/features/planner/lib/soft-delete";
+import { resolveStatusUpdate } from "@/lib/labels";
 import { getWeekStart, parseWeekStartParam, plannerHref } from "@/lib/week";
 
 const daySchema = z.coerce.number().int().min(0).max(6);
@@ -157,7 +158,9 @@ export async function updateContentItemAction(
     data: {
       caption: String(formData.get("caption") ?? "").trim() || null,
       hashtags: String(formData.get("hashtags") ?? "").trim() || null,
-      status: statusParsed.data,
+      status: resolveStatusUpdate(item.status, statusParsed.data),
+      // Legacy field — no longer editable in UI; clear leftovers on save.
+      performanceNote: null,
     },
   });
 

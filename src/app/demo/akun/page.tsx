@@ -59,7 +59,7 @@ export default function DemoAkunPage() {
         >
           <span>
             <span className="block text-sm font-semibold text-ink">Riwayat</span>
-            <span className="text-xs text-ink-muted">Posting & catatan</span>
+            <span className="text-xs text-ink-muted">Konten yang sudah Posted</span>
           </span>
           <span className="text-ink-muted">→</span>
         </Link>

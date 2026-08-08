@@ -25,7 +25,6 @@ export default function DemoRiwayatPage() {
             <p className="font-semibold text-ink">{item.title}</p>
             <p className="mt-1 text-sm text-ink-muted">
               {DAY_SHORT[item.dayOfWeek]}
-              {item.performanceNote ? ` · ${item.performanceNote}` : ""}
             </p>
           </FadeIn>
         ))}
