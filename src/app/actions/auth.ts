@@ -5,6 +5,7 @@ import { AuthError } from "next-auth";
 import { z } from "zod";
 import { signIn } from "@/auth";
 import { prisma } from "@/lib/prisma";
+import { DEFAULT_NICHE } from "@/lib/niches";
 
 const registerSchema = z.object({
   name: z.string().trim().min(1, "Nama wajib diisi").max(80),
@@ -48,7 +49,7 @@ export async function registerAction(
       email,
       name: parsed.data.name,
       passwordHash,
-      niche: "Couple Date Ideas",
+      niche: DEFAULT_NICHE,
       weeklyGoal: 3,
       onboardingComplete: false,
     },

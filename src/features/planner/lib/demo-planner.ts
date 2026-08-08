@@ -22,77 +22,84 @@ export const DEMO_WEEKLY_GOAL = 5;
 export const DEMO_USER_NAME = "Demo Creator";
 export const DEMO_NICHE = "Couple Date Ideas";
 
-/** Hardcoded week for public /demo embed — no DB, no auth. */
+/**
+ * Planner mock = konten milik creator (judul kerja di plan).
+ * Sengaja beda dari DEMO_TRENDS agar tidak bentrok dengan rekomendasi tren.
+ */
 export const DEMO_ITEMS: DemoPlannerItem[] = [
   {
     id: "demo-sen",
     dayOfWeek: 0,
-    title: "Cheap date under 100k",
+    title: "Caption picnic taman — revisi 2",
     status: "READY",
   },
   {
     id: "demo-sel",
     dayOfWeek: 1,
-    title: "Rainy day date at home",
+    title: "POV hujan: board game night",
     status: "DRAFT",
   },
   {
     id: "demo-rab",
     dayOfWeek: 2,
-    title: "Aesthetic cafe date vlog",
+    title: "Draft: toko buku Blok M",
     status: "IDE",
   },
   {
     id: "demo-jum",
     dayOfWeek: 4,
-    title: "Sunset picnic date",
+    title: "Masak bareng malam minggu",
     status: "POSTED",
     performanceNote: "12.4k views · save rate bagus",
   },
   {
     id: "demo-sab",
     dayOfWeek: 5,
-    title: "Cook together date night",
+    title: "Anniversary hemat di rumah",
     status: "READY",
   },
 ];
 
+/**
+ * Rekomendasi mock = katalog tren (format/hook viral).
+ * Bukan item planner; user masih perlu “Pakai” untuk masuk plan.
+ */
 export const DEMO_TRENDS: DemoTrend[] = [
   {
     id: "demo-trend-1",
-    title: "Cheap date under 100k",
+    title: "Format: 3 date di bawah 100rb",
     hook: "3 date ideas that feel expensive…",
     format: "LIST",
     score: 94,
-    reason: "Tren hemat cocok niche couple — ide actionable untuk minggu ini",
+    reason: "Tren hemat — cocok diisi ke slot kosong minggu ini",
   },
   {
     id: "demo-trend-2",
-    title: "Rainy day date at home",
+    title: "POV: hujan, date di rumah aja",
     hook: "When it rains, try this instead…",
     format: "POV",
     score: 91,
-    reason: "Format POV sedang naik dan low effort untuk creator solo",
+    reason: "POV low effort, mudah diambil creator solo",
   },
   {
     id: "demo-trend-3",
-    title: "Aesthetic cafe date vlog",
+    title: "Story: cafe aesthetic first date",
     hook: "We found the coziest cafe for…",
     format: "STORYTELLING",
     score: 88,
-    reason: "Visual cafe + storytelling pas untuk Couple Date Ideas",
+    reason: "Visual cafe + storytelling pas niche couple",
   },
   {
     id: "demo-trend-4",
-    title: "First date checklist",
+    title: "List: checklist kencan pertama",
     hook: "Don’t go on a first date without…",
     format: "LIST",
     score: 86,
-    reason: "Checklist mudah diikuti dan sering di-save audiens dating",
+    reason: "Checklist sering di-save audiens dating",
   },
   {
     id: "demo-trend-5",
-    title: "Night drive date ideas",
+    title: "POV: night drive bareng doi",
     hook: "POV: night drive with your person…",
     format: "POV",
     score: 82,
@@ -100,11 +107,11 @@ export const DEMO_TRENDS: DemoTrend[] = [
   },
   {
     id: "demo-trend-6",
-    title: "Bookstore date aesthetic",
+    title: "POV: bookstore date soft launch",
     hook: "Take them to a bookstore and do this…",
     format: "POV",
     score: 78,
-    reason: "Aesthetic + soft romance cocok untuk feed couple",
+    reason: "Aesthetic soft — beda dari konten cafe biasa",
   },
 ];
 

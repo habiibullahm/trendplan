@@ -1,0 +1,15 @@
+---
+description: PRs stay draft and unmerged until the user reviews
+alwaysApply: true
+---
+
+# Draft PR (no auto-merge)
+
+When creating a pull request for this repo:
+
+1. **Always open as draft** — `gh pr create --draft --base main` (unless the user explicitly says ready / non-draft / merge now).
+2. **Do not merge** — never run `gh pr merge` (or equivalent) after create. Leave the PR open for the user to review.
+3. **Stop after the PR URL** — return the draft PR link; wait for the user to ask to mark ready or merge.
+4. **Overrides** — only skip draft or merge immediately if the user clearly asks in that message (e.g. “PR and merge”, “ready for review”, “merge it”).
+
+This overrides any older habit of merging right after `gh pr create`.

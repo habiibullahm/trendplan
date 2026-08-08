@@ -69,10 +69,12 @@ export function FadeIn({
   children,
   className,
   as = "div",
+  id,
 }: {
   children: ReactNode;
   className?: string;
   as?: "div" | "li";
+  id?: string;
 }) {
   const reduce = usePrefersReducedMotion();
   const inStagger = useContext(StaggerContext);
@@ -90,8 +92,14 @@ export function FadeIn({
   };
 
   const shared = inStagger
-    ? { className, variants }
-    : { className, variants, initial: "hidden" as const, animate: "show" as const };
+    ? { id, className, variants }
+    : {
+        id,
+        className,
+        variants,
+        initial: "hidden" as const,
+        animate: "show" as const,
+      };
 
   if (as === "li") {
     return <motion.li {...shared}>{children}</motion.li>;

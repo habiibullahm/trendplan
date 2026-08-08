@@ -1,5 +1,5 @@
 ---
-description: When user says PR — branch from main, commit, push, open PR, merge
+description: When user says PR — branch from main, commit, push, open draft PR (no merge)
 alwaysApply: true
 ---
 
@@ -17,9 +17,9 @@ When the user says **PR** (or “create PR” / “open PR” for the current wo
    Never leave the feature branch tracking `origin/main` (a bare `git push` would update main).
 4. **Commit** — stage relevant files; commit with a concise message; author **habibullahm / mr.habiibullahm@gmail.com** (see github-commit-email rule). Do not commit secrets.
 5. **Push** — `git push -u origin HEAD`.
-6. **PR** — `gh pr create --base main` (draft only if the user asks for draft).
-7. **Merge** — after the PR is created, merge it (`gh pr merge --merge` or `--squash` matching repo default) unless the user says not to merge / wait for review / draft only.
+6. **PR** — `gh pr create --draft --base main` (see **draft-pr** rule). Stay draft until the user reviews.
+7. **Do not merge** — do not run `gh pr merge` unless the user explicitly asks to merge / mark ready and merge.
 
 If there is nothing to commit, say so and do not open an empty PR.
 
-Related: README **Branching strategy**.
+Related: README **Branching strategy**; `.cursor/rules/draft-pr.mdc`.
