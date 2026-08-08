@@ -1,9 +1,16 @@
 import assert from "node:assert/strict";
 import { afterEach, describe, it } from "node:test";
-import { appBaseUrl, isEmailVerificationRequired } from "./auth-env";
+import {
+  appBaseUrl,
+  isEmailVerificationRequired,
+  isTransactionalEmailEnabled,
+} from "./auth-env";
 
 const original = {
   EMAIL_VERIFICATION_REQUIRED: process.env.EMAIL_VERIFICATION_REQUIRED,
+  TRANSACTIONAL_EMAIL_ENABLED: process.env.TRANSACTIONAL_EMAIL_ENABLED,
+  NEXT_PUBLIC_TRANSACTIONAL_EMAIL_ENABLED:
+    process.env.NEXT_PUBLIC_TRANSACTIONAL_EMAIL_ENABLED,
   AUTH_URL: process.env.AUTH_URL,
   NEXT_PUBLIC_APP_URL: process.env.NEXT_PUBLIC_APP_URL,
   VERCEL_URL: process.env.VERCEL_URL,
@@ -38,13 +45,36 @@ describe("isEmailVerificationRequired", () => {
     assert.equal(isEmailVerificationRequired(), true);
   });
 
-  it("defaults to production-only when unset", () => {
+  it("defaults to off when unset (until domain / opt-in)", () => {
     delete process.env.EMAIL_VERIFICATION_REQUIRED;
     setNodeEnv("production");
-    assert.equal(isEmailVerificationRequired(), true);
+    assert.equal(isEmailVerificationRequired(), false);
 
     setNodeEnv("development");
     assert.equal(isEmailVerificationRequired(), false);
+  });
+});
+
+describe("isTransactionalEmailEnabled", () => {
+  it("defaults to off", () => {
+    delete process.env.TRANSACTIONAL_EMAIL_ENABLED;
+    delete process.env.NEXT_PUBLIC_TRANSACTIONAL_EMAIL_ENABLED;
+    assert.equal(isTransactionalEmailEnabled(), false);
+  });
+
+  it("respects TRANSACTIONAL_EMAIL_ENABLED", () => {
+    delete process.env.NEXT_PUBLIC_TRANSACTIONAL_EMAIL_ENABLED;
+    process.env.TRANSACTIONAL_EMAIL_ENABLED = "true";
+    assert.equal(isTransactionalEmailEnabled(), true);
+
+    process.env.TRANSACTIONAL_EMAIL_ENABLED = "false";
+    assert.equal(isTransactionalEmailEnabled(), false);
+  });
+
+  it("prefers NEXT_PUBLIC_TRANSACTIONAL_EMAIL_ENABLED when set", () => {
+    process.env.TRANSACTIONAL_EMAIL_ENABLED = "false";
+    process.env.NEXT_PUBLIC_TRANSACTIONAL_EMAIL_ENABLED = "true";
+    assert.equal(isTransactionalEmailEnabled(), true);
   });
 });
 

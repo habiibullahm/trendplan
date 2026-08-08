@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { ResetPasswordForm } from "@/features/auth/components/reset-password-form";
+import { isTransactionalEmailEnabled } from "@/lib/auth-env";
 
 type Props = {
   searchParams: Promise<{ token?: string }>;
@@ -7,6 +8,7 @@ type Props = {
 
 export default async function ResetPasswordPage({ searchParams }: Props) {
   const { token } = await searchParams;
+  const emailEnabled = isTransactionalEmailEnabled();
 
   return (
     <main className="flex flex-1 flex-col items-center justify-center px-6 py-12">
@@ -25,9 +27,15 @@ export default async function ResetPasswordPage({ searchParams }: Props) {
         ) : (
           <p className="text-center text-sm text-ink-muted">
             Tautan reset tidak lengkap.{" "}
-            <Link href="/forgot-password" className="font-semibold text-coral">
-              Minta tautan baru
-            </Link>
+            {emailEnabled ? (
+              <Link href="/forgot-password" className="font-semibold text-coral">
+                Minta tautan baru
+              </Link>
+            ) : (
+              <Link href="/login" className="font-semibold text-coral">
+                Kembali ke masuk
+              </Link>
+            )}
           </p>
         )}
       </div>

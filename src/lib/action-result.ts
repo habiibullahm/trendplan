@@ -15,7 +15,7 @@ export const ActionErrors = {
   generic: "Terjadi kesalahan. Coba lagi.",
   loginFailed: "Email atau password salah.",
   registerNeutral:
-    "Jika email tersedia, akun sudah dibuat. Cek email untuk verifikasi, lalu masuk.",
+    "Jika email tersedia, akun sudah dibuat. Silakan masuk.",
   resetRequested:
     "Jika email terdaftar, kami mengirim tautan reset password.",
   resetInvalid: "Tautan reset tidak valid atau sudah kedaluwarsa.",
@@ -27,6 +27,8 @@ export const ActionErrors = {
   verifySent: "Jika memungkinkan, kami mengirim ulang email verifikasi.",
   emailUnverified: "Verifikasi email dulu sebelum lanjut.",
   sessionStale: "Sesi tidak valid. Masuk lagi.",
+  emailDisabled:
+    "Email transaksi belum aktif. Aktifkan setelah domain Resend diverifikasi. Setelah masuk, ubah password dari menu Akun.",
 } as const;
 
 export function actionError(message: string): ActionResult {
