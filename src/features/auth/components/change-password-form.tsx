@@ -6,7 +6,6 @@ import {
   type PasswordActionState,
 } from "@/features/auth/actions/password";
 import { Button } from "@/components/ui/button";
-import { ChipButton } from "@/components/ui/chip-button";
 import { FormField } from "@/components/ui/form-field";
 import { Input } from "@/components/ui/input";
 import { Modal } from "@/components/ui/modal";
@@ -31,13 +30,14 @@ export function ChangePasswordForm() {
     <>
       <div className="flex items-center justify-between gap-3 py-2.5">
         <span className="text-sm text-ink-muted">Password</span>
-        <ChipButton
+        <Button
           variant="ghost"
+          size="sm"
           disabled={pending}
           onClick={() => setOpen(true)}
         >
           Ubah
-        </ChipButton>
+        </Button>
       </div>
 
       <Modal

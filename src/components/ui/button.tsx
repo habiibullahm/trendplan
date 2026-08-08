@@ -14,10 +14,13 @@ export const buttonVariants = cva(
           "rounded-xl border border-border bg-surface text-ink transition-colors hover:bg-paper active:scale-[0.98] disabled:opacity-60",
         danger:
           "rounded-none bg-transparent text-ink-muted transition-colors hover:text-coral hover:underline disabled:opacity-60",
+        /** Compact coral text action (ex-ChipButton ghost) */
+        ghost:
+          "rounded-lg bg-transparent text-coral transition-colors hover:underline disabled:opacity-60",
       },
       size: {
         md: "min-touch px-5 text-sm font-semibold",
-        sm: "min-touch px-4 text-sm font-semibold",
+        sm: "min-touch px-3 text-xs font-semibold",
         /** Compact text control (e.g. Hapus) — no 44px touch floor */
         link: "min-h-0 min-w-0 px-0 py-0 text-sm font-semibold",
       },

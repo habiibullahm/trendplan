@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useState, useSyncExternalStore } from "react";
-import { ChipButton } from "@/components/ui/chip-button";
+import { Button } from "@/components/ui/button";
 import { Modal } from "@/components/ui/modal";
 import {
   APP_UPDATE_ID,
@@ -92,9 +92,14 @@ export function UpdateLog() {
           ))}
         </ul>
         <div className="mt-4 flex justify-end">
-          <ChipButton type="button" onClick={() => setOpen(false)}>
+          <Button
+            type="button"
+            variant="secondary"
+            size="sm"
+            onClick={() => setOpen(false)}
+          >
             Tutup
-          </ChipButton>
+          </Button>
         </div>
       </Modal>
     </>

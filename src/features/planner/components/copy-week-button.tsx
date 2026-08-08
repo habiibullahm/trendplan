@@ -1,6 +1,6 @@
 "use client";
 
-import { ChipButton } from "@/components/ui/chip-button";
+import { Button } from "@/components/ui/button";
 import { copyText } from "@/features/planner/lib/clipboard";
 import { copyToastError, copyToastSuccess } from "@/features/planner/lib/copy-toast";
 import { formatWeekPaste, type WeekPasteItem } from "@/features/planner/lib/export-text";
@@ -24,6 +24,8 @@ export function CopyWeekButton({
   }
 
   return (
-    <ChipButton onClick={onCopy}>Salin minggu</ChipButton>
+    <Button type="button" variant="secondary" size="sm" onClick={onCopy}>
+      Salin minggu
+    </Button>
   );
 }

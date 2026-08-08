@@ -7,7 +7,6 @@ import {
   softDeleteContentItemAction,
   type PlannerActionState,
 } from "@/features/planner/actions";
-import { ChipButton } from "@/components/ui/chip-button";
 import { Button } from "@/components/ui/button";
 import { FormField } from "@/components/ui/form-field";
 import { Input } from "@/components/ui/input";
@@ -157,9 +156,15 @@ export function ContentEditForm({
           label="Caption"
           htmlFor="caption-field"
           action={
-            <ChipButton variant="ghost" onClick={isiSaran} disabled={busy}>
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={isiSaran}
+              disabled={busy}
+            >
               Isi saran
-            </ChipButton>
+            </Button>
           }
         >
           <Textarea
@@ -191,9 +196,15 @@ export function ContentEditForm({
           >
             Simpan
           </Button>
-          <ChipButton onClick={salin} disabled={busy}>
+          <Button
+            type="button"
+            variant="secondary"
+            size="sm"
+            onClick={salin}
+            disabled={busy}
+          >
             Salin
-          </ChipButton>
+          </Button>
         </div>
       </form>
 
