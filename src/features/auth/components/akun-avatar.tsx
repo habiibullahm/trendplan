@@ -16,6 +16,7 @@ import {
   type ProfileImageActionState,
 } from "@/features/auth/actions/profile";
 import { Modal } from "@/components/ui/modal";
+import { planAvatarPickerOpen } from "@/components/ui/modal-behavior";
 import { Spinner } from "@/components/ui/spinner";
 import {
   canSubmitAvatarUpdate,
@@ -179,7 +180,8 @@ export function AkunAvatar({
   function openPicker() {
     // Keep modal open when replacing from preview; close first only when
     // starting from the empty avatar (no dialog yet).
-    if (menuOpen) {
+    const plan = planAvatarPickerOpen(menuOpen);
+    if (plan.clickWhileOpen) {
       inputRef.current?.click();
       return;
     }
@@ -347,6 +349,7 @@ export function AkunAvatar({
       <Modal
         open={modalOpen}
         onClose={onModalClose}
+        allowClose={!pending}
         title="Foto profil"
         description={
           canUpdate
@@ -356,6 +359,8 @@ export function AkunAvatar({
         titleAlign="center"
         size="xs"
         bodyClassName="flex flex-col items-center gap-5"
+        // While opening the OS picker after close, disable return-focus
+        // (see planAvatarPickerOpen / modal smoke tests).
         restoreFocus={!openingPicker}
       >
         <div className="relative h-28 w-28">

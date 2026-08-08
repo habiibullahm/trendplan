@@ -101,6 +101,7 @@ export function AkunGoalEditor({ weeklyGoal }: { weeklyGoal: number }) {
       <Modal
         open={open}
         onClose={onClose}
+        allowClose={!pending}
         title="Target per minggu"
         description="Berapa ide yang ingin kamu rencanakan tiap minggu?"
         size="sm"

@@ -43,6 +43,7 @@ export function ChangePasswordForm() {
       <Modal
         open={open}
         onClose={onClose}
+        allowClose={!pending}
         title="Ubah password"
         size="sm"
       >

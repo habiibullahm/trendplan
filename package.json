@@ -21,6 +21,7 @@
     "db:init-prod-user": "tsx scripts/init-prod-user-mocks.ts",
     "db:copy-to-prod": "tsx scripts/copy-local-to-prod.ts",
     "smoke": "tsx scripts/smoke-happy-path.ts",
+    "smoke:modal": "tsx scripts/smoke-modal-ui.ts",
     "test": "tsx --import ./scripts/stub-server-only.ts --test src/**/*.test.ts",
     "prepare": "husky"
   },
