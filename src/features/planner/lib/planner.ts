@@ -140,9 +140,12 @@ export async function countActiveItemsByWeekStarts(
   return map;
 }
 
-export async function getRecommendations(limit = 12) {
+export async function getRecommendations(
+  niche: string | null = null,
+  limit = 12,
+) {
   return prisma.trend.findMany({
-    where: { niche: "Couple Date Ideas" },
+    where: niche ? { niche } : undefined,
     orderBy: { score: "desc" },
     take: limit,
   });

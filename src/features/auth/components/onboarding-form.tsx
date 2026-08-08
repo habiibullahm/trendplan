@@ -3,12 +3,14 @@
 import { useState } from "react";
 import { useFormStatus } from "react-dom";
 import { Button } from "@/components/ui/button";
+import { DEFAULT_NICHE, NICHES, type Niche } from "@/lib/niches";
 
 const GOAL_OPTIONS = [1, 2, 3, 4, 5, 6, 7] as const;
 
 type OnboardingFormProps = {
   action: (formData: FormData) => Promise<void>;
   defaultGoal?: number;
+  defaultNiche?: Niche;
   userName?: string | null;
   trendCount: number;
 };
@@ -46,6 +48,39 @@ function GoalPicker({
   );
 }
 
+function NichePicker({
+  niche,
+  onSelect,
+}: {
+  niche: Niche;
+  onSelect: (value: Niche) => void;
+}) {
+  const { pending } = useFormStatus();
+
+  return (
+    <div className="mt-3 flex flex-col gap-2">
+      {NICHES.map((value) => {
+        const active = value === niche;
+        return (
+          <button
+            key={value}
+            type="button"
+            disabled={pending}
+            onClick={() => onSelect(value)}
+            className={`min-touch rounded-xl border px-3 py-2.5 text-left text-sm font-semibold transition-colors disabled:opacity-60 ${
+              active
+                ? "border-coral bg-coral text-white"
+                : "border-border bg-surface text-ink"
+            }`}
+          >
+            {value}
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
 function SubmitButton() {
   const { pending } = useFormStatus();
 
@@ -64,14 +99,17 @@ function SubmitButton() {
 export function OnboardingForm({
   action,
   defaultGoal = 3,
+  defaultNiche = DEFAULT_NICHE,
   userName,
   trendCount,
 }: OnboardingFormProps) {
   const [goal, setGoal] = useState(defaultGoal);
+  const [niche, setNiche] = useState<Niche>(defaultNiche);
 
   return (
     <form action={action} className="mt-6 flex flex-col gap-5">
       <input type="hidden" name="weeklyGoal" value={goal} />
+      <input type="hidden" name="niche" value={niche} />
 
       <section className="rounded-2xl border border-border bg-paper p-4">
         <p className="text-xs font-medium uppercase tracking-wide text-ink-muted">
@@ -88,13 +126,22 @@ export function OnboardingForm({
           </li>
           <li className="flex justify-between gap-3">
             <span className="text-ink-muted">Niche</span>
-            <span className="font-medium">Couple Date Ideas</span>
+            <span className="font-medium">{niche}</span>
           </li>
           <li className="flex justify-between gap-3">
             <span className="text-ink-muted">Tren mock siap</span>
             <span className="font-medium text-sage">{trendCount} ide</span>
           </li>
         </ul>
+      </section>
+
+      <section>
+        <p className="text-sm font-medium text-ink">Pilih niche utama</p>
+        <p className="mt-1 text-sm text-ink-muted">
+          Rekomendasi untukmu mengikuti niche ini. Di Tren kamu tetap bisa lihat
+          semua niche.
+        </p>
+        <NichePicker niche={niche} onSelect={setNiche} />
       </section>
 
       <section>

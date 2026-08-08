@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { completeOnboardingAction } from "@/app/actions/onboarding";
 import { OnboardingForm } from "@/features/auth/components/onboarding-form";
 import { prisma } from "@/lib/prisma";
+import { DEFAULT_NICHE } from "@/lib/niches";
 import { getSafeSession } from "@/lib/session";
 
 export default async function OnboardingPage() {
@@ -9,9 +10,7 @@ export default async function OnboardingPage() {
   if (!session?.user) redirect("/login");
   if (session.user.onboardingComplete) redirect("/dashboard");
 
-  const trendCount = await prisma.trend.count({
-    where: { niche: "Couple Date Ideas" },
-  });
+  const trendCount = await prisma.trend.count();
 
   async function submitOnboarding(formData: FormData) {
     "use server";
@@ -27,13 +26,14 @@ export default async function OnboardingPage() {
           Atur rencana konten kamu
         </h1>
         <p className="mt-2 text-sm text-ink-muted">
-          Demo FYP difokuskan ke TikTok dan niche Couple Date Ideas. Tentukan target
-          posting mingguan, lalu mulai dari tren mock yang sudah disiapkan.
+          Pilih niche utama untuk rekomendasi personal. Di Tren kamu tetap bisa
+          jelajahi FYP mock semua niche.
         </p>
 
         <OnboardingForm
           action={submitOnboarding}
           defaultGoal={3}
+          defaultNiche={DEFAULT_NICHE}
           userName={session.user.name}
           trendCount={trendCount}
         />
