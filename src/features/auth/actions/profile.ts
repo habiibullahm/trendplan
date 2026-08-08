@@ -5,7 +5,7 @@ import { revalidatePath } from "next/cache";
 import { AVATAR_MAX_BYTES } from "@/features/auth/lib/avatar-image";
 import { prepareAvatarUpload } from "@/features/auth/lib/prepare-avatar-upload";
 import { prisma } from "@/lib/prisma";
-import { requireAppUserAction } from "@/lib/require-app-user";
+import { requireAppUserAction } from "@/lib/auth/require-app-user";
 
 export type ProfileImageActionState = {
   error?: string;

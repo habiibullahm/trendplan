@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { ForgotPasswordForm } from "@/features/auth/components/forgot-password-form";
-import { isTransactionalEmailEnabled } from "@/lib/auth-env";
+import { isTransactionalEmailEnabled } from "@/lib/auth/env";
 
 export default function ForgotPasswordPage() {
   const emailEnabled = isTransactionalEmailEnabled();

@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache";
 import { unstable_update } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { isNiche } from "@/lib/niches";
-import { gateAppUser, requireAppUserAction } from "@/lib/require-app-user";
+import { gateAppUser, requireAppUserAction } from "@/lib/auth/require-app-user";
 
 export async function completeOnboardingAction(formData: FormData) {
   const gate = await gateAppUser();

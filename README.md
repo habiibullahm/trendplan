@@ -176,13 +176,16 @@ Catatan penting:
 
 ```
 src/app/(app)/              # Routes: dashboard, tren, rekomendasi, planner, riwayat, akun
-src/app/actions/            # Auth + onboarding server actions
+src/app/api/auth/           # Auth.js + clear-session handlers
 src/components/layout/      # App shell, nav, toaster
+src/components/theme/       # Theme provider, script, ThemeToggle
 src/components/motion/      # Shared motion helpers
 src/components/ui/          # Primitives (Button, FormField, Input, Badge, …)
 src/features/planner/       # Planner components, lib, server actions
-src/features/auth/          # Auth + onboarding forms + Akun goal editor
-src/lib/                    # Shared (db, prisma, session, week, labels, cn)
+src/features/auth/          # Auth UI + feature server actions (login, password, profile, …)
+src/lib/auth/               # Auth infra (session, JWT claims, tokens, validation, …)
+src/lib/                    # Shared (db, prisma, mail, week, labels, cn, rate-limit)
+src/auth.ts + auth.config.ts
 prisma/                     # Schema, migrations, seed
 scripts/                    # Smoke + copy-local-to-prod
 ```

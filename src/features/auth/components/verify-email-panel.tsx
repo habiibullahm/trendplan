@@ -5,7 +5,7 @@ import {
   resendVerificationEmailAction,
   verifyEmailAction,
   type EmailVerificationState,
-} from "@/app/actions/email-verification";
+} from "@/features/auth/actions/email-verification";
 import { Button } from "@/components/ui/button";
 import { useActionToasts } from "@/hooks/use-action-toasts";
 

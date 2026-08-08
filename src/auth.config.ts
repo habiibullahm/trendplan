@@ -1,5 +1,5 @@
 import type { NextAuthConfig } from "next-auth";
-import { isEmailVerificationRequired } from "@/lib/auth-env";
+import { isEmailVerificationRequired } from "@/lib/auth/env";
 
 export const authConfig = {
   pages: {

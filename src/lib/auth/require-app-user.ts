@@ -6,8 +6,8 @@ import {
   actionError,
   type ActionResult,
 } from "@/lib/action-result";
-import { isEmailVerificationRequired } from "@/lib/auth-env";
-import { isPasswordVersionCurrent } from "@/lib/auth-jwt-claims";
+import { isEmailVerificationRequired } from "./env";
+import { isPasswordVersionCurrent } from "./jwt-claims";
 import { prisma } from "@/lib/prisma";
 
 export type AppUserGate =

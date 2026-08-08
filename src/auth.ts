@@ -7,17 +7,17 @@ import { getClientIp } from "@/lib/action-middleware";
 import {
   LOGIN_EMAIL_LIMIT,
   LOGIN_IP_LIMIT,
-} from "@/lib/auth-rate-limits";
+} from "@/lib/auth/rate-limits";
 import {
   dbSecurityClaims,
   shouldInvalidateForPasswordVersion,
-} from "@/lib/auth-jwt-claims";
-import { passwordSchema } from "@/lib/auth-validation";
+} from "@/lib/auth/jwt-claims";
+import { passwordSchema } from "@/lib/auth/validation";
 import {
   PASSWORD_CHANGE_REFRESH_COOKIE,
   passwordChangeRefreshClearOptions,
   verifyPasswordChangeRefresh,
-} from "@/lib/password-change-refresh";
+} from "@/lib/auth/password-change-refresh";
 import { checkRateLimit } from "@/lib/rate-limit";
 import { prisma } from "@/lib/prisma";
 import { cookies } from "next/headers";

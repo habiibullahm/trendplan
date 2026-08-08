@@ -4,7 +4,7 @@ import { hash } from "bcryptjs";
 import { AuthError } from "next-auth";
 import { redirect } from "next/navigation";
 import { signIn } from "@/auth";
-import { sendVerificationEmailForUser } from "@/app/actions/email-verification";
+import { sendVerificationEmailForUser } from "@/features/auth/actions/email-verification";
 import {
   ActionErrors,
   actionError,
@@ -15,12 +15,12 @@ import {
   getClientIp,
   withValidation,
 } from "@/lib/action-middleware";
-import { isEmailVerificationRequired } from "@/lib/auth-env";
+import { isEmailVerificationRequired } from "@/lib/auth/env";
 import {
   REGISTER_EMAIL_LIMIT,
   REGISTER_IP_LIMIT,
-} from "@/lib/auth-rate-limits";
-import { loginSchema, registerSchema } from "@/lib/auth-validation";
+} from "@/lib/auth/rate-limits";
+import { loginSchema, registerSchema } from "@/lib/auth/validation";
 import { DEFAULT_NICHE } from "@/lib/niches";
 import { prisma } from "@/lib/prisma";
 

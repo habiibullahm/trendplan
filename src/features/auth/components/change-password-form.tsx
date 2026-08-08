@@ -4,7 +4,7 @@ import { useActionState, useState } from "react";
 import {
   changePasswordAction,
   type PasswordActionState,
-} from "@/app/actions/password";
+} from "@/features/auth/actions/password";
 import { Button } from "@/components/ui/button";
 import { ChipButton } from "@/components/ui/chip-button";
 import { FormField } from "@/components/ui/form-field";

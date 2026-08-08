@@ -1,6 +1,6 @@
 import "server-only";
 
-import { isTransactionalEmailEnabled } from "@/lib/auth-env";
+import { isTransactionalEmailEnabled } from "@/lib/auth/env";
 
 export type MailMessage = {
   to: string;

@@ -14,7 +14,7 @@ import {
   PASSWORD_CHANGE_REFRESH_COOKIE,
   passwordChangeRefreshCookieOptions,
   signPasswordChangeRefresh,
-} from "@/lib/password-change-refresh";
+} from "@/lib/auth/password-change-refresh";
 import {
   assertRateLimits,
   getClientIp,
@@ -25,16 +25,16 @@ import {
   createAuthToken,
   consumeAuthTokenThen,
   invalidateUnusedAuthTokens,
-} from "@/lib/auth-tokens";
-import { isTransactionalEmailEnabled } from "@/lib/auth-env";
+} from "@/lib/auth/tokens";
+import { isTransactionalEmailEnabled } from "@/lib/auth/env";
 import {
   changePasswordSchema,
   requestPasswordResetSchema,
   resetPasswordSchema,
-} from "@/lib/auth-validation";
+} from "@/lib/auth/validation";
 import { sendMail } from "@/lib/mail";
 import { prisma } from "@/lib/prisma";
-import { requireAppUserAction } from "@/lib/require-app-user";
+import { requireAppUserAction } from "@/lib/auth/require-app-user";
 
 const CHANGE_USER_LIMIT = { limit: 5, windowMs: 15 * 60 * 1000 };
 const CHANGE_IP_LIMIT = { limit: 10, windowMs: 15 * 60 * 1000 };

@@ -4,10 +4,10 @@ import type { AuthTokenType, Prisma } from "@/generated/prisma/client";
 import {
   generateRawAuthToken,
   hashAuthToken,
-} from "@/lib/auth-token-crypto";
+} from "./token-crypto";
 import { prisma } from "@/lib/prisma";
 
-export { generateRawAuthToken, hashAuthToken } from "@/lib/auth-token-crypto";
+export { generateRawAuthToken, hashAuthToken } from "./token-crypto";
 
 const DEFAULT_TTL_MS = 60 * 60 * 1000; // 1 hour
 
@@ -104,4 +104,4 @@ export {
   appBaseUrl,
   isEmailVerificationRequired,
   isTransactionalEmailEnabled,
-} from "@/lib/auth-env";
+} from "./env";

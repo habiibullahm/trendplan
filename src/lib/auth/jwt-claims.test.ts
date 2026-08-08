@@ -4,7 +4,7 @@ import {
   dbSecurityClaims,
   isPasswordVersionCurrent,
   shouldInvalidateForPasswordVersion,
-} from "./auth-jwt-claims";
+} from "./jwt-claims";
 
 describe("dbSecurityClaims", () => {
   it("maps DB row to JWT claims (source of truth for session update)", () => {
