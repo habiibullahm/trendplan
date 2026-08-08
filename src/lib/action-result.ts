@@ -14,8 +14,7 @@ export const ActionErrors = {
   invalid: "Data tidak valid.",
   generic: "Terjadi kesalahan. Coba lagi.",
   loginFailed: "Email atau password salah.",
-  registerNeutral:
-    "Jika email tersedia, akun sudah dibuat. Silakan masuk.",
+  registerNeutral: "Daftar berhasil. Silakan masuk.",
   resetRequested:
     "Jika email terdaftar, kami mengirim tautan reset password.",
   resetInvalid: "Tautan reset tidak valid atau sudah kedaluwarsa.",

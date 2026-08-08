@@ -28,8 +28,7 @@ export default async function DashboardPage() {
   const weekPlan = await getOrCreateWeekPlan(userId);
   const scheduled = weekPlan.items.length;
   const goal = user?.weeklyGoal ?? 3;
-  const remaining = Math.max(0, goal - scheduled);
-  const onTrack = remaining === 0;
+  const onTrack = scheduled >= goal;
   const progress = Math.min(100, Math.round((scheduled / goal) * 100));
   const topRecs = await getRecommendations(niche, 2);
 
@@ -44,7 +43,7 @@ export default async function DashboardPage() {
             Perencana konten minggu ini
           </h1>
           <p className="mt-2 text-sm text-ink-muted">
-            {formatWeekRange(weekPlan.weekStart)} · {niche}
+            {formatWeekRange(weekPlan.weekStart)}
           </p>
         </div>
         <ThemeToggle />
@@ -77,9 +76,6 @@ export default async function DashboardPage() {
             ))}
           </Stagger>
         ) : null}
-        {!onTrack ? (
-          <p className="mt-3 text-xs text-ink-muted">sisa {remaining}</p>
-        ) : null}
       </section>
 
       <div className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-2">
@@ -104,7 +100,6 @@ export default async function DashboardPage() {
             <h2 className="text-lg font-semibold text-ink">
               Rekomendasi untukmu
             </h2>
-            <p className="mt-0.5 text-xs text-ink-muted">{niche}</p>
           </div>
           <Link
             href="/rekomendasi"
@@ -131,9 +126,15 @@ export default async function DashboardPage() {
             </FadeIn>
           ))}
           {topRecs.length === 0 ? (
-            <EmptyState as="li" variant="plain">
-              Belum ada rekomendasi untuk niche ini. Jalankan{" "}
-              <code>npm run db:seed</code>.
+            <EmptyState as="li">
+              <p className="font-medium text-ink">Belum ada rekomendasi</p>
+              <p className="mt-1">
+                Data masih kosong. Cek{" "}
+                <Link href="/tren" className="font-semibold text-coral">
+                  Tren
+                </Link>{" "}
+                atau ubah niche di Akun.
+              </p>
             </EmptyState>
           ) : null}
         </Stagger>

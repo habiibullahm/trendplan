@@ -18,7 +18,7 @@ const fraunces = Fraunces({
 export const metadata: Metadata = {
   title: "TrendPlan",
   description:
-    "Perencanaan konten TikTok mingguan berbasis tren — niche Couple Date Ideas",
+    "Perencanaan konten TikTok mingguan berbasis tren — pilih niche yang cocok",
   applicationName: "TrendPlan",
 };
 
@@ -29,10 +29,8 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       suppressHydrationWarning
       className={`${dmSans.variable} ${fraunces.variable} h-full antialiased`}
     >
-      <head>
-        <ThemeScript />
-      </head>
       <body className="min-h-full flex flex-col bg-paper text-ink font-sans">
+        <ThemeScript />
         <ThemeProvider>
           {children}
           <AppToaster />

@@ -3,14 +3,15 @@
 import { useState } from "react";
 import { useFormStatus } from "react-dom";
 import { Button } from "@/components/ui/button";
-import { DEFAULT_NICHE, NICHES, type Niche } from "@/lib/niches";
+import { NICHES, type Niche } from "@/lib/niches";
 
 const GOAL_OPTIONS = [1, 2, 3, 4, 5, 6, 7] as const;
 
 type OnboardingFormProps = {
   action: (formData: FormData) => Promise<void>;
   defaultGoal?: number;
-  defaultNiche?: Niche;
+  /** Omit or null = no niche preselected (user must choose). */
+  defaultNiche?: Niche | null;
   userName?: string | null;
   trendCount: number;
 };
@@ -52,7 +53,7 @@ function NichePicker({
   niche,
   onSelect,
 }: {
-  niche: Niche;
+  niche: Niche | null;
   onSelect: (value: Niche) => void;
 }) {
   const { pending } = useFormStatus();
@@ -81,13 +82,14 @@ function NichePicker({
   );
 }
 
-function SubmitButton() {
+function SubmitButton({ disabled }: { disabled: boolean }) {
   const { pending } = useFormStatus();
 
   return (
     <Button
       type="submit"
       width="full"
+      disabled={disabled}
       loading={pending}
       loadingText="Menyimpan..."
     >
@@ -99,17 +101,17 @@ function SubmitButton() {
 export function OnboardingForm({
   action,
   defaultGoal = 3,
-  defaultNiche = DEFAULT_NICHE,
+  defaultNiche = null,
   userName,
   trendCount,
 }: OnboardingFormProps) {
   const [goal, setGoal] = useState(defaultGoal);
-  const [niche, setNiche] = useState<Niche>(defaultNiche);
+  const [niche, setNiche] = useState<Niche | null>(defaultNiche);
 
   return (
     <form action={action} className="mt-6 flex flex-col gap-5">
       <input type="hidden" name="weeklyGoal" value={goal} />
-      <input type="hidden" name="niche" value={niche} />
+      <input type="hidden" name="niche" value={niche ?? ""} />
 
       <section className="rounded-2xl border border-border bg-paper p-4">
         <p className="text-xs font-medium uppercase tracking-wide text-ink-muted">
@@ -126,7 +128,7 @@ export function OnboardingForm({
           </li>
           <li className="flex justify-between gap-3">
             <span className="text-ink-muted">Niche</span>
-            <span className="font-medium">{niche}</span>
+            <span className="font-medium">{niche ?? "—"}</span>
           </li>
           <li className="flex justify-between gap-3">
             <span className="text-ink-muted">Tren mock siap</span>
@@ -156,7 +158,7 @@ export function OnboardingForm({
         </p>
       </section>
 
-      <SubmitButton />
+      <SubmitButton disabled={!niche} />
     </form>
   );
 }

@@ -4,15 +4,6 @@
  */
 
 /**
- * Soft-gate email verification. Opt-in only — off until a real sending domain
- * is ready (`EMAIL_VERIFICATION_REQUIRED=true`).
- */
-export function isEmailVerificationRequired(): boolean {
-  const raw = process.env.EMAIL_VERIFICATION_REQUIRED;
-  return raw === "true" || raw === "1";
-}
-
-/**
  * Password-reset / verify emails via Resend.
  * Default OFF until a verified domain From is configured — set
  * `TRANSACTIONAL_EMAIL_ENABLED=true` (and preferably
@@ -24,6 +15,17 @@ export function isTransactionalEmailEnabled(): boolean {
     process.env.NEXT_PUBLIC_TRANSACTIONAL_EMAIL_ENABLED ??
     process.env.TRANSACTIONAL_EMAIL_ENABLED;
   return raw === "true" || raw === "1";
+}
+
+/**
+ * Soft-gate email verification. Opt-in only — requires both
+ * `EMAIL_VERIFICATION_REQUIRED=true` and transactional email enabled so
+ * users are never soft-gated without a working mail path.
+ */
+export function isEmailVerificationRequired(): boolean {
+  const raw = process.env.EMAIL_VERIFICATION_REQUIRED;
+  if (raw !== "true" && raw !== "1") return false;
+  return isTransactionalEmailEnabled();
 }
 
 /** Canonical app origin for reset/verify links. */

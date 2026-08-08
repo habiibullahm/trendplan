@@ -2,12 +2,12 @@
 
 import { hash } from "bcryptjs";
 import { AuthError } from "next-auth";
+import { redirect } from "next/navigation";
 import { signIn } from "@/auth";
 import { sendVerificationEmailForUser } from "@/app/actions/email-verification";
 import {
   ActionErrors,
   actionError,
-  actionSuccess,
   type ActionResult,
 } from "@/lib/action-result";
 import {
@@ -79,7 +79,8 @@ export async function registerAction(
         }
       }
 
-      return actionSuccess(ActionErrors.registerNeutral);
+      // Same path for new + existing email (anti-enumeration).
+      redirect("/login?registered=1");
     },
   );
 }

@@ -60,9 +60,15 @@ export default async function RekomendasiPage() {
           </FadeIn>
         ))}
         {trends.length === 0 ? (
-          <EmptyState as="li" variant="plain">
-            Belum ada rekomendasi untuk niche ini. Jalankan{" "}
-            <code>npm run db:seed</code>.
+          <EmptyState as="li">
+            <p className="font-medium text-ink">Belum ada rekomendasi</p>
+            <p className="mt-1">
+              Belum ada ide untuk niche {niche}. Coba lihat{" "}
+              <Link href="/tren" className="font-semibold text-coral">
+                Tren
+              </Link>{" "}
+              semua niche, atau ubah niche di Akun.
+            </p>
           </EmptyState>
         ) : null}
       </Stagger>

@@ -2,20 +2,20 @@ import { redirect } from "next/navigation";
 import { completeOnboardingAction } from "@/app/actions/onboarding";
 import { OnboardingForm } from "@/features/auth/components/onboarding-form";
 import { prisma } from "@/lib/prisma";
-import { DEFAULT_NICHE } from "@/lib/niches";
 import { gateAppUser } from "@/lib/require-app-user";
-import { getSafeSession } from "@/lib/session";
-import { signOut } from "@/auth";
+import {
+  getSafeSession,
+  redirectToLoginClearingSession,
+} from "@/lib/session";
 
 export default async function OnboardingPage() {
   const session = await getSafeSession();
-  if (!session?.user) redirect("/login");
+  if (!session?.user) redirectToLoginClearingSession();
 
   const gate = await gateAppUser();
   if (!gate.ok) {
     if (gate.kind === "unverified") redirect("/verify-email");
-    await signOut({ redirectTo: "/login" });
-    redirect("/login");
+    redirectToLoginClearingSession();
   }
 
   if (session.user.onboardingComplete) redirect("/dashboard");
@@ -36,14 +36,14 @@ export default async function OnboardingPage() {
           Atur rencana konten kamu
         </h1>
         <p className="mt-2 text-sm text-ink-muted">
-          Pilih niche utama untuk rekomendasi personal. Di Tren kamu tetap bisa
-          jelajahi FYP mock semua niche.
+          Pilih niche utama dulu — rekomendasi mengikuti pilihanmu. Di Tren kamu
+          tetap bisa jelajahi FYP mock semua niche.
         </p>
 
         <OnboardingForm
           action={submitOnboarding}
           defaultGoal={3}
-          defaultNiche={DEFAULT_NICHE}
+          defaultNiche={null}
           userName={session.user.name}
           trendCount={trendCount}
         />
