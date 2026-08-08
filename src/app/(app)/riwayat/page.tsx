@@ -1,10 +1,10 @@
-import Link from "next/link";
 import { redirect } from "next/navigation";
 import { auth } from "@/auth";
 import { FadeIn, Stagger } from "@/components/motion";
 import { EmptyState } from "@/components/ui/empty-state";
+import { RiwayatPostedCard } from "@/features/planner/components/riwayat-posted-card";
 import { prisma } from "@/lib/prisma";
-import { DAY_SHORT } from "@/lib/week";
+import { DAY_SHORT, formatWeekRange } from "@/lib/week";
 
 export default async function RiwayatPage() {
   const session = await auth();
@@ -31,25 +31,26 @@ export default async function RiwayatPage() {
         Riwayat
       </h1>
       <p className="mt-2 text-sm text-ink-muted">
-        Konten yang sudah ditandai Posted.
+        Preview konten yang sudah Posted. Hanya baca (termasuk di Planner).
       </p>
 
       <Stagger as="ul" className="mt-6 space-y-3">
-        {items.map((item) => (
-          <FadeIn
-            key={item.id}
-            as="li"
-            className="rounded-2xl border border-border bg-surface p-4 transition-colors hover:border-coral/30"
-          >
-            <Link href={`/planner/${item.id}`} className="block">
-              <p className="font-semibold text-ink">{item.title}</p>
-              <p className="mt-1 text-sm text-ink-muted">
-                {DAY_SHORT[item.dayOfWeek]}
-                {item.trend ? ` · ${item.trend.title}` : ""}
-              </p>
-            </Link>
-          </FadeIn>
-        ))}
+        {items.map((item) => {
+          const day = DAY_SHORT[item.dayOfWeek] ?? "";
+          const week = formatWeekRange(item.weekPlan.weekStart);
+          return (
+            <FadeIn key={item.id} as="li">
+              <RiwayatPostedCard
+                title={item.title}
+                meta={`${day} · ${week}`}
+                trendTitle={item.trend?.title}
+                hook={item.hook}
+                caption={item.caption}
+                hashtags={item.hashtags}
+              />
+            </FadeIn>
+          );
+        })}
         {items.length === 0 ? (
           <EmptyState as="li">
             Belum ada yang diposting. Ubah status konten di Planner menjadi{" "}
