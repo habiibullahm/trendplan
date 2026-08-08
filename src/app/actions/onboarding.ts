@@ -1,13 +1,14 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { auth, unstable_update } from "@/auth";
+import { unstable_update } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { DEFAULT_NICHE, isNiche } from "@/lib/niches";
+import { gateAppUser, requireAppUserAction } from "@/lib/require-app-user";
 
 export async function completeOnboardingAction(formData: FormData) {
-  const session = await auth();
-  if (!session?.user?.id) {
+  const gate = await gateAppUser();
+  if (!gate.ok) {
     throw new Error("Unauthorized");
   }
 
@@ -20,7 +21,7 @@ export async function completeOnboardingAction(formData: FormData) {
   const niche = isNiche(nicheRaw) ? nicheRaw : DEFAULT_NICHE;
 
   await prisma.user.update({
-    where: { id: session.user.id },
+    where: { id: gate.userId },
     data: {
       weeklyGoal,
       niche,
@@ -28,11 +29,7 @@ export async function completeOnboardingAction(formData: FormData) {
     },
   });
 
-  await unstable_update({
-    user: {
-      onboardingComplete: true,
-    },
-  });
+  await unstable_update({});
 
   revalidatePath("/dashboard");
   revalidatePath("/tren");
@@ -50,9 +47,9 @@ export async function updateWeeklyGoalAction(
   _prev: WeeklyGoalActionState,
   formData: FormData,
 ): Promise<WeeklyGoalActionState> {
-  const session = await auth();
-  if (!session?.user?.id) {
-    return { error: "Sesi berakhir. Masuk lagi." };
+  const gated = await requireAppUserAction();
+  if (!gated.ok) {
+    return { error: gated.result.error ?? "Sesi berakhir. Masuk lagi." };
   }
 
   const raw = Number(formData.get("weeklyGoal"));
@@ -62,7 +59,7 @@ export async function updateWeeklyGoalAction(
 
   try {
     await prisma.user.update({
-      where: { id: session.user.id },
+      where: { id: gated.userId },
       data: { weeklyGoal: raw },
     });
   } catch {
@@ -85,9 +82,9 @@ export async function updateNicheAction(
   _prev: NicheActionState,
   formData: FormData,
 ): Promise<NicheActionState> {
-  const session = await auth();
-  if (!session?.user?.id) {
-    return { error: "Sesi berakhir. Masuk lagi." };
+  const gated = await requireAppUserAction();
+  if (!gated.ok) {
+    return { error: gated.result.error ?? "Sesi berakhir. Masuk lagi." };
   }
 
   const nicheRaw = String(formData.get("niche") ?? "");
@@ -97,7 +94,7 @@ export async function updateNicheAction(
 
   try {
     await prisma.user.update({
-      where: { id: session.user.id },
+      where: { id: gated.userId },
       data: { niche: nicheRaw },
     });
   } catch {

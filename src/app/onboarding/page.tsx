@@ -3,11 +3,21 @@ import { completeOnboardingAction } from "@/app/actions/onboarding";
 import { OnboardingForm } from "@/features/auth/components/onboarding-form";
 import { prisma } from "@/lib/prisma";
 import { DEFAULT_NICHE } from "@/lib/niches";
+import { gateAppUser } from "@/lib/require-app-user";
 import { getSafeSession } from "@/lib/session";
+import { signOut } from "@/auth";
 
 export default async function OnboardingPage() {
   const session = await getSafeSession();
   if (!session?.user) redirect("/login");
+
+  const gate = await gateAppUser();
+  if (!gate.ok) {
+    if (gate.kind === "unverified") redirect("/verify-email");
+    await signOut({ redirectTo: "/login" });
+    redirect("/login");
+  }
+
   if (session.user.onboardingComplete) redirect("/dashboard");
 
   const trendCount = await prisma.trend.count();

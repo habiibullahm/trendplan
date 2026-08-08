@@ -4,6 +4,7 @@ import { signOut } from "@/auth";
 import { AppShell } from "@/components/layout/app-shell";
 import { PasswordUpgradeToast } from "@/features/auth/components/password-upgrade-nudge";
 import { prisma } from "@/lib/prisma";
+import { gateAppUser } from "@/lib/require-app-user";
 import { getSafeSession } from "@/lib/session";
 
 export default async function AppLayout({
@@ -14,27 +15,24 @@ export default async function AppLayout({
   const session = await getSafeSession();
   if (!session?.user?.id) redirect("/login");
 
-  const user = await prisma.user.findUnique({
-    where: { id: session.user.id },
-    select: {
-      id: true,
-      onboardingComplete: true,
-      passwordNeedsUpgrade: true,
-      passwordVersion: true,
-    },
-  });
-
-  if (!user) {
+  const gate = await gateAppUser();
+  if (!gate.ok) {
+    if (gate.kind === "unverified") redirect("/verify-email");
     await signOut({ redirectTo: "/login" });
     redirect("/login");
   }
 
-  // Invalidate sessions after password reset/change (Node auth also checks JWT).
-  const tokenVersion =
-    typeof session.user.passwordVersion === "number"
-      ? session.user.passwordVersion
-      : 0;
-  if (user.passwordVersion !== tokenVersion) {
+  const user = await prisma.user.findUnique({
+    where: { id: gate.userId },
+    select: {
+      id: true,
+      onboardingComplete: true,
+      passwordNeedsUpgrade: true,
+    },
+  });
+
+  // Session cookie exists but user row was deleted/reset
+  if (!user) {
     await signOut({ redirectTo: "/login" });
     redirect("/login");
   }
