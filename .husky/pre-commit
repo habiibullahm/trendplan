@@ -1,11 +1,12 @@
 #!/usr/bin/env sh
 # Block forced adds of env/secret filenames (staged only — fast).
 staged="$(git diff --cached --name-only --diff-filter=ACM)"
-blocked="$(printf '%s\n' "$staged" | grep -E '(^|/)\.env($|\.)|(^|/)(credentials|secrets?)\.(json|ya?ml|toml|env)$' | grep -vE '(^|/)\.env\.example$' || true)"
+# Allow committed templates: .env.example, .env.e2e.example, etc.
+blocked="$(printf '%s\n' "$staged" | grep -E '(^|/)\.env($|\.)|(^|/)(credentials|secrets?)\.(json|ya?ml|toml|env)$' | grep -vE '(^|/)\.env(\.[^/]+)?\.example$' || true)"
 if [ -n "$blocked" ]; then
   echo "pre-commit: refusing to commit env/secret files:"
   printf '%s\n' "$blocked"
-  echo "Remove them from the index (git restore --staged <file>) or use .env.example instead."
+  echo "Remove them from the index (git restore --staged <file>) or use a *.example template."
   exit 1
 fi
 
