@@ -1,5 +1,6 @@
 "use server";
 
+import { redirect } from "next/navigation";
 import { auth } from "@/auth";
 import {
   ActionErrors,
@@ -47,6 +48,14 @@ export async function sendVerificationEmailForUser(
   }
 }
 
+async function postVerifyRedirectPath(userId: string): Promise<string> {
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    select: { onboardingComplete: true },
+  });
+  return user?.onboardingComplete ? "/dashboard" : "/onboarding";
+}
+
 export async function verifyEmailAction(
   _prev: EmailVerificationState,
   formData: FormData,
@@ -81,9 +90,11 @@ export async function verifyEmailAction(
       if (session?.user?.id === consumed) {
         const { unstable_update } = await import("@/auth");
         await unstable_update({});
+        redirect(await postVerifyRedirectPath(consumed));
       }
 
-      return actionSuccess(ActionErrors.verifySuccess);
+      // Logged-out verify link: send them to login next.
+      redirect("/login?verified=1");
     },
   );
 }
