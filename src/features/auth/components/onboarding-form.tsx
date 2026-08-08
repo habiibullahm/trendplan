@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useFormStatus } from "react-dom";
 import { Button } from "@/components/ui/button";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { NICHES, type Niche } from "@/lib/niches";
 
 const GOAL_OPTIONS = [1, 2, 3, 4, 5, 6, 7] as const;
@@ -26,26 +27,25 @@ function GoalPicker({
   const { pending } = useFormStatus();
 
   return (
-    <div className="mt-3 grid grid-cols-7 gap-2">
-      {GOAL_OPTIONS.map((value) => {
-        const active = value === goal;
-        return (
-          <button
-            key={value}
-            type="button"
-            disabled={pending}
-            onClick={() => onSelect(value)}
-            className={`min-touch rounded-xl border text-sm font-semibold transition-colors disabled:opacity-60 ${
-              active
-                ? "border-coral bg-coral text-white"
-                : "border-border bg-surface text-ink"
-            }`}
-          >
-            {value}
-          </button>
-        );
-      })}
-    </div>
+    <ToggleGroup
+      className="mt-3 grid w-full grid-cols-7 gap-2"
+      variant="outline"
+      size="default"
+      disabled={pending}
+      value={[String(goal)]}
+      onValueChange={(next) => {
+        const raw = next[0];
+        if (!raw) return;
+        const n = Number(raw);
+        if (n >= 1 && n <= 7) onSelect(n);
+      }}
+    >
+      {GOAL_OPTIONS.map((value) => (
+        <ToggleGroupItem key={value} value={String(value)}>
+          {value}
+        </ToggleGroupItem>
+      ))}
+    </ToggleGroup>
   );
 }
 
@@ -59,26 +59,26 @@ function NichePicker({
   const { pending } = useFormStatus();
 
   return (
-    <div className="mt-3 flex flex-col gap-2">
-      {NICHES.map((value) => {
-        const active = value === niche;
-        return (
-          <button
-            key={value}
-            type="button"
-            disabled={pending}
-            onClick={() => onSelect(value)}
-            className={`min-touch rounded-xl border px-3 py-2.5 text-left text-sm font-semibold transition-colors disabled:opacity-60 ${
-              active
-                ? "border-coral bg-coral text-white"
-                : "border-border bg-surface text-ink"
-            }`}
-          >
-            {value}
-          </button>
-        );
-      })}
-    </div>
+    <ToggleGroup
+      className="mt-3 w-full"
+      orientation="vertical"
+      variant="outline"
+      size="lg"
+      disabled={pending}
+      value={niche ? [niche] : []}
+      onValueChange={(next) => {
+        const value = next[0];
+        if (value && NICHES.includes(value as Niche)) {
+          onSelect(value as Niche);
+        }
+      }}
+    >
+      {NICHES.map((value) => (
+        <ToggleGroupItem key={value} value={value}>
+          {value}
+        </ToggleGroupItem>
+      ))}
+    </ToggleGroup>
   );
 }
 

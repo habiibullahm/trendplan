@@ -7,8 +7,8 @@ import {
   type NicheActionState,
 } from "@/features/auth/actions/onboarding";
 import { Button } from "@/components/ui/button";
-import { ChipButton } from "@/components/ui/chip-button";
 import { Modal } from "@/components/ui/modal";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { useActionToasts } from "@/hooks/use-action-toasts";
 import { NICHES, resolveNiche, type Niche } from "@/lib/niches";
 
@@ -38,26 +38,26 @@ function NichePicker({
   const { pending } = useFormStatus();
 
   return (
-    <div className="flex flex-col gap-2">
-      {NICHES.map((value) => {
-        const active = value === niche;
-        return (
-          <button
-            key={value}
-            type="button"
-            disabled={pending}
-            onClick={() => onSelect(value)}
-            className={`min-touch rounded-xl border px-3 py-2.5 text-left text-sm font-semibold transition-colors disabled:opacity-60 ${
-              active
-                ? "border-coral bg-coral text-white"
-                : "border-border bg-paper text-ink"
-            }`}
-          >
-            {value}
-          </button>
-        );
-      })}
-    </div>
+    <ToggleGroup
+      className="w-full"
+      orientation="vertical"
+      variant="outline"
+      size="lg"
+      disabled={pending}
+      value={[niche]}
+      onValueChange={(next) => {
+        const value = next[0];
+        if (value && NICHES.includes(value as Niche)) {
+          onSelect(value as Niche);
+        }
+      }}
+    >
+      {NICHES.map((value) => (
+        <ToggleGroupItem key={value} value={value}>
+          {value}
+        </ToggleGroupItem>
+      ))}
+    </ToggleGroup>
   );
 }
 
@@ -88,8 +88,9 @@ export function AkunNicheEditor({ niche }: { niche: string }) {
           <span className="truncate text-sm font-semibold text-ink">
             {current}
           </span>
-          <ChipButton
+          <Button
             variant="ghost"
+            size="sm"
             disabled={pending}
             onClick={() => {
               setSelected(current);
@@ -97,7 +98,7 @@ export function AkunNicheEditor({ niche }: { niche: string }) {
             }}
           >
             Ubah
-          </ChipButton>
+          </Button>
         </div>
       </div>
 

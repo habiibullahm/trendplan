@@ -7,8 +7,8 @@ import {
   type WeeklyGoalActionState,
 } from "@/features/auth/actions/onboarding";
 import { Button } from "@/components/ui/button";
-import { ChipButton } from "@/components/ui/chip-button";
 import { Modal } from "@/components/ui/modal";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { useActionToasts } from "@/hooks/use-action-toasts";
 
 const GOAL_OPTIONS = [1, 2, 3, 4, 5, 6, 7] as const;
@@ -38,26 +38,25 @@ function GoalPicker({
   const { pending } = useFormStatus();
 
   return (
-    <div className="grid grid-cols-7 gap-2">
-      {GOAL_OPTIONS.map((value) => {
-        const active = value === goal;
-        return (
-          <button
-            key={value}
-            type="button"
-            disabled={pending}
-            onClick={() => onSelect(value)}
-            className={`min-touch rounded-xl border text-sm font-semibold transition-colors disabled:opacity-60 ${
-              active
-                ? "border-coral bg-coral text-white"
-                : "border-border bg-paper text-ink"
-            }`}
-          >
-            {value}
-          </button>
-        );
-      })}
-    </div>
+    <ToggleGroup
+      className="grid w-full grid-cols-7 gap-2"
+      variant="outline"
+      size="default"
+      disabled={pending}
+      value={[String(goal)]}
+      onValueChange={(next) => {
+        const raw = next[0];
+        if (!raw) return;
+        const n = Number(raw);
+        if (n >= 1 && n <= 7) onSelect(n);
+      }}
+    >
+      {GOAL_OPTIONS.map((value) => (
+        <ToggleGroupItem key={value} value={String(value)}>
+          {value}
+        </ToggleGroupItem>
+      ))}
+    </ToggleGroup>
   );
 }
 
@@ -85,8 +84,9 @@ export function AkunGoalEditor({ weeklyGoal }: { weeklyGoal: number }) {
         <span className="text-sm text-ink-muted">Target / minggu</span>
         <div className="flex items-center gap-2">
           <span className="text-sm font-semibold text-ink">{weeklyGoal} ide</span>
-          <ChipButton
+          <Button
             variant="ghost"
+            size="sm"
             disabled={pending}
             onClick={() => {
               setGoal(weeklyGoal);
@@ -94,7 +94,7 @@ export function AkunGoalEditor({ weeklyGoal }: { weeklyGoal: number }) {
             }}
           >
             Ubah
-          </ChipButton>
+          </Button>
         </div>
       </div>
 

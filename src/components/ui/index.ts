@@ -5,9 +5,9 @@ export type {
   ButtonWidth,
 } from "@/components/ui/button";
 export { ButtonLink } from "@/components/ui/button-link";
-export { ChipButton } from "@/components/ui/chip-button";
-export type { ChipVariant, ChipWidth } from "@/components/ui/chip-button";
 export { Badge } from "@/components/ui/badge";
+export { Toggle, toggleVariants } from "@/components/ui/toggle";
+export { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 export { EmptyState } from "@/components/ui/empty-state";
 export { Modal } from "@/components/ui/modal";
 export type { ModalSize } from "@/components/ui/modal";

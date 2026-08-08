@@ -9,6 +9,7 @@ import {
 } from "@/features/planner/components/trend-media";
 import { FadeIn, Stagger } from "@/components/motion";
 import { EmptyState } from "@/components/ui/empty-state";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { FORMAT_LABEL } from "@/lib/labels";
 import { NICHES, type Niche } from "@/lib/niches";
 
@@ -39,25 +40,27 @@ export function TrenFeed({
 
   return (
     <div>
-      <div
-        className="tp-scroll-x flex gap-2 pb-1"
-        role="group"
+      <ToggleGroup
+        className="tp-scroll-x w-full max-w-full pb-1"
+        variant="outline"
+        size="sm"
         aria-label="Filter niche"
+        value={[filter]}
+        onValueChange={(next) => {
+          const value = next[0];
+          if (!value) return;
+          if (value === "all" || NICHES.includes(value as Niche)) {
+            setFilter(value as Filter);
+          }
+        }}
       >
-        <FilterChip
-          label="Semua"
-          active={filter === "all"}
-          onClick={() => setFilter("all")}
-        />
+        <ToggleGroupItem value="all">Semua</ToggleGroupItem>
         {NICHES.map((niche) => (
-          <FilterChip
-            key={niche}
-            label={niche}
-            active={filter === niche}
-            onClick={() => setFilter(niche)}
-          />
+          <ToggleGroupItem key={niche} value={niche}>
+            {niche}
+          </ToggleGroupItem>
         ))}
-      </div>
+      </ToggleGroup>
 
       <Stagger as="ul" className="mt-6 space-y-4">
         {visible.map((trend) => (
@@ -113,27 +116,3 @@ export function TrenFeed({
   );
 }
 
-function FilterChip({
-  label,
-  active,
-  onClick,
-}: {
-  label: string;
-  active: boolean;
-  onClick: () => void;
-}) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      aria-pressed={active}
-      className={`min-touch shrink-0 rounded-xl border px-3 text-xs font-semibold transition-colors ${
-        active
-          ? "border-coral bg-coral text-white"
-          : "border-border bg-surface text-ink"
-      }`}
-    >
-      {label}
-    </button>
-  );
-}

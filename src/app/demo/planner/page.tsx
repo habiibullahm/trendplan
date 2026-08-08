@@ -1,7 +1,6 @@
 import { ReadOnlyPlannerBoard } from "@/features/planner/components/planner-board";
 import { Button } from "@/components/ui/button";
 import { ButtonLink } from "@/components/ui/button-link";
-import { ChipButton } from "@/components/ui/chip-button";
 import { DEMO_ITEMS, demoWeekLabel } from "@/features/planner/lib/demo-planner";
 import {
   formatMonthLabel,
@@ -27,7 +26,9 @@ export default function DemoPlannerPage() {
           <p className="text-sm font-medium text-ink">
             Target 5 · isi {DEMO_ITEMS.length}
           </p>
-          <ChipButton disabled>Salin minggu</ChipButton>
+          <Button type="button" variant="secondary" size="sm" disabled>
+            Salin minggu
+          </Button>
         </div>
       </div>
 
@@ -86,9 +87,9 @@ export default function DemoPlannerPage() {
               #coupledate #dateideas #tiktok
             </p>
           </div>
-          <ChipButton disabled className="bg-paper">
+          <Button type="button" variant="secondary" size="sm" disabled>
             Salin
-          </ChipButton>
+          </Button>
         </div>
 
         <p className="mt-4 text-sm text-ink-muted">
