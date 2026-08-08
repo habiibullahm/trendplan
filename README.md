@@ -10,6 +10,7 @@ Perencanaan konten TikTok mingguan berbasis tren — niche **Couple Date Ideas**
 - Auth.js (credentials + JWT)
 - Prisma 7 + PostgreSQL (`pg` adapter)
 - Sonner (toast feedback)
+- **shadcn/ui** (initialized; `Card` / `Separator` / `Skeleton` available). Most forms still use custom controls in `src/components/ui` (`Button`, `Input`, `Modal`, …). Prefer shadcn primitives for new UI where they exist; brand tokens (`coral`, `paper`, `ink`) map to shadcn CSS variables.
 - Deploy: Vercel + Neon (Vercel Postgres / Marketplace)
 - Vercel Blob (foto profil Akun)
 
@@ -24,6 +25,10 @@ Perencanaan konten TikTok mingguan berbasis tren — niche **Couple Date Ideas**
 - Akun: identitas, foto profil (unggah), target mingguan (ubah), pintasan Riwayat/Rekomendasi, keluar
 - Demo baca saja di `/demo` (embed portfolio)
 - Toast sukses/error (Bahasa Indonesia)
+
+## Roadmap
+
+- **AI bantu rencana konten** — saran ide, caption, dan hashtag dari tren/niche user (bukan ganti planner manual; membantu mengisi slot mingguan lebih cepat). Arah teknis kasar: streaming UI (mis. Vercel AI SDK), tool calling ke data tren/planner, tetap UI ringan (Tailwind / komponen sendiri).
 
 ## Setup lokal
 

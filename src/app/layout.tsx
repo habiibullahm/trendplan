@@ -27,9 +27,9 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
     <html
       lang="id"
       suppressHydrationWarning
-      className={`${dmSans.variable} ${fraunces.variable} h-full antialiased`}
+      className={`h-full ${dmSans.variable} ${fraunces.variable}`}
     >
-      <body className="min-h-full flex flex-col bg-paper text-ink font-sans">
+      <body className="flex min-h-full flex-col bg-paper font-sans text-ink antialiased">
         <ThemeScript />
         <ThemeProvider>
           {children}
