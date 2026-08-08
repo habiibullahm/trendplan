@@ -52,6 +52,12 @@ export function LoginForm() {
       </Button>
 
       <p className="text-center text-sm text-ink-muted">
+        <Link href="/forgot-password" className="font-semibold text-coral">
+          Lupa password?
+        </Link>
+      </p>
+
+      <p className="text-center text-sm text-ink-muted">
         Belum punya akun?{" "}
         <Link href="/register" className="font-semibold text-coral">
           Daftar
@@ -92,10 +98,10 @@ export function RegisterForm() {
           name="password"
           type="password"
           required
-          minLength={8}
-          maxLength={12}
+          minLength={10}
+          maxLength={128}
           autoComplete="new-password"
-          placeholder="8–12 karakter, huruf besar, angka, simbol"
+          placeholder="Minimal 10 karakter"
         />
       </FormField>
 

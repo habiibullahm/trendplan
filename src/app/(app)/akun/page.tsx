@@ -4,6 +4,7 @@ import { auth, signOut } from "@/auth";
 import { AkunAvatar } from "@/features/auth/components/akun-avatar";
 import { AkunGoalEditor } from "@/features/auth/components/akun-goal-editor";
 import { AkunNicheEditor } from "@/features/auth/components/akun-niche-editor";
+import { ChangePasswordForm } from "@/features/auth/components/change-password-form";
 import { LogoutButton } from "@/features/auth/components/logout-button";
 import { UpdateLog } from "@/features/auth/components/update-log";
 import { prisma } from "@/lib/prisma";
@@ -59,6 +60,15 @@ export default async function AkunPage() {
       </section>
 
       <hr className="mt-2 border-border" />
+
+      <section id="password" className="mt-2 scroll-mt-24">
+        <p className="text-sm font-semibold text-ink">Keamanan</p>
+        <div className="mt-1 divide-y divide-border">
+          <ChangePasswordForm />
+        </div>
+      </section>
+
+      <hr className="mt-6 border-border" />
 
       <section className="mt-4 space-y-3">
         <p className="text-sm font-semibold text-ink">Pintasan</p>

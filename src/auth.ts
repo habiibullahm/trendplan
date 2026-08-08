@@ -8,6 +8,11 @@ import {
   LOGIN_EMAIL_LIMIT,
   LOGIN_IP_LIMIT,
 } from "@/lib/auth-rate-limits";
+import {
+  dbSecurityClaims,
+  isPasswordVersionCurrent,
+} from "@/lib/auth-jwt-claims";
+import { passwordSchema } from "@/lib/auth-validation";
 import { checkRateLimit } from "@/lib/rate-limit";
 import { prisma } from "@/lib/prisma";
 
@@ -29,6 +34,9 @@ const DUMMY_PASSWORD_HASH =
  */
 const trustHost =
   process.env.AUTH_TRUST_HOST === "true" || process.env.VERCEL === "1";
+
+const baseJwt = authConfig.callbacks?.jwt;
+const baseSession = authConfig.callbacks?.session;
 
 export const { handlers, auth, signIn, signOut, unstable_update } = NextAuth({
   ...authConfig,
@@ -56,17 +64,79 @@ export const { handlers, auth, signIn, signOut, unstable_update } = NextAuth({
         if (!emailLimit.ok) return null;
 
         const user = await prisma.user.findUnique({ where: { email } });
-        const hash = user?.passwordHash ?? DUMMY_PASSWORD_HASH;
-        const valid = await compare(parsed.data.password, hash);
+        const storedHash = user?.passwordHash ?? DUMMY_PASSWORD_HASH;
+        const valid = await compare(parsed.data.password, storedHash);
         if (!user || !valid) return null;
+
+        const needsUpgrade = !passwordSchema.safeParse(parsed.data.password)
+          .success;
+        if (user.passwordNeedsUpgrade !== needsUpgrade) {
+          await prisma.user.update({
+            where: { id: user.id },
+            data: { passwordNeedsUpgrade: needsUpgrade },
+          });
+        }
 
         return {
           id: user.id,
           email: user.email,
           name: user.name,
           onboardingComplete: user.onboardingComplete,
+          emailVerified: user.emailVerified,
+          passwordNeedsUpgrade: needsUpgrade,
+          passwordVersion: user.passwordVersion,
         };
       },
     }),
   ],
+  callbacks: {
+    ...authConfig.callbacks,
+    async jwt(params) {
+      const token = baseJwt
+        ? await baseJwt(params)
+        : params.token;
+
+      if (!token) return token;
+
+      // Sign-in already stamped claims from authorize().
+      if (params.user) return token;
+      if (typeof token.id !== "string") return token;
+
+      // Per-request passwordVersion check is intentional (invalidates sessions after
+      // reset). Only load full security claims when refreshing via unstable_update.
+      if (params.trigger === "update") {
+        const row = await prisma.user.findUnique({
+          where: { id: token.id },
+          select: {
+            onboardingComplete: true,
+            passwordNeedsUpgrade: true,
+            passwordVersion: true,
+            emailVerified: true,
+          },
+        });
+        if (!row) return null;
+        Object.assign(token, dbSecurityClaims(row));
+        return token;
+      }
+
+      const row = await prisma.user.findUnique({
+        where: { id: token.id },
+        select: { passwordVersion: true },
+      });
+      if (!row) return null;
+
+      if (!isPasswordVersionCurrent(token.passwordVersion, row.passwordVersion)) {
+        return null;
+      }
+
+      return token;
+    },
+    async session(params) {
+      if (!params.token?.id) {
+        return { ...params.session, user: undefined as never };
+      }
+      if (baseSession) return baseSession(params);
+      return params.session;
+    },
+  },
 });

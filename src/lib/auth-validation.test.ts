@@ -1,20 +1,51 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
-import { passwordSchema } from "./auth-validation";
+import {
+  passwordSchema,
+  resetPasswordSchema,
+  requestPasswordResetSchema,
+} from "./auth-validation";
 
 describe("passwordSchema", () => {
-  it("accepts 8–12 chars with upper, lower, digit, symbol", () => {
-    assert.equal(passwordSchema.safeParse("Abcd12!@").success, true);
+  it("accepts length-only passwords of 10–128 chars", () => {
+    assert.equal(passwordSchema.safeParse("password12").success, true);
+    assert.equal(passwordSchema.safeParse("a".repeat(10)).success, true);
   });
 
   it("rejects too short / too long", () => {
-    assert.equal(passwordSchema.safeParse("Ab1!xyz").success, false); // 7
-    assert.equal(passwordSchema.safeParse("Abcd12!@xyzZZ").success, false); // 13
+    assert.equal(passwordSchema.safeParse("short").success, false);
+    assert.equal(passwordSchema.safeParse("a".repeat(9)).success, false);
+    assert.equal(passwordSchema.safeParse("a".repeat(129)).success, false);
   });
+});
 
-  it("rejects missing uppercase, digit, or symbol", () => {
-    assert.equal(passwordSchema.safeParse("abcd12!@").success, false);
-    assert.equal(passwordSchema.safeParse("Abcdef!@").success, false);
-    assert.equal(passwordSchema.safeParse("Abcd1234").success, false);
+describe("requestPasswordResetSchema", () => {
+  it("requires a valid email", () => {
+    assert.equal(
+      requestPasswordResetSchema.safeParse({ email: "a@b.co" }).success,
+      true,
+    );
+    assert.equal(
+      requestPasswordResetSchema.safeParse({ email: "nope" }).success,
+      false,
+    );
+  });
+});
+
+describe("resetPasswordSchema", () => {
+  it("requires matching passwords and a token", () => {
+    const ok = resetPasswordSchema.safeParse({
+      token: "abc",
+      newPassword: "password12",
+      confirmPassword: "password12",
+    });
+    assert.equal(ok.success, true);
+
+    const mismatch = resetPasswordSchema.safeParse({
+      token: "abc",
+      newPassword: "password12",
+      confirmPassword: "password99",
+    });
+    assert.equal(mismatch.success, false);
   });
 });

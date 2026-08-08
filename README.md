@@ -51,6 +51,12 @@ AUTH_TRUST_HOST="true"
 
 Rate limit login/register disimpan di Postgres (`RateLimitBucket`) supaya berlaku lintas instance serverless (bukan hanya in-memory per proses).
 
+### Auth hardening (password + email)
+
+- **Ubah password** di Akun; akun dengan password lama mendapat nudge non-blocking.
+- **Lupa password** → `/forgot-password` (email via Resend, atau log URL di console jika `RESEND_API_KEY` kosong).
+- **Verifikasi email**: default wajib di production. Lokal set `EMAIL_VERIFICATION_REQUIRED=false`. Soft-gate ke `/verify-email` setelah masuk sampai email terverifikasi.
+
 Buat database/user `trendplan` di Postgres lokal jika belum ada.
 
 ### 3. Migrate + seed
@@ -122,6 +128,9 @@ TARGET_DATABASE_URL="postgresql://...@....neon.tech/neondb?sslmode=require" npm 
 | `AUTH_SECRET` | `openssl rand -base64 32` |
 | `AUTH_URL` | `https://trendplan.vercel.app` (URL kanonis; lebih aman daripada mengandalkan Host header) |
 | `AUTH_TRUST_HOST` | `true` (opsional di Vercel — `VERCEL=1` sudah mengaktifkan `trustHost`) |
+| `EMAIL_FROM` | `TrendPlan <noreply@yourdomain.com>` |
+| `RESEND_API_KEY` | (Resend — reset/verifikasi email; tanpa ini URL di-log di server) |
+| `EMAIL_VERIFICATION_REQUIRED` | `true` di production (lokal boleh `false`) |
 | `BLOB_READ_WRITE_TOKEN` | (dari Vercel Blob store) |
 
 4. Deploy — build menjalankan `prisma migrate deploy` (`vercel.json`).

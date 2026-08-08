@@ -23,17 +23,43 @@ enum ContentStatus {
 }
 
 model User {
-  id                 String     @id @default(cuid())
-  email              String     @unique
-  passwordHash       String
-  name               String?
-  imageUrl           String?
-  niche              String     @default("Couple Date Ideas")
-  weeklyGoal         Int        @default(3)
-  onboardingComplete Boolean    @default(false)
-  createdAt          DateTime   @default(now())
-  updatedAt          DateTime   @updatedAt
-  weekPlans          WeekPlan[]
+  id                    String      @id @default(cuid())
+  email                 String      @unique
+  passwordHash          String
+  name                  String?
+  imageUrl              String?
+  niche                 String      @default("Couple Date Ideas")
+  weeklyGoal            Int         @default(3)
+  onboardingComplete    Boolean     @default(false)
+  /** True when password does not meet current passwordSchema (legacy accounts). */
+  passwordNeedsUpgrade  Boolean     @default(true)
+  /** Null until email verification succeeds (or skipped in local dev). */
+  emailVerified         DateTime?
+  /** Bumped on password change/reset so old JWTs are rejected. */
+  passwordVersion       Int         @default(0)
+  createdAt             DateTime    @default(now())
+  updatedAt             DateTime    @updatedAt
+  weekPlans             WeekPlan[]
+  authTokens            AuthToken[]
+}
+
+enum AuthTokenType {
+  PASSWORD_RESET
+  EMAIL_VERIFY
+}
+
+model AuthToken {
+  id        String        @id @default(cuid())
+  userId    String
+  type      AuthTokenType
+  tokenHash String
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime      @default(now())
+  user      User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([tokenHash])
+  @@index([userId, type])
 }
 
 model Trend {
