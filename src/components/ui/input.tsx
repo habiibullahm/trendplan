@@ -3,6 +3,13 @@ import { fieldClassName } from "@/components/ui/field-styles";
 
 type Props = InputHTMLAttributes<HTMLInputElement>;
 
+/** TrendPlan input — native element, shadcn-compatible field chrome. */
 export function Input({ className, ...props }: Props) {
-  return <input className={fieldClassName(className)} {...props} />;
+  return (
+    <input
+      data-slot="input"
+      className={fieldClassName(className, "input")}
+      {...props}
+    />
+  );
 }

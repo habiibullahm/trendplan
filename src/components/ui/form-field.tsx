@@ -4,7 +4,11 @@ import { cn } from "@/lib/cn";
 
 export function FieldError({ messages }: { messages?: string[] }) {
   if (!messages?.length) return null;
-  return <p className="mt-1 text-sm text-coral">{messages[0]}</p>;
+  return (
+    <p data-slot="field-error" className="mt-1 text-sm text-coral">
+      {messages[0]}
+    </p>
+  );
 }
 
 type FormFieldProps = {
