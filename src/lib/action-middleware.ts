@@ -14,15 +14,38 @@ import {
   type RateLimitOptions,
 } from "@/lib/rate-limit";
 
+/**
+ * Best-effort client IP for rate limits.
+ *
+ * Prefer platform-set headers. Only trust generic X-Forwarded-For when the
+ * deployment is known to overwrite it (Vercel) or TRUST_PROXY_IP / AUTH_TRUST_HOST
+ * is explicitly enabled for a reverse proxy that strips client-supplied values.
+ */
 export async function getClientIp(): Promise<string> {
   const h = await headers();
-  const forwarded = h.get("x-forwarded-for");
-  if (forwarded) {
-    const first = forwarded.split(",")[0]?.trim();
+
+  const vercelFwd = h.get("x-vercel-forwarded-for");
+  if (vercelFwd) {
+    const first = vercelFwd.split(",")[0]?.trim();
     if (first) return first;
   }
+
+  const trustForwarded =
+    process.env.VERCEL === "1" ||
+    process.env.TRUST_PROXY_IP === "true" ||
+    process.env.AUTH_TRUST_HOST === "true";
+
+  if (trustForwarded) {
+    const forwarded = h.get("x-forwarded-for");
+    if (forwarded) {
+      const first = forwarded.split(",")[0]?.trim();
+      if (first) return first;
+    }
+  }
+
   const realIp = h.get("x-real-ip")?.trim();
   if (realIp) return realIp;
+
   // Avoid a single shared "unknown" bucket: isolate by coarse UA fingerprint.
   const ua = h.get("user-agent")?.slice(0, 80) ?? "ua";
   return `unknown:${ua}`;

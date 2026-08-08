@@ -14,14 +14,13 @@ import {
   getClientIp,
   withValidation,
 } from "@/lib/action-middleware";
+import {
+  REGISTER_EMAIL_LIMIT,
+  REGISTER_IP_LIMIT,
+} from "@/lib/auth-rate-limits";
 import { loginSchema, registerSchema } from "@/lib/auth-validation";
 import { DEFAULT_NICHE } from "@/lib/niches";
 import { prisma } from "@/lib/prisma";
-
-const LOGIN_IP_LIMIT = { limit: 10, windowMs: 15 * 60 * 1000 };
-const LOGIN_EMAIL_LIMIT = { limit: 10, windowMs: 15 * 60 * 1000 };
-const REGISTER_IP_LIMIT = { limit: 5, windowMs: 60 * 60 * 1000 };
-const REGISTER_EMAIL_LIMIT = { limit: 5, windowMs: 60 * 60 * 1000 };
 
 export type AuthFormState = ActionResult;
 
@@ -87,12 +86,7 @@ export async function loginAction(
     }),
     async (data) => {
       const email = data.email.toLowerCase().trim();
-      const ip = await getClientIp();
-      const limited = await assertRateLimits(
-        { key: `login:ip:${ip}`, options: LOGIN_IP_LIMIT },
-        { key: `login:email:${email}`, options: LOGIN_EMAIL_LIMIT },
-      );
-      if (limited) return limited;
+      // Rate limits enforced in authorize() so /api/auth/callback is covered too.
 
       const user = await prisma.user.findUnique({
         where: { email },
