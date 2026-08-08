@@ -23,6 +23,8 @@
     "smoke": "tsx scripts/smoke-happy-path.ts",
     "smoke:modal": "tsx scripts/smoke-modal-ui.ts",
     "test": "tsx --import ./scripts/stub-server-only.ts --test src/**/*.test.ts",
+    "test:e2e": "playwright test",
+    "test:e2e:ui": "playwright test --ui",
     "prepare": "husky"
   },
   "lint-staged": {
@@ -58,6 +60,7 @@
     "zod": "^4.4.3"
   },
   "devDependencies": {
+    "@playwright/test": "^1.62.1",
     "@tailwindcss/postcss": "^4",
     "@types/bcryptjs": "^2.4.6",
     "@types/node": "^20",

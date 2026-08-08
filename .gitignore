@@ -12,6 +12,11 @@
 
 # testing
 /coverage
+/test-results/
+/playwright-report/
+/blob-report/
+.playwright/
+.env.e2e
 
 # next.js
 /.next/
@@ -34,6 +39,7 @@ yarn-error.log*
 .env
 .env*.local
 !.env.example
+!.env.e2e.example
 
 # sqlite
 /prisma/dev.db
