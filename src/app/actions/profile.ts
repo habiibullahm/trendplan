@@ -2,10 +2,10 @@
 
 import { del, put } from "@vercel/blob";
 import { revalidatePath } from "next/cache";
-import { auth } from "@/auth";
 import { AVATAR_MAX_BYTES } from "@/features/auth/lib/avatar-image";
 import { prepareAvatarUpload } from "@/features/auth/lib/prepare-avatar-upload";
 import { prisma } from "@/lib/prisma";
+import { requireAppUserAction } from "@/lib/require-app-user";
 
 export type ProfileImageActionState = {
   error?: string;
@@ -41,9 +41,9 @@ export async function uploadProfileImageAction(
   formData: FormData,
 ): Promise<ProfileImageActionState> {
   void prev;
-  const session = await auth();
-  if (!session?.user?.id) {
-    return { error: "Sesi berakhir. Masuk lagi." };
+  const gated = await requireAppUserAction();
+  if (!gated.ok) {
+    return { error: gated.result.error ?? "Sesi berakhir. Masuk lagi." };
   }
 
   if (!process.env.BLOB_READ_WRITE_TOKEN) {
@@ -69,7 +69,7 @@ export async function uploadProfileImageAction(
     return { error: "Format harus JPEG, PNG, atau WebP." };
   }
 
-  const userId = session.user.id;
+  const userId = gated.userId;
   const pathname = `avatars/${userId}/${crypto.randomUUID()}.${prepared.ext}`;
 
   const existing = await prisma.user.findUnique({
@@ -120,12 +120,12 @@ export async function removeProfileImageAction(
 ): Promise<ProfileImageActionState> {
   void prev;
   void formData;
-  const session = await auth();
-  if (!session?.user?.id) {
-    return { error: "Sesi berakhir. Masuk lagi." };
+  const gated = await requireAppUserAction();
+  if (!gated.ok) {
+    return { error: gated.result.error ?? "Sesi berakhir. Masuk lagi." };
   }
 
-  const userId = session.user.id;
+  const userId = gated.userId;
   const existing = await prisma.user.findUnique({
     where: { id: userId },
     select: { imageUrl: true },

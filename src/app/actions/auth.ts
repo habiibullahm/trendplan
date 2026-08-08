@@ -3,6 +3,7 @@
 import { hash } from "bcryptjs";
 import { AuthError } from "next-auth";
 import { signIn } from "@/auth";
+import { sendVerificationEmailForUser } from "@/app/actions/email-verification";
 import {
   ActionErrors,
   actionError,
@@ -14,6 +15,7 @@ import {
   getClientIp,
   withValidation,
 } from "@/lib/action-middleware";
+import { isEmailVerificationRequired } from "@/lib/auth-env";
 import {
   REGISTER_EMAIL_LIMIT,
   REGISTER_IP_LIMIT,
@@ -51,11 +53,11 @@ export async function registerAction(
       });
 
       if (existing) {
-        // Same work factor as create path — no sign-in (avoids redirect/error oracle).
         await hash(data.password, 10);
       } else {
         const passwordHash = await hash(data.password, 10);
-        await prisma.user.create({
+        const verificationRequired = isEmailVerificationRequired();
+        const user = await prisma.user.create({
           data: {
             email,
             name: data.name,
@@ -63,11 +65,20 @@ export async function registerAction(
             niche: DEFAULT_NICHE,
             weeklyGoal: 3,
             onboardingComplete: false,
+            passwordNeedsUpgrade: false,
+            emailVerified: verificationRequired ? null : new Date(),
           },
         });
+
+        if (verificationRequired) {
+          try {
+            await sendVerificationEmailForUser(user.id, user.email);
+          } catch {
+            console.error("[register] verification mail failed", user.id);
+          }
+        }
       }
 
-      // Identical client outcome whether the email was new or already taken.
       return actionSuccess(ActionErrors.registerNeutral);
     },
   );
@@ -90,14 +101,22 @@ export async function loginAction(
 
       const user = await prisma.user.findUnique({
         where: { email },
-        select: { onboardingComplete: true },
+        select: { onboardingComplete: true, emailVerified: true },
       });
+
+      const verificationRequired = isEmailVerificationRequired();
+      const needsVerify =
+        verificationRequired && user && !user.emailVerified;
 
       try {
         await signIn("credentials", {
           email,
           password: data.password,
-          redirectTo: user?.onboardingComplete ? "/dashboard" : "/onboarding",
+          redirectTo: needsVerify
+            ? "/verify-email"
+            : user?.onboardingComplete
+              ? "/dashboard"
+              : "/onboarding",
         });
       } catch (error) {
         if (error instanceof AuthError) {

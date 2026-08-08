@@ -14,7 +14,19 @@ export const ActionErrors = {
   invalid: "Data tidak valid.",
   generic: "Terjadi kesalahan. Coba lagi.",
   loginFailed: "Email atau password salah.",
-  registerNeutral: "Jika email tersedia, akun sudah dibuat. Silakan masuk.",
+  registerNeutral:
+    "Jika email tersedia, akun sudah dibuat. Cek email untuk verifikasi, lalu masuk.",
+  resetRequested:
+    "Jika email terdaftar, kami mengirim tautan reset password.",
+  resetInvalid: "Tautan reset tidak valid atau sudah kedaluwarsa.",
+  resetSuccess: "Password berhasil diperbarui. Silakan masuk.",
+  passwordChanged: "Password berhasil diperbarui.",
+  currentPasswordWrong: "Password saat ini salah.",
+  verifyInvalid: "Tautan verifikasi tidak valid atau sudah kedaluwarsa.",
+  verifySuccess: "Email berhasil diverifikasi.",
+  verifySent: "Jika memungkinkan, kami mengirim ulang email verifikasi.",
+  emailUnverified: "Verifikasi email dulu sebelum lanjut.",
+  sessionStale: "Sesi tidak valid. Masuk lagi.",
 } as const;
 
 export function actionError(message: string): ActionResult {

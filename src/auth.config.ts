@@ -1,4 +1,5 @@
 import type { NextAuthConfig } from "next-auth";
+import { isEmailVerificationRequired } from "@/lib/auth-env";
 
 export const authConfig = {
   pages: {
@@ -31,7 +32,13 @@ export const authConfig = {
     authorized({ auth, request: { nextUrl } }) {
       const isLoggedIn = !!auth?.user;
       const path = nextUrl.pathname;
-      const isAuthPage = path === "/login" || path === "/register";
+      const isAuthPage =
+        path === "/login" ||
+        path === "/register" ||
+        path === "/forgot-password";
+      // Public so email links work while logged out or with a stale session.
+      const isResetPage = path.startsWith("/reset-password");
+      const isVerifyPage = path.startsWith("/verify-email");
       const isProtected =
         path.startsWith("/dashboard") ||
         path.startsWith("/onboarding") ||
@@ -41,8 +48,28 @@ export const authConfig = {
         path.startsWith("/riwayat") ||
         path.startsWith("/akun");
 
-      if (isAuthPage) {
+      // Reset links must work even if the user still has a session cookie.
+      if (isResetPage) return true;
+
+      if (isAuthPage || isVerifyPage) {
         if (isLoggedIn) {
+          const needsVerify =
+            isEmailVerificationRequired() && !auth.user?.emailVerified;
+
+          if (isVerifyPage) {
+            // Stay on verify until done; leave once verified.
+            if (!needsVerify) {
+              const done = Boolean(auth.user?.onboardingComplete);
+              return Response.redirect(
+                new URL(done ? "/dashboard" : "/onboarding", nextUrl),
+              );
+            }
+            return true;
+          }
+
+          if (needsVerify) {
+            return Response.redirect(new URL("/verify-email", nextUrl));
+          }
           const done = Boolean(auth.user?.onboardingComplete);
           return Response.redirect(
             new URL(done ? "/dashboard" : "/onboarding", nextUrl),
@@ -53,6 +80,13 @@ export const authConfig = {
 
       if (isProtected) {
         if (!isLoggedIn) return false;
+
+        const needsVerify =
+          isEmailVerificationRequired() && !auth.user?.emailVerified;
+        if (needsVerify) {
+          return Response.redirect(new URL("/verify-email", nextUrl));
+        }
+
         const done = Boolean(auth.user?.onboardingComplete);
         if (!done && !path.startsWith("/onboarding")) {
           return Response.redirect(new URL("/onboarding", nextUrl));
@@ -64,13 +98,18 @@ export const authConfig = {
 
       return true;
     },
-    jwt({ token, user, trigger, session }) {
+    jwt({ token, user }) {
+      // Initial sign-in only. Session "update" must not trust client payload —
+      // Node jwt callback in auth.ts reloads security claims from the DB.
       if (user) {
         token.id = user.id;
         token.onboardingComplete = Boolean(user.onboardingComplete);
-      }
-      if (trigger === "update" && session?.user) {
-        token.onboardingComplete = Boolean(session.user.onboardingComplete);
+        token.passwordNeedsUpgrade = Boolean(user.passwordNeedsUpgrade);
+        token.passwordVersion =
+          typeof user.passwordVersion === "number" ? user.passwordVersion : 0;
+        token.emailVerified = user.emailVerified
+          ? new Date(user.emailVerified).toISOString()
+          : null;
       }
       return token;
     },
@@ -78,6 +117,11 @@ export const authConfig = {
       if (session.user) {
         session.user.id = token.id as string;
         session.user.onboardingComplete = Boolean(token.onboardingComplete);
+        session.user.passwordNeedsUpgrade = Boolean(token.passwordNeedsUpgrade);
+        session.user.passwordVersion =
+          typeof token.passwordVersion === "number" ? token.passwordVersion : 0;
+        (session.user as { emailVerified: string | null }).emailVerified =
+          typeof token.emailVerified === "string" ? token.emailVerified : null;
       }
       return session;
     },

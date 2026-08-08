@@ -152,10 +152,10 @@ export async function getRecommendations(
 }
 
 export async function requireUserId() {
-  const { auth } = await import("@/auth");
-  const session = await auth();
-  if (!session?.user?.id) {
+  const { gateAppUser } = await import("@/lib/require-app-user");
+  const gate = await gateAppUser();
+  if (!gate.ok) {
     throw new Error("Unauthorized");
   }
-  return session.user.id;
+  return gate.userId;
 }
