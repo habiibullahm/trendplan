@@ -19,6 +19,7 @@ export const metadata: Metadata = {
   title: "TrendPlan",
   description:
     "Perencanaan konten TikTok mingguan berbasis tren — niche Couple Date Ideas",
+  applicationName: "TrendPlan",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
