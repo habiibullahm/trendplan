@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { scrollWindowTop } from "@/components/layout/scroll-to-top";
 
 const primaryNav = [
   { href: "/dashboard", label: "Beranda" },
@@ -51,6 +52,9 @@ export function TopNav({ basePath = "" }: { basePath?: string }) {
               <Link
                 key={item.href}
                 href={href}
+                onClick={() => {
+                  if (item.href === "/tren") scrollWindowTop();
+                }}
                 className={`min-touch inline-flex items-center justify-center rounded-xl px-4 text-sm font-semibold transition-colors duration-200 ${
                   active
                     ? "bg-coral/10 text-coral"
@@ -83,6 +87,9 @@ export function BottomNav({ basePath = "" }: { basePath?: string }) {
             <li key={item.href}>
               <Link
                 href={href}
+                onClick={() => {
+                  if (item.href === "/tren") scrollWindowTop();
+                }}
                 className={`min-touch flex flex-col items-center justify-center gap-0.5 px-1 text-xs font-semibold transition-colors duration-200 ${
                   active ? "text-coral" : "text-ink-muted"
                 }`}
