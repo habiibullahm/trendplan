@@ -1,24 +1,22 @@
 "use client";
 
+import type { ReactNode } from "react";
 import {
-  useEffect,
-  useId,
-  useLayoutEffect,
-  useRef,
-  useSyncExternalStore,
-  type ReactNode,
-} from "react";
-import { createPortal } from "react-dom";
-import { motion } from "motion/react";
-import { usePrefersReducedMotion } from "@/components/motion";
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import {
+  modalContentClassName,
+  modalFinalFocus,
+  planModalOpenChange,
+  type ModalSizeClass,
+} from "@/components/ui/modal-behavior";
 import { cn } from "@/lib/cn";
 
-const SIZE = {
-  xs: "max-w-xs",
-  sm: "max-w-sm",
-} as const;
-
-export type ModalSize = keyof typeof SIZE;
+export type ModalSize = ModalSizeClass;
 
 type ModalProps = {
   open: boolean;
@@ -32,18 +30,21 @@ type ModalProps = {
   className?: string;
   /** Extra classes for the padded panel body (around children). */
   bodyClassName?: string;
-  /** Restore focus to the opener on close. Disable when chaining to a file picker. */
+  /**
+   * Restore focus to the opener on close.
+   * Disable when chaining to a file picker (`finalFocus={false}` on Dialog).
+   */
   restoreFocus?: boolean;
+  /**
+   * When false, Escape / backdrop dismiss is canceled at the Dialog layer
+   * (use while a form submit is pending). Default true.
+   */
+  allowClose?: boolean;
 };
-
-const emptySubscribe = () => () => {};
-
-const FOCUSABLE =
-  'a[href],button:not([disabled]),textarea:not([disabled]),input:not([disabled]),select:not([disabled]),[tabindex]:not([tabindex="-1"])';
 
 /**
  * Shared bottom-sheet (mobile) / centered panel (sm+) modal.
- * Owns backdrop dismiss, Escape, focus trap, scroll lock, portal, and a11y wiring.
+ * Composes shadcn Dialog for portal, focus trap, Escape, and scroll lock.
  */
 export function Modal({
   open,
@@ -56,137 +57,41 @@ export function Modal({
   className,
   bodyClassName,
   restoreFocus = true,
+  allowClose = true,
 }: ModalProps) {
-  const titleId = useId();
-  const descriptionId = useId();
-  const reduce = usePrefersReducedMotion();
-  const panelRef = useRef<HTMLDivElement>(null);
-  const onCloseRef = useRef(onClose);
-  const restoreFocusRef = useRef(restoreFocus);
-  const previousFocusRef = useRef<HTMLElement | null>(null);
-  const mounted = useSyncExternalStore(
-    emptySubscribe,
-    () => true,
-    () => false,
-  );
-
-  useLayoutEffect(() => {
-    onCloseRef.current = onClose;
-    restoreFocusRef.current = restoreFocus;
-  }, [onClose, restoreFocus]);
-
-  useEffect(() => {
-    if (!open) return;
-
-    previousFocusRef.current =
-      document.activeElement instanceof HTMLElement
-        ? document.activeElement
-        : null;
-
-    const prevOverflow = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
-
-    const panel = panelRef.current;
-    const focusables = panel
-      ? Array.from(panel.querySelectorAll<HTMLElement>(FOCUSABLE)).filter(
-          (el) => !el.hasAttribute("disabled") && el.tabIndex !== -1,
-        )
-      : [];
-    const initial = focusables[0] ?? panel;
-    initial?.focus();
-
-    function onKey(e: KeyboardEvent) {
-      if (e.key === "Escape") {
-        e.preventDefault();
-        onCloseRef.current();
-        return;
-      }
-      if (e.key !== "Tab" || !panelRef.current) return;
-
-      const nodes = Array.from(
-        panelRef.current.querySelectorAll<HTMLElement>(FOCUSABLE),
-      ).filter((el) => !el.hasAttribute("disabled") && el.tabIndex !== -1);
-
-      if (nodes.length === 0) {
-        e.preventDefault();
-        panelRef.current.focus();
-        return;
-      }
-
-      const first = nodes[0];
-      const last = nodes[nodes.length - 1];
-      const active = document.activeElement;
-
-      if (e.shiftKey && active === first) {
-        e.preventDefault();
-        last.focus();
-      } else if (!e.shiftKey && active === last) {
-        e.preventDefault();
-        first.focus();
-      }
-    }
-
-    window.addEventListener("keydown", onKey);
-    return () => {
-      document.body.style.overflow = prevOverflow;
-      window.removeEventListener("keydown", onKey);
-      if (restoreFocusRef.current) {
-        previousFocusRef.current?.focus?.();
-      }
-    };
-  }, [open]);
-
-  if (!open || !mounted) return null;
-
-  return createPortal(
-    <div
-      className="fixed inset-0 z-50 flex items-end justify-center p-4 sm:items-center"
-      role="presentation"
+  return (
+    <Dialog
+      open={open}
+      onOpenChange={(next, details) => {
+        const plan = planModalOpenChange(next, allowClose);
+        if (plan.action === "cancel") {
+          details.cancel();
+          return;
+        }
+        if (plan.action === "close") onClose();
+      }}
     >
-      <motion.div
-        aria-hidden
-        className="absolute inset-0 bg-ink/40"
-        initial={reduce ? false : { opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ duration: reduce ? 0 : 0.18 }}
-        onClick={() => onCloseRef.current()}
-      />
-      <motion.div
-        ref={panelRef}
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby={titleId}
-        aria-describedby={description ? descriptionId : undefined}
-        tabIndex={-1}
-        className={cn(
-          "relative z-10 w-full rounded-2xl border border-border bg-surface p-4 shadow-lg outline-none",
-          SIZE[size],
-          className,
-        )}
-        initial={reduce ? false : { opacity: 0, y: 16 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: reduce ? 0 : 0.22, ease: [0.22, 1, 0.36, 1] }}
+      <DialogContent
+        showCloseButton={false}
+        finalFocus={modalFinalFocus(restoreFocus)}
+        className={cn(modalContentClassName(size), className)}
       >
-        <p
-          id={titleId}
-          className={cn(
-            "text-sm font-semibold text-ink",
-            titleAlign === "center" && "text-center",
-          )}
+        <DialogHeader
+          className={cn(titleAlign === "center" && "items-center text-center")}
         >
-          {title}
-        </p>
-        {description ? (
-          <p
-            id={descriptionId}
-            className={cn(
-              "mt-1 text-sm text-ink-muted",
-              titleAlign === "center" && "text-center",
-            )}
+          <DialogTitle
+            className={cn(titleAlign === "center" && "text-center")}
           >
-            {description}
-          </p>
-        ) : null}
+            {title}
+          </DialogTitle>
+          {description ? (
+            <DialogDescription
+              className={cn(titleAlign === "center" && "text-center")}
+            >
+              {description}
+            </DialogDescription>
+          ) : null}
+        </DialogHeader>
         <div
           className={cn(
             description || title ? "mt-4" : undefined,
@@ -195,8 +100,7 @@ export function Modal({
         >
           {children}
         </div>
-      </motion.div>
-    </div>,
-    document.body,
+      </DialogContent>
+    </Dialog>
   );
 }

@@ -104,6 +104,7 @@ export function AkunNicheEditor({ niche }: { niche: string }) {
       <Modal
         open={open}
         onClose={onClose}
+        allowClose={!pending}
         title="Ubah niche"
         description="Ganti niche untuk jelajahi tren lain. Konten di Planner tetap."
         size="sm"

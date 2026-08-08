@@ -10,7 +10,7 @@ Perencanaan konten TikTok mingguan berbasis tren — niche **Couple Date Ideas**
 - Auth.js (credentials + JWT)
 - Prisma 7 + PostgreSQL (`pg` adapter)
 - Sonner (toast feedback)
-- **shadcn/ui** (initialized; `Card` / `Separator` / `Skeleton` available). Most forms still use custom controls in `src/components/ui` (`Button`, `Input`, `Modal`, …). Prefer shadcn primitives for new UI where they exist; brand tokens (`coral`, `paper`, `ink`) map to shadcn CSS variables.
+- **shadcn/ui** (initialized; `Card` / `Separator` / `Skeleton` / `Button` / `Dialog` available). App code still imports TrendPlan `Button` and `Modal` wrappers (shadcn-backed, same props); `ChipButton` stays custom. Prefer shadcn primitives for new UI where they exist; brand tokens (`coral`, `paper`, `ink`) map to shadcn CSS variables.
 - Deploy: Vercel + Neon (Vercel Postgres / Marketplace)
 - Vercel Blob (foto profil Akun)
 
@@ -93,6 +93,7 @@ Opsional: Postgres terisolasi via Docker — lihat `docker-compose.yml` (pastika
 | `npm run db:seed` | Seed 12 tren Couple Date Ideas |
 | `npm run db:studio` | Prisma Studio |
 | `npm run smoke` | Happy-path smoke test |
+| `npm run smoke:modal` | Modal/Dialog UI smoke (dismiss-while-loading, avatar picker focus, sheet layout) |
 | `npm run db:copy-to-prod` | Copy data lokal → Neon (butuh `TARGET_DATABASE_URL`) |
 | `npm test` | Unit tests (`src/**/*.test.ts`) — juga di pre-push |
 
