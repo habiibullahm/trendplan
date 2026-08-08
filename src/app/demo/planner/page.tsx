@@ -79,7 +79,7 @@ export default function DemoPlannerPage() {
           <div>
             <p className="text-xs font-semibold text-ink-muted">Caption contoh</p>
             <p className="mt-1 whitespace-pre-line text-sm text-ink">
-              {"Cheap date under 100k\n\n3 date ideas that feel expensive…"}
+              {"Format: 3 date di bawah 100rb\n\n3 date ideas that feel expensive…"}
             </p>
           </div>
           <div>

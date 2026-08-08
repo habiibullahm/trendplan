@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { auth, signOut } from "@/auth";
 import { AkunAvatar } from "@/features/auth/components/akun-avatar";
 import { AkunGoalEditor } from "@/features/auth/components/akun-goal-editor";
+import { AkunNicheEditor } from "@/features/auth/components/akun-niche-editor";
 import { LogoutButton } from "@/features/auth/components/logout-button";
 import { prisma } from "@/lib/prisma";
 
@@ -51,10 +52,7 @@ export default async function AkunPage() {
       <section className="mt-2">
         <p className="text-sm font-semibold text-ink">Preferensi konten</p>
         <div className="mt-1 divide-y divide-border">
-          <div className="flex items-center justify-between gap-3 py-2.5">
-            <span className="text-sm text-ink-muted">Niche</span>
-            <span className="text-sm font-semibold text-ink">{user.niche}</span>
-          </div>
+          <AkunNicheEditor key={user.niche} niche={user.niche} />
           <AkunGoalEditor key={user.weeklyGoal} weeklyGoal={user.weeklyGoal} />
         </div>
       </section>
