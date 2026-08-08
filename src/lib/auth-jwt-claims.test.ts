@@ -3,6 +3,7 @@ import { describe, it } from "node:test";
 import {
   dbSecurityClaims,
   isPasswordVersionCurrent,
+  shouldInvalidateForPasswordVersion,
 } from "./auth-jwt-claims";
 
 describe("dbSecurityClaims", () => {
@@ -52,5 +53,17 @@ describe("isPasswordVersionCurrent", () => {
   it("rejects stale versions after reset", () => {
     assert.equal(isPasswordVersionCurrent(1, 2), false);
     assert.equal(isPasswordVersionCurrent(2, 2), true);
+  });
+});
+
+describe("shouldInvalidateForPasswordVersion", () => {
+  it("invalidates on version diverge even for Auth.js update trigger", () => {
+    // Refresh after bump must use signed grace cookie — not trigger alone.
+    assert.equal(shouldInvalidateForPasswordVersion("update", 0, 1), true);
+  });
+
+  it("invalidates other sessions when version diverges", () => {
+    assert.equal(shouldInvalidateForPasswordVersion(undefined, 0, 1), true);
+    assert.equal(shouldInvalidateForPasswordVersion("signIn", 1, 1), false);
   });
 });

@@ -21,6 +21,7 @@ export const ActionErrors = {
   resetSuccess: "Password berhasil diperbarui. Silakan masuk.",
   passwordChanged: "Password berhasil diperbarui.",
   currentPasswordWrong: "Password saat ini salah.",
+  passwordUnchanged: "Password baru harus berbeda dari password saat ini.",
   verifyInvalid: "Tautan verifikasi tidak valid atau sudah kedaluwarsa.",
   verifySuccess: "Email berhasil diverifikasi.",
   verifySent: "Jika memungkinkan, kami mengirim ulang email verifikasi.",

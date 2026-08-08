@@ -41,6 +41,10 @@ export const changePasswordSchema = z
   .refine((data) => data.newPassword === data.confirmPassword, {
     message: "Konfirmasi password tidak cocok",
     path: ["confirmPassword"],
+  })
+  .refine((data) => data.newPassword !== data.currentPassword, {
+    message: "Password baru harus berbeda dari password saat ini.",
+    path: ["newPassword"],
   });
 
 export const requestPasswordResetSchema = z.object({

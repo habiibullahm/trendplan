@@ -17,11 +17,7 @@ const initial: PasswordActionState = {};
 export function ChangePasswordForm() {
   const [open, setOpen] = useState(false);
   const [state, action, pending] = useActionState(
-    async (prev: PasswordActionState, formData: FormData) => {
-      const next = await changePasswordAction(prev, formData);
-      if (next.success) setOpen(false);
-      return next;
-    },
+    changePasswordAction,
     initial,
   );
   useActionToasts(state);

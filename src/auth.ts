@@ -10,11 +10,17 @@ import {
 } from "@/lib/auth-rate-limits";
 import {
   dbSecurityClaims,
-  isPasswordVersionCurrent,
+  shouldInvalidateForPasswordVersion,
 } from "@/lib/auth-jwt-claims";
 import { passwordSchema } from "@/lib/auth-validation";
+import {
+  PASSWORD_CHANGE_REFRESH_COOKIE,
+  passwordChangeRefreshClearOptions,
+  verifyPasswordChangeRefresh,
+} from "@/lib/password-change-refresh";
 import { checkRateLimit } from "@/lib/rate-limit";
 import { prisma } from "@/lib/prisma";
+import { cookies } from "next/headers";
 
 const credentialsSchema = z.object({
   email: z.email(),
@@ -115,8 +121,52 @@ export const { handlers, auth, signIn, signOut, unstable_update } = NextAuth({
       });
       if (!row) return null;
 
-      if (!isPasswordVersionCurrent(token.passwordVersion, row.passwordVersion)) {
-        return null;
+      // passwordVersion bump invalidates JWTs unless this browser holds a
+      // signed grace cookie from changePasswordAction (RSC race / update).
+      const invalidate = shouldInvalidateForPasswordVersion(
+        params.trigger,
+        token.passwordVersion,
+        row.passwordVersion,
+      );
+      if (invalidate) {
+        try {
+          const jar = await cookies();
+          const grace = jar.get(PASSWORD_CHANGE_REFRESH_COOKIE)?.value;
+          if (
+            !verifyPasswordChangeRefresh(
+              grace,
+              token.id,
+              row.passwordVersion,
+            )
+          ) {
+            return null;
+          }
+          // Keep cookie through Auth.js `update` so the follow-up RSC can
+          // still race-refresh; clear on the next non-update request.
+          if (params.trigger !== "update") {
+            jar.set(
+              PASSWORD_CHANGE_REFRESH_COOKIE,
+              "",
+              passwordChangeRefreshClearOptions(),
+            );
+          }
+        } catch {
+          return null;
+        }
+      } else {
+        // Opportunistic cleanup after session already matches DB.
+        try {
+          const jar = await cookies();
+          if (jar.get(PASSWORD_CHANGE_REFRESH_COOKIE)?.value) {
+            jar.set(
+              PASSWORD_CHANGE_REFRESH_COOKIE,
+              "",
+              passwordChangeRefreshClearOptions(),
+            );
+          }
+        } catch {
+          // ignore
+        }
       }
 
       Object.assign(token, dbSecurityClaims(row));

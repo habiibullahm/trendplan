@@ -39,3 +39,16 @@ export function isPasswordVersionCurrent(
   const v = typeof tokenVersion === "number" ? tokenVersion : 0;
   return v === dbVersion;
 }
+
+/**
+ * True when JWT passwordVersion diverges from DB.
+ * Session refresh after a bump must use a signed grace cookie (not Auth.js
+ * `trigger === "update"` alone — that is client-callable).
+ */
+export function shouldInvalidateForPasswordVersion(
+  _trigger: string | undefined,
+  tokenVersion: unknown,
+  dbVersion: number,
+): boolean {
+  return !isPasswordVersionCurrent(tokenVersion, dbVersion);
+}
