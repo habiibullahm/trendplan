@@ -47,7 +47,10 @@ next-env.d.ts
 
 /src/generated/prisma
 
-# IDE agent skill caches (auto-installed)
+# Personal Cursor rules/config (shared contributor notes → CONTRIBUTING.md later)
+.cursor/
+
+# Other IDE agent skill caches (auto-installed; not used)
 .agents/
 .claude/
 .windsurf/
