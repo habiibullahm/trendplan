@@ -4,6 +4,7 @@ import { auth, signOut } from "@/auth";
 import { AkunAvatar } from "@/features/auth/components/akun-avatar";
 import { AkunGoalEditor } from "@/features/auth/components/akun-goal-editor";
 import { LogoutButton } from "@/features/auth/components/logout-button";
+import { UpdateLog } from "@/features/auth/components/update-log";
 import { prisma } from "@/lib/prisma";
 
 function initialFrom(name: string | null | undefined, email: string): string {
@@ -69,7 +70,7 @@ export default async function AkunPage() {
         >
           <span>
             <span className="block text-sm font-semibold text-ink">Riwayat</span>
-            <span className="text-xs text-ink-muted">Posting & performa</span>
+            <span className="text-xs text-ink-muted">Posting & catatan</span>
           </span>
           <span className="text-ink-muted">→</span>
         </Link>
@@ -85,6 +86,7 @@ export default async function AkunPage() {
           </span>
           <span className="text-ink-muted">→</span>
         </Link>
+        <UpdateLog />
       </section>
 
       <form

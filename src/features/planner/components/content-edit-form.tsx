@@ -14,7 +14,7 @@ import { Input } from "@/components/ui/input";
 import { LabelText } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useActionToasts } from "@/hooks/use-action-toasts";
-import { ALL_STATUSES, STATUS_LABEL } from "@/lib/labels";
+import { ALL_STATUSES, STATUS_LABEL, normalizeStatus } from "@/lib/labels";
 import { copyText } from "@/features/planner/lib/clipboard";
 import { copyToastError, copyToastSuccess } from "@/features/planner/lib/copy-toast";
 import {
@@ -33,7 +33,6 @@ type Props = {
     hook: string | null;
     caption: string | null;
     hashtags: string | null;
-    performanceNote: string | null;
     status: ContentStatus;
   };
   returnMonth?: string;
@@ -130,7 +129,7 @@ export function ContentEditForm({
 
         <div>
           <LabelText>Status</LabelText>
-          <div className="mt-2 grid grid-cols-2 gap-2 sm:grid-cols-4">
+          <div className="mt-2 grid grid-cols-2 gap-2">
             {ALL_STATUSES.map((status) => (
               <label
                 key={status}
@@ -144,7 +143,7 @@ export function ContentEditForm({
                   type="radio"
                   name="status"
                   value={status}
-                  defaultChecked={item.status === status}
+                  defaultChecked={normalizeStatus(item.status) === status}
                   disabled={busy}
                   className="sr-only"
                 />
@@ -179,15 +178,6 @@ export function ContentEditForm({
             name="hashtags"
             value={hashtags}
             onChange={(e) => setHashtags(e.target.value)}
-            disabled={busy}
-          />
-        </FormField>
-
-        <FormField label="Catatan performa (opsional)">
-          <Input
-            name="performanceNote"
-            defaultValue={item.performanceNote ?? ""}
-            placeholder="Contoh: 12k views, hook kuat"
             disabled={busy}
           />
         </FormField>

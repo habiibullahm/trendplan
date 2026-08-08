@@ -28,13 +28,13 @@ export const DEMO_ITEMS: DemoPlannerItem[] = [
     id: "demo-sen",
     dayOfWeek: 0,
     title: "Cheap date under 100k",
-    status: "READY",
+    status: "IDE",
   },
   {
     id: "demo-sel",
     dayOfWeek: 1,
     title: "Rainy day date at home",
-    status: "DRAFT",
+    status: "IDE",
   },
   {
     id: "demo-rab",
@@ -47,13 +47,13 @@ export const DEMO_ITEMS: DemoPlannerItem[] = [
     dayOfWeek: 4,
     title: "Sunset picnic date",
     status: "POSTED",
-    performanceNote: "12.4k views · save rate bagus",
+    performanceNote: "Hook kuat — coba angle sunset lagi",
   },
   {
     id: "demo-sab",
     dayOfWeek: 5,
     title: "Cook together date night",
-    status: "READY",
+    status: "IDE",
   },
 ];
 
