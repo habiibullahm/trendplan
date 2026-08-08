@@ -19,7 +19,7 @@ export default async function Home() {
           TrendPlan
         </p>
         <p className="mt-3 text-base text-ink-muted">
-          Rencana konten TikTok kamu, tiap minggu — niche Couple Date Ideas.
+          Rencana konten TikTok kamu, tiap minggu — pilih niche yang cocok.
         </p>
         <div className="mt-8 flex flex-col gap-3">
           <ButtonLink href="/login" width="full">

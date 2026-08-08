@@ -13,7 +13,7 @@ export default function RegisterPage() {
             TrendPlan
           </Link>
           <p className="mt-2 text-sm text-ink-muted">
-            Daftar gratis — niche Couple Date Ideas
+            Daftar gratis — atur niche & target mingguan setelah masuk.
           </p>
         </div>
         <RegisterForm />

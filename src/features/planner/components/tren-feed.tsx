@@ -35,12 +35,8 @@ export function TrenFeed({
 
   return (
     <div>
-      <p className="mt-2 text-sm text-ink-muted">
-        FYP mock · filter by niche
-      </p>
-
       <div
-        className="tp-scroll-x mt-4 flex gap-2 pb-1"
+        className="tp-scroll-x flex gap-2 pb-1"
         role="group"
         aria-label="Filter niche"
       >
@@ -77,9 +73,24 @@ export function TrenFeed({
           </FadeIn>
         ))}
         {visible.length === 0 ? (
-          <EmptyState as="li" variant="plain">
-            Belum ada tren untuk filter ini. Jalankan{" "}
-            <code>npm run db:seed</code>.
+          <EmptyState as="li">
+            {trends.length === 0 ? (
+              <>
+                <p className="font-medium text-ink">Belum ada tren</p>
+                <p className="mt-1">
+                  Data masih kosong. Coba lagi nanti, atau ubah filter niche.
+                </p>
+              </>
+            ) : (
+              <>
+                <p className="font-medium text-ink">Tidak ada tren di filter ini</p>
+                <p className="mt-1">
+                  Coba{" "}
+                  <span className="font-semibold text-ink">Semua</span> atau
+                  niche lain.
+                </p>
+              </>
+            )}
           </EmptyState>
         ) : null}
       </Stagger>

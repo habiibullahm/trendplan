@@ -1,11 +1,13 @@
 import type { ReactNode } from "react";
 import { redirect } from "next/navigation";
-import { signOut } from "@/auth";
 import { AppShell } from "@/components/layout/app-shell";
 import { PasswordUpgradeToast } from "@/features/auth/components/password-upgrade-nudge";
 import { prisma } from "@/lib/prisma";
 import { gateAppUser } from "@/lib/require-app-user";
-import { getSafeSession } from "@/lib/session";
+import {
+  getSafeSession,
+  redirectToLoginClearingSession,
+} from "@/lib/session";
 
 export default async function AppLayout({
   children,
@@ -13,13 +15,12 @@ export default async function AppLayout({
   children: ReactNode;
 }) {
   const session = await getSafeSession();
-  if (!session?.user?.id) redirect("/login");
+  if (!session?.user?.id) redirectToLoginClearingSession();
 
   const gate = await gateAppUser();
   if (!gate.ok) {
     if (gate.kind === "unverified") redirect("/verify-email");
-    await signOut({ redirectTo: "/login" });
-    redirect("/login");
+    redirectToLoginClearingSession();
   }
 
   const user = await prisma.user.findUnique({
@@ -32,10 +33,7 @@ export default async function AppLayout({
   });
 
   // Session cookie exists but user row was deleted/reset
-  if (!user) {
-    await signOut({ redirectTo: "/login" });
-    redirect("/login");
-  }
+  if (!user) redirectToLoginClearingSession();
 
   if (!user.onboardingComplete) redirect("/onboarding");
 

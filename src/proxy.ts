@@ -1,38 +1,26 @@
 import NextAuth from "next-auth";
 import { NextResponse } from "next/server";
 import { authConfig } from "@/auth.config";
+import {
+  authSessionCookieClearOptions,
+  isAuthSessionCookie,
+} from "@/lib/auth-session-cookies";
 
 const { auth } = NextAuth(authConfig);
-
-const SESSION_COOKIES = [
-  "authjs.session-token",
-  "__Secure-authjs.session-token",
-  "__Host-authjs.session-token",
-] as const;
-
-type SessionCookieName = (typeof SESSION_COOKIES)[number];
-
-/** Match Set-Cookie attributes so Secure-/Host-prefixed cookies actually clear. */
-function clearCookieOptions(name: SessionCookieName) {
-  const base = { path: "/" as const, maxAge: 0 };
-  if (name.startsWith("__Host-") || name.startsWith("__Secure-")) {
-    return { ...base, secure: true };
-  }
-  return base;
-}
 
 /** Clear stale JWT cookies (e.g. after AUTH_SECRET change) so auth() stops failing. */
 export const proxy = auth((req) => {
   if (req.auth) return;
 
-  const hasStale = SESSION_COOKIES.some((name) => req.cookies.has(name));
-  if (!hasStale) return;
+  const staleNames = req.cookies
+    .getAll()
+    .map((c) => c.name)
+    .filter(isAuthSessionCookie);
+  if (staleNames.length === 0) return;
 
   const res = NextResponse.next();
-  for (const name of SESSION_COOKIES) {
-    if (req.cookies.has(name)) {
-      res.cookies.set(name, "", clearCookieOptions(name));
-    }
+  for (const name of staleNames) {
+    res.cookies.set(name, "", authSessionCookieClearOptions(name));
   }
   return res;
 });

@@ -35,18 +35,29 @@ afterEach(() => {
 });
 
 describe("isEmailVerificationRequired", () => {
-  it("respects explicit true/false", () => {
+  it("respects explicit false", () => {
     process.env.EMAIL_VERIFICATION_REQUIRED = "false";
+    process.env.TRANSACTIONAL_EMAIL_ENABLED = "true";
+    delete process.env.NEXT_PUBLIC_TRANSACTIONAL_EMAIL_ENABLED;
     setNodeEnv("production");
     assert.equal(isEmailVerificationRequired(), false);
+  });
 
+  it("requires transactional email when verification is opted in", () => {
     process.env.EMAIL_VERIFICATION_REQUIRED = "true";
+    delete process.env.TRANSACTIONAL_EMAIL_ENABLED;
+    delete process.env.NEXT_PUBLIC_TRANSACTIONAL_EMAIL_ENABLED;
     setNodeEnv("development");
+    assert.equal(isEmailVerificationRequired(), false);
+
+    process.env.TRANSACTIONAL_EMAIL_ENABLED = "true";
     assert.equal(isEmailVerificationRequired(), true);
   });
 
   it("defaults to off when unset (until domain / opt-in)", () => {
     delete process.env.EMAIL_VERIFICATION_REQUIRED;
+    delete process.env.TRANSACTIONAL_EMAIL_ENABLED;
+    delete process.env.NEXT_PUBLIC_TRANSACTIONAL_EMAIL_ENABLED;
     setNodeEnv("production");
     assert.equal(isEmailVerificationRequired(), false);
 

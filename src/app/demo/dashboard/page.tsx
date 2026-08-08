@@ -4,7 +4,6 @@ import { ButtonLink } from "@/components/ui/button-link";
 import { STATUS_LABEL } from "@/lib/labels";
 import {
   DEMO_ITEMS,
-  DEMO_NICHE,
   DEMO_TRENDS,
   DEMO_USER_NAME,
   DEMO_WEEKLY_GOAL,
@@ -14,8 +13,7 @@ import {
 export default function DemoDashboardPage() {
   const scheduled = DEMO_ITEMS.length;
   const goal = DEMO_WEEKLY_GOAL;
-  const remaining = Math.max(0, goal - scheduled);
-  const onTrack = remaining === 0;
+  const onTrack = scheduled >= goal;
   const progress = Math.min(100, Math.round((scheduled / goal) * 100));
   const topRecs = DEMO_TRENDS.slice(0, 2);
 
@@ -27,7 +25,7 @@ export default function DemoDashboardPage() {
           Perencana konten minggu ini
         </h1>
         <p className="mt-2 text-sm text-ink-muted">
-          {demoWeekLabel()} · {DEMO_NICHE}
+          {demoWeekLabel()}
         </p>
       </div>
 
@@ -51,9 +49,6 @@ export default function DemoDashboardPage() {
             </FadeIn>
           ))}
         </Stagger>
-        {!onTrack ? (
-          <p className="mt-3 text-xs text-ink-muted">sisa {remaining}</p>
-        ) : null}
       </section>
 
       <div className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-2">

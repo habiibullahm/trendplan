@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { unstable_update } from "@/auth";
 import { prisma } from "@/lib/prisma";
-import { DEFAULT_NICHE, isNiche } from "@/lib/niches";
+import { isNiche } from "@/lib/niches";
 import { gateAppUser, requireAppUserAction } from "@/lib/require-app-user";
 
 export async function completeOnboardingAction(formData: FormData) {
@@ -18,7 +18,10 @@ export async function completeOnboardingAction(formData: FormData) {
     : 3;
 
   const nicheRaw = String(formData.get("niche") ?? "");
-  const niche = isNiche(nicheRaw) ? nicheRaw : DEFAULT_NICHE;
+  if (!isNiche(nicheRaw)) {
+    throw new Error("Pilih niche yang valid.");
+  }
+  const niche = nicheRaw;
 
   await prisma.user.update({
     where: { id: gate.userId },

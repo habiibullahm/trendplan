@@ -18,7 +18,7 @@ export function EmptyState({
   const classes = cn(
     "text-sm text-ink-muted",
     variant === "card" &&
-      "rounded-2xl border border-dashed border-border px-4 py-6",
+      "rounded-2xl border border-dashed border-border bg-surface/50 px-4 py-8 text-center",
     className,
   );
 

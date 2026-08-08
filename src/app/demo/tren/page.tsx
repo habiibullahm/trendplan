@@ -5,19 +5,8 @@ import { DEMO_TRENDS } from "@/features/planner/lib/demo-planner";
 export default function DemoTrenPage() {
   return (
     <main className="flex flex-1 flex-col">
-      <div className="flex items-center justify-between gap-3">
-        <h1 className="font-[family-name:var(--font-fraunces)] text-3xl font-semibold text-ink">
-          Tren
-        </h1>
-        <span className="rounded-full border border-border bg-surface px-3 py-1 text-xs font-semibold text-ink-muted">
-          Mock
-        </span>
-      </div>
-      <p className="mt-2 text-sm text-ink-muted">
-        Pilih tren, lalu tambah ke Planner — tersedia setelah daftar.
-      </p>
-
-      <Stagger as="ul" className="mt-6 space-y-3">
+      <h1 className="sr-only">Tren</h1>
+      <Stagger as="ul" className="space-y-3">
         {DEMO_TRENDS.map((trend) => (
           <FadeIn
             key={trend.id}

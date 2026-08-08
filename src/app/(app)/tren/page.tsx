@@ -19,15 +19,7 @@ export default async function TrenPage() {
 
   return (
     <main className="flex flex-1 flex-col">
-      <div className="flex items-center justify-between gap-3">
-        <h1 className="font-[family-name:var(--font-fraunces)] text-3xl font-semibold text-ink">
-          Tren
-        </h1>
-        <span className="rounded-full border border-border bg-surface px-3 py-1 text-xs font-semibold text-ink-muted">
-          Mock FYP
-        </span>
-      </div>
-
+      <h1 className="sr-only">Tren</h1>
       <TrenFeed
         defaultNiche={userNiche}
         trends={trends.map((t) => ({

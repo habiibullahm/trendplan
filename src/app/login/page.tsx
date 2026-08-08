@@ -2,11 +2,11 @@ import Link from "next/link";
 import { LoginForm } from "@/features/auth/components/auth-forms";
 
 type Props = {
-  searchParams: Promise<{ verified?: string }>;
+  searchParams: Promise<{ verified?: string; registered?: string }>;
 };
 
 export default async function LoginPage({ searchParams }: Props) {
-  const { verified } = await searchParams;
+  const { verified, registered } = await searchParams;
 
   return (
     <main className="flex flex-1 flex-col items-center justify-center px-6 py-12">
@@ -23,6 +23,11 @@ export default async function LoginPage({ searchParams }: Props) {
         {verified === "1" ? (
           <p className="mb-4 rounded-xl border border-border bg-paper px-3 py-2 text-center text-sm text-ink">
             Email berhasil diverifikasi. Silakan masuk.
+          </p>
+        ) : null}
+        {registered === "1" ? (
+          <p className="mb-4 rounded-xl border border-border bg-paper px-3 py-2 text-center text-sm text-ink">
+            Daftar berhasil. Silakan masuk.
           </p>
         ) : null}
         <LoginForm />
