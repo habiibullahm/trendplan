@@ -3,12 +3,27 @@
  * Used by middleware auth.config and Node auth/mail paths.
  */
 
+/**
+ * Soft-gate email verification. Opt-in only — off until a real sending domain
+ * is ready (`EMAIL_VERIFICATION_REQUIRED=true`).
+ */
 export function isEmailVerificationRequired(): boolean {
   const raw = process.env.EMAIL_VERIFICATION_REQUIRED;
-  if (raw === "false" || raw === "0") return false;
-  if (raw === "true" || raw === "1") return true;
-  // Default: require in production, soft in local/dev.
-  return process.env.NODE_ENV === "production";
+  return raw === "true" || raw === "1";
+}
+
+/**
+ * Password-reset / verify emails via Resend.
+ * Default OFF until a verified domain From is configured — set
+ * `TRANSACTIONAL_EMAIL_ENABLED=true` (and preferably
+ * `NEXT_PUBLIC_TRANSACTIONAL_EMAIL_ENABLED=true` for UI) after Resend domain verify.
+ * Do not use onboarding@resend.dev for multi-recipient production mail.
+ */
+export function isTransactionalEmailEnabled(): boolean {
+  const raw =
+    process.env.NEXT_PUBLIC_TRANSACTIONAL_EMAIL_ENABLED ??
+    process.env.TRANSACTIONAL_EMAIL_ENABLED;
+  return raw === "true" || raw === "1";
 }
 
 /** Canonical app origin for reset/verify links. */

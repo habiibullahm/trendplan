@@ -11,12 +11,14 @@ import { Button } from "@/components/ui/button";
 import { FormField } from "@/components/ui/form-field";
 import { Input } from "@/components/ui/input";
 import { useActionToasts } from "@/hooks/use-action-toasts";
+import { isTransactionalEmailEnabled } from "@/lib/auth-env";
 
 const initialState: AuthFormState = {};
 
 export function LoginForm() {
   const [state, action, pending] = useActionState(loginAction, initialState);
   useActionToasts(state);
+  const showForgotPassword = isTransactionalEmailEnabled();
 
   return (
     <form action={action} className="flex w-full flex-col gap-4">
@@ -51,11 +53,13 @@ export function LoginForm() {
         Masuk
       </Button>
 
-      <p className="text-center text-sm text-ink-muted">
-        <Link href="/forgot-password" className="font-semibold text-coral">
-          Lupa password?
-        </Link>
-      </p>
+      {showForgotPassword ? (
+        <p className="text-center text-sm text-ink-muted">
+          <Link href="/forgot-password" className="font-semibold text-coral">
+            Lupa password?
+          </Link>
+        </p>
+      ) : null}
 
       <p className="text-center text-sm text-ink-muted">
         Belum punya akun?{" "}

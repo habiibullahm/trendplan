@@ -19,6 +19,7 @@ import {
   consumeAuthTokenThen,
   invalidateUnusedAuthTokens,
 } from "@/lib/auth-tokens";
+import { isTransactionalEmailEnabled } from "@/lib/auth-env";
 import { verifyEmailTokenSchema } from "@/lib/auth-validation";
 import { sendMail } from "@/lib/mail";
 import { prisma } from "@/lib/prisma";
@@ -33,6 +34,10 @@ export async function sendVerificationEmailForUser(
   userId: string,
   email: string,
 ): Promise<void> {
+  if (!isTransactionalEmailEnabled()) {
+    throw new Error("Email belum diaktifkan.");
+  }
+
   const raw = await createAuthToken(userId, "EMAIL_VERIFY");
   try {
     const link = `${appBaseUrl()}/verify-email?token=${encodeURIComponent(raw)}`;
@@ -107,6 +112,10 @@ export async function resendVerificationEmailAction(
   const session = await auth();
   const userId = session?.user?.id;
   if (!userId) return actionError(ActionErrors.unauthorized);
+
+  if (!isTransactionalEmailEnabled()) {
+    return actionError(ActionErrors.emailDisabled);
+  }
 
   const ip = await getClientIp();
   const limited = await assertRateLimits(

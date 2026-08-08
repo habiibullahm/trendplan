@@ -100,4 +100,8 @@ export async function consumeAuthTokenThen<T>(
   });
 }
 
-export { appBaseUrl, isEmailVerificationRequired } from "@/lib/auth-env";
+export {
+  appBaseUrl,
+  isEmailVerificationRequired,
+  isTransactionalEmailEnabled,
+} from "@/lib/auth-env";

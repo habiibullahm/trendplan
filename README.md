@@ -53,9 +53,9 @@ Rate limit login/register disimpan di Postgres (`RateLimitBucket`) supaya berlak
 
 ### Auth hardening (password + email)
 
-- **Ubah password** di Akun; akun dengan password lama mendapat nudge non-blocking.
-- **Lupa password** → `/forgot-password` (email via Resend, atau log URL di console jika `RESEND_API_KEY` kosong).
-- **Verifikasi email**: default wajib di production. Lokal set `EMAIL_VERIFICATION_REQUIRED=false`. Soft-gate ke `/verify-email` setelah masuk sampai email terverifikasi.
+- **Ubah password** di Akun (selalu aktif; pakai password saat ini, tanpa email).
+- **Lupa password via email** → `/forgot-password` — **default OFF** sampai domain Resend diverifikasi. Aktifkan dengan `TRANSACTIONAL_EMAIL_ENABLED=true` dan `NEXT_PUBLIC_TRANSACTIONAL_EMAIL_ENABLED=true`, plus `RESEND_API_KEY` / `EMAIL_FROM`.
+- **Verifikasi email**: **default OFF** (`EMAIL_VERIFICATION_REQUIRED` opt-in). Soft-gate ke `/verify-email` hanya saat diwajibkan.
 
 Buat database/user `trendplan` di Postgres lokal jika belum ada.
 
@@ -128,9 +128,11 @@ TARGET_DATABASE_URL="postgresql://...@....neon.tech/neondb?sslmode=require" npm 
 | `AUTH_SECRET` | `openssl rand -base64 32` |
 | `AUTH_URL` | `https://trendplan.vercel.app` (URL kanonis; lebih aman daripada mengandalkan Host header) |
 | `AUTH_TRUST_HOST` | `true` (opsional di Vercel — `VERCEL=1` sudah mengaktifkan `trustHost`) |
-| `EMAIL_FROM` | `TrendPlan <noreply@yourdomain.com>` |
-| `RESEND_API_KEY` | (Resend — reset/verifikasi email; tanpa ini URL di-log di server) |
-| `EMAIL_VERIFICATION_REQUIRED` | `true` di production (lokal boleh `false`) |
+| `EMAIL_FROM` | `TrendPlan <noreply@yourdomain.com>` (domain harus verified di Resend) |
+| `RESEND_API_KEY` | Resend API key (hanya dipakai jika transactional email ON) |
+| `TRANSACTIONAL_EMAIL_ENABLED` | `true` setelah domain ready; **default off** |
+| `NEXT_PUBLIC_TRANSACTIONAL_EMAIL_ENABLED` | `true` agar UI tampilkan “Lupa password?” |
+| `EMAIL_VERIFICATION_REQUIRED` | Opt-in `true`; **default off** |
 | `BLOB_READ_WRITE_TOKEN` | (dari Vercel Blob store) |
 
 4. Deploy — build menjalankan `prisma migrate deploy` (`vercel.json`).

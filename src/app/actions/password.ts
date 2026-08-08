@@ -19,6 +19,7 @@ import {
   consumeAuthTokenThen,
   invalidateUnusedAuthTokens,
 } from "@/lib/auth-tokens";
+import { isTransactionalEmailEnabled } from "@/lib/auth-env";
 import {
   changePasswordSchema,
   requestPasswordResetSchema,
@@ -101,6 +102,11 @@ export async function requestPasswordResetAction(
     formData,
     (fd) => ({ email: fd.get("email") }),
     async (data) => {
+      // Until a verified Resend domain is configured, do not pretend mail was sent.
+      if (!isTransactionalEmailEnabled()) {
+        return actionError(ActionErrors.emailDisabled);
+      }
+
       const email = data.email.toLowerCase().trim();
       const ip = await getClientIp();
       const limited = await assertRateLimits(

@@ -1,5 +1,7 @@
 import "server-only";
 
+import { isTransactionalEmailEnabled } from "@/lib/auth-env";
+
 export type MailMessage = {
   to: string;
   subject: string;
@@ -8,10 +10,34 @@ export type MailMessage = {
 };
 
 /**
- * Thin mail abstraction: Resend when RESEND_API_KEY is set; otherwise log to
- * the server console (dev only). Never returns the message body to the client.
+ * Thin mail abstraction: Resend when transactional email is enabled and
+ * RESEND_API_KEY is set; otherwise log to the server console (dev only).
+ * Never returns the message body to the client.
  */
 export async function sendMail(message: MailMessage): Promise<void> {
+  // Off until a verified domain is configured (see TRANSACTIONAL_EMAIL_ENABLED).
+  if (!isTransactionalEmailEnabled()) {
+    if (process.env.NODE_ENV === "production") {
+      console.error(
+        "[mail] Transactional email disabled — set TRANSACTIONAL_EMAIL_ENABLED=true after verifying a Resend domain.",
+      );
+      throw new Error("Email belum diaktifkan.");
+    }
+    console.info(
+      [
+        "",
+        "======== TrendPlan mail (dev — transactional email off) ========",
+        `To: ${message.to}`,
+        `Subject: ${message.subject}`,
+        "",
+        message.text,
+        "===============================================================",
+        "",
+      ].join("\n"),
+    );
+    return;
+  }
+
   const apiKey = process.env.RESEND_API_KEY?.trim();
   const from =
     process.env.EMAIL_FROM?.trim() || "TrendPlan <onboarding@resend.dev>";
@@ -23,7 +49,6 @@ export async function sendMail(message: MailMessage): Promise<void> {
       );
       throw new Error("Email belum dikonfigurasi.");
     }
-    // Local/dev: print the full message (includes reset/verify URL) once.
     console.info(
       [
         "",
