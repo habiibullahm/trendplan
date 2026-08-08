@@ -293,3 +293,37 @@ body {
   }
 }
 
+/* Dashboard week target — solid surface card + in-flow title + hatch */
+.tp-week-target {
+  background: transparent;
+}
+
+.tp-week-target__frame {
+  border: 1px solid var(--color-border);
+  border-radius: 1rem;
+  background: var(--color-surface);
+  padding: 1rem;
+}
+
+.tp-week-target__title {
+  margin: 0;
+  font-size: 0.875rem;
+  font-weight: 600;
+  letter-spacing: normal;
+  line-height: 1.2;
+  color: var(--color-ink);
+}
+
+.tp-week-target__body {
+  padding-top: 0.75rem;
+}
+
+.tp-week-target-hatch {
+  background-color: var(--color-surface);
+  background-image: repeating-linear-gradient(
+    -45deg,
+    color-mix(in srgb, var(--color-ink) 32%, transparent) 0 1px,
+    transparent 1px 5px
+  );
+}
+
