@@ -3,11 +3,11 @@ import { redirect } from "next/navigation";
 import { AppShell } from "@/components/layout/app-shell";
 import { PasswordUpgradeToast } from "@/features/auth/components/password-upgrade-nudge";
 import { prisma } from "@/lib/prisma";
-import { gateAppUser } from "@/lib/require-app-user";
+import { gateAppUser } from "@/lib/auth/require-app-user";
 import {
   getSafeSession,
   redirectToLoginClearingSession,
-} from "@/lib/session";
+} from "@/lib/auth/session";
 
 export default async function AppLayout({
   children,

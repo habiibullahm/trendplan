@@ -4,7 +4,7 @@ import {
   passwordSchema,
   resetPasswordSchema,
   requestPasswordResetSchema,
-} from "./auth-validation";
+} from "./validation";
 
 describe("passwordSchema", () => {
   it("accepts length-only passwords of 10–128 chars", () => {

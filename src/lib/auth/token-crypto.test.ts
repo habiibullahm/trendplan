@@ -3,7 +3,7 @@ import { describe, it } from "node:test";
 import {
   generateRawAuthToken,
   hashAuthToken,
-} from "./auth-token-crypto";
+} from "./token-crypto";
 
 describe("hashAuthToken", () => {
   it("is stable and hex-encoded", () => {

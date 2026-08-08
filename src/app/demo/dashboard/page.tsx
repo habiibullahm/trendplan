@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { FadeIn, Stagger } from "@/components/motion";
-import { ThemeToggle } from "@/features/auth/components/theme-toggle";
+import { ThemeToggle } from "@/components/theme/theme-toggle";
 import { CompactTrendMedia } from "@/features/planner/components/trend-media";
 import { WeekTargetCard } from "@/features/planner/components/week-target-card";
 import { STATUS_LABEL } from "@/lib/labels";

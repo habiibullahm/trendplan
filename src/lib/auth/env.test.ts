@@ -4,7 +4,7 @@ import {
   appBaseUrl,
   isEmailVerificationRequired,
   isTransactionalEmailEnabled,
-} from "./auth-env";
+} from "./env";
 
 const original = {
   EMAIL_VERIFICATION_REQUIRED: process.env.EMAIL_VERIFICATION_REQUIRED,

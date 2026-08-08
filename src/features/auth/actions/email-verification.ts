@@ -18,9 +18,9 @@ import {
   createAuthToken,
   consumeAuthTokenThen,
   invalidateUnusedAuthTokens,
-} from "@/lib/auth-tokens";
-import { isTransactionalEmailEnabled } from "@/lib/auth-env";
-import { verifyEmailTokenSchema } from "@/lib/auth-validation";
+} from "@/lib/auth/tokens";
+import { isTransactionalEmailEnabled } from "@/lib/auth/env";
+import { verifyEmailTokenSchema } from "@/lib/auth/validation";
 import { sendMail } from "@/lib/mail";
 import { prisma } from "@/lib/prisma";
 

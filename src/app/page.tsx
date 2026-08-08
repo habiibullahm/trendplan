@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
 import { ButtonLink } from "@/components/ui/button-link";
-import { isEmailVerificationRequired } from "@/lib/auth-env";
-import { getSafeSession } from "@/lib/session";
+import { isEmailVerificationRequired } from "@/lib/auth/env";
+import { getSafeSession } from "@/lib/auth/session";
 
 export default async function Home() {
   const session = await getSafeSession();

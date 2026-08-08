@@ -6,12 +6,12 @@ import {
   loginAction,
   registerAction,
   type AuthFormState,
-} from "@/app/actions/auth";
+} from "@/features/auth/actions/auth";
 import { Button } from "@/components/ui/button";
 import { FormField } from "@/components/ui/form-field";
 import { Input } from "@/components/ui/input";
 import { useActionToasts } from "@/hooks/use-action-toasts";
-import { isTransactionalEmailEnabled } from "@/lib/auth-env";
+import { isTransactionalEmailEnabled } from "@/lib/auth/env";
 
 const initialState: AuthFormState = {};
 

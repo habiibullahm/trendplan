@@ -4,7 +4,7 @@ import { authConfig } from "@/auth.config";
 import {
   authSessionCookieClearOptions,
   isAuthSessionCookie,
-} from "@/lib/auth-session-cookies";
+} from "@/lib/auth/session-cookies";
 
 const { auth } = NextAuth(authConfig);
 

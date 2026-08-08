@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { ResetPasswordForm } from "@/features/auth/components/reset-password-form";
-import { isTransactionalEmailEnabled } from "@/lib/auth-env";
+import { isTransactionalEmailEnabled } from "@/lib/auth/env";
 
 type Props = {
   searchParams: Promise<{ token?: string }>;

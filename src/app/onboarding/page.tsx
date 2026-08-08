@@ -1,12 +1,12 @@
 import { redirect } from "next/navigation";
-import { completeOnboardingAction } from "@/app/actions/onboarding";
+import { completeOnboardingAction } from "@/features/auth/actions/onboarding";
 import { OnboardingForm } from "@/features/auth/components/onboarding-form";
 import { prisma } from "@/lib/prisma";
-import { gateAppUser } from "@/lib/require-app-user";
+import { gateAppUser } from "@/lib/auth/require-app-user";
 import {
   getSafeSession,
   redirectToLoginClearingSession,
-} from "@/lib/session";
+} from "@/lib/auth/session";
 
 export default async function OnboardingPage() {
   const session = await getSafeSession();

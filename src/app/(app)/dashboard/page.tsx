@@ -3,7 +3,7 @@ import { redirect } from "next/navigation";
 import { auth } from "@/auth";
 import { FadeIn, Stagger } from "@/components/motion";
 import { EmptyState } from "@/components/ui/empty-state";
-import { ThemeToggle } from "@/features/auth/components/theme-toggle";
+import { ThemeToggle } from "@/components/theme/theme-toggle";
 import { CompactTrendMedia } from "@/features/planner/components/trend-media";
 import { WeekTargetCard } from "@/features/planner/components/week-target-card";
 import { prisma } from "@/lib/prisma";

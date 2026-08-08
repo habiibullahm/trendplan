@@ -167,7 +167,7 @@ export async function getRecommendations(
 }
 
 export async function requireUserId() {
-  const { gateAppUser } = await import("@/lib/require-app-user");
+  const { gateAppUser } = await import("@/lib/auth/require-app-user");
   const gate = await gateAppUser();
   if (!gate.ok) {
     throw new Error("Unauthorized");

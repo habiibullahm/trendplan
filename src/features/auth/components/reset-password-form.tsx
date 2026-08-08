@@ -4,7 +4,7 @@ import { useActionState } from "react";
 import {
   resetPasswordAction,
   type PasswordActionState,
-} from "@/app/actions/password";
+} from "@/features/auth/actions/password";
 import { Button } from "@/components/ui/button";
 import { FormField } from "@/components/ui/form-field";
 import { Input } from "@/components/ui/input";

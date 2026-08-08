@@ -3,7 +3,7 @@ import { redirect } from "next/navigation";
 import { auth, signOut, unstable_update } from "@/auth";
 import { VerifyEmailPanel } from "@/features/auth/components/verify-email-panel";
 import { Button } from "@/components/ui/button";
-import { isEmailVerificationRequired } from "@/lib/auth-env";
+import { isEmailVerificationRequired } from "@/lib/auth/env";
 import { prisma } from "@/lib/prisma";
 
 type Props = {

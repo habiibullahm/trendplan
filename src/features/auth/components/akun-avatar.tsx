@@ -14,7 +14,7 @@ import {
   removeProfileImageAction,
   uploadProfileImageAction,
   type ProfileImageActionState,
-} from "@/app/actions/profile";
+} from "@/features/auth/actions/profile";
 import { Modal } from "@/components/ui/modal";
 import { Spinner } from "@/components/ui/spinner";
 import {

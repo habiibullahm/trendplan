@@ -1,10 +1,10 @@
 import { NextResponse } from "next/server";
-import { appBaseUrl } from "@/lib/auth-env";
+import { appBaseUrl } from "@/lib/auth/env";
 import {
   AUTH_SESSION_COOKIES,
   authSessionCookieClearOptions,
   isAuthSessionCookie,
-} from "@/lib/auth-session-cookies";
+} from "@/lib/auth/session-cookies";
 
 /**
  * Clears Auth.js session cookies then redirects to /login.

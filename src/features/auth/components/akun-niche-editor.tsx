@@ -5,7 +5,7 @@ import { useFormStatus } from "react-dom";
 import {
   updateNicheAction,
   type NicheActionState,
-} from "@/app/actions/onboarding";
+} from "@/features/auth/actions/onboarding";
 import { Button } from "@/components/ui/button";
 import { ChipButton } from "@/components/ui/chip-button";
 import { Modal } from "@/components/ui/modal";
