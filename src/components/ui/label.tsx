@@ -5,9 +5,17 @@ type LabelProps = LabelHTMLAttributes<HTMLLabelElement> & {
   children: ReactNode;
 };
 
+/** Form label wrapper (block) — keeps FormField nesting working. */
 export function Label({ className, children, ...props }: LabelProps) {
   return (
-    <label className={cn("block text-left", className)} {...props}>
+    <label
+      data-slot="label"
+      className={cn(
+        "block text-left text-sm leading-none font-medium select-none",
+        className,
+      )}
+      {...props}
+    >
       {children}
     </label>
   );
@@ -21,7 +29,10 @@ export function LabelText({
   className?: string;
 }) {
   return (
-    <span className={cn("text-sm font-medium text-ink", className)}>
+    <span
+      data-slot="label-text"
+      className={cn("text-sm font-medium text-ink", className)}
+    >
       {children}
     </span>
   );
