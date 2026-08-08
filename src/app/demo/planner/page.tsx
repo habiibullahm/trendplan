@@ -66,11 +66,11 @@ export default function DemoPlannerPage() {
 
       <ReadOnlyPlannerBoard items={DEMO_ITEMS} />
 
-      <section className="mt-8 rounded-2xl border border-border bg-surface p-4 md:p-5">
-        <h2 className="text-lg font-semibold text-ink">
+      <section className="mt-8 rounded-2xl bg-card p-4 ring-1 ring-border md:p-5">
+        <h2 className="text-lg font-semibold text-foreground">
           Saran caption & hashtag
         </h2>
-        <p className="mt-1 text-sm text-ink-muted">
+        <p className="mt-1 text-sm text-muted-foreground">
           Dari rekomendasi tren — siap disalin ke TikTok setelah daftar.
         </p>
 
@@ -97,9 +97,9 @@ export default function DemoPlannerPage() {
         </p>
       </section>
 
-      <section className="mt-4 rounded-2xl border border-border bg-surface p-4 md:p-5">
-        <h2 className="text-lg font-semibold text-ink">Buat ide sendiri</h2>
-        <p className="mt-1 text-sm text-ink-muted">
+      <section className="mt-4 rounded-2xl bg-card p-4 ring-1 ring-border md:p-5">
+        <h2 className="text-lg font-semibold text-foreground">Buat ide sendiri</h2>
+        <p className="mt-1 text-sm text-muted-foreground">
           Tambah ide di hari kosong tanpa memilih tren.
         </p>
 

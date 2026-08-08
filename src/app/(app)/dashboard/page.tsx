@@ -2,6 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { auth } from "@/auth";
 import { FadeIn, Stagger } from "@/components/motion";
+import { Card } from "@/components/ui/card";
 import { EmptyState } from "@/components/ui/empty-state";
 import { ThemeToggle } from "@/components/theme/theme-toggle";
 import { CompactTrendMedia } from "@/features/planner/components/trend-media";
@@ -69,7 +70,7 @@ export default async function DashboardPage() {
           </div>
           <Stagger
             as="ul"
-            className="mt-3 divide-y divide-border overflow-hidden rounded-2xl border border-border bg-surface"
+            className="mt-3 divide-y divide-border overflow-hidden rounded-2xl bg-card ring-1 ring-border"
           >
             {inProgressItems.map((item) => (
               <FadeIn key={item.id} as="li">
@@ -105,7 +106,7 @@ export default async function DashboardPage() {
         <Stagger as="ul" className="mt-3 space-y-2">
           {topRecs.map((trend) => (
             <FadeIn key={trend.id} as="li">
-              <div className="rounded-2xl border border-border bg-surface px-4 py-3">
+              <Card className="gap-0 rounded-2xl px-4 py-3 ring-border">
                 <CompactTrendMedia
                   title={trend.title}
                   titleHref={`/tren#${trend.id}`}
@@ -115,7 +116,7 @@ export default async function DashboardPage() {
                     audioUrl: trend.audioUrl,
                   }}
                 />
-              </div>
+              </Card>
             </FadeIn>
           ))}
           {topRecs.length === 0 ? (

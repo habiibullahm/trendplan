@@ -24,7 +24,7 @@ export default function DemoRekomendasiPage() {
             key={trend.id}
             as="li"
             id={trend.id}
-            className="scroll-mt-24 rounded-2xl border border-border bg-surface p-4"
+            className="scroll-mt-24 rounded-2xl bg-card p-4 ring-1 ring-border"
           >
             <div className="flex items-start gap-2">
               <span className="mt-0.5 shrink-0 rounded-full bg-coral/10 px-2 py-0.5 text-xs font-semibold text-coral">
