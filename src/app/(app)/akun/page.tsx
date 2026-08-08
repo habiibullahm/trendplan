@@ -41,11 +41,9 @@ export default async function AkunPage() {
       <Suspense fallback={null}>
         <AkunToastFromQuery />
       </Suspense>
-      <h1 className="font-[family-name:var(--font-fraunces)] text-3xl font-semibold text-ink">
-        Akun
-      </h1>
+      <h1 className="sr-only">Akun</h1>
 
-      <div className="mt-6">
+      <div className="mt-0">
         <AkunAvatar
           imageUrl={user.imageUrl}
           initialLetter={initial}
