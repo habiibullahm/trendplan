@@ -57,8 +57,9 @@ describe("isPasswordVersionCurrent", () => {
 });
 
 describe("shouldInvalidateForPasswordVersion", () => {
-  it("keeps session on update after passwordVersion bump", () => {
-    assert.equal(shouldInvalidateForPasswordVersion("update", 0, 1), false);
+  it("invalidates on version diverge even for Auth.js update trigger", () => {
+    // Refresh after bump must use signed grace cookie — not trigger alone.
+    assert.equal(shouldInvalidateForPasswordVersion("update", 0, 1), true);
   });
 
   it("invalidates other sessions when version diverges", () => {

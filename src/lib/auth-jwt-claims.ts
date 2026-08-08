@@ -41,15 +41,14 @@ export function isPasswordVersionCurrent(
 }
 
 /**
- * Kill stale JWTs after password change/reset — except session `update`,
- * which refreshes claims from the DB for the session that just changed
- * the password (Akun → Ubah password + unstable_update).
+ * True when JWT passwordVersion diverges from DB.
+ * Session refresh after a bump must use a signed grace cookie (not Auth.js
+ * `trigger === "update"` alone — that is client-callable).
  */
 export function shouldInvalidateForPasswordVersion(
-  trigger: string | undefined,
+  _trigger: string | undefined,
   tokenVersion: unknown,
   dbVersion: number,
 ): boolean {
-  if (trigger === "update") return false;
   return !isPasswordVersionCurrent(tokenVersion, dbVersion);
 }

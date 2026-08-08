@@ -1,9 +1,11 @@
 import Link from "next/link";
+import { Suspense } from "react";
 import { redirect } from "next/navigation";
 import { auth, signOut } from "@/auth";
 import { AkunAvatar } from "@/features/auth/components/akun-avatar";
 import { AkunGoalEditor } from "@/features/auth/components/akun-goal-editor";
 import { AkunNicheEditor } from "@/features/auth/components/akun-niche-editor";
+import { AkunToastFromQuery } from "@/features/auth/components/akun-toast-from-query";
 import { ChangePasswordForm } from "@/features/auth/components/change-password-form";
 import { LogoutButton } from "@/features/auth/components/logout-button";
 import { UpdateLog } from "@/features/auth/components/update-log";
@@ -36,6 +38,9 @@ export default async function AkunPage() {
 
   return (
     <main className="mx-auto flex w-full max-w-lg flex-1 flex-col">
+      <Suspense fallback={null}>
+        <AkunToastFromQuery />
+      </Suspense>
       <h1 className="font-[family-name:var(--font-fraunces)] text-3xl font-semibold text-ink">
         Akun
       </h1>

@@ -1,13 +1,20 @@
 "use server";
 
 import { compare, hash } from "bcryptjs";
+import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import {
   ActionErrors,
   actionError,
+  actionFieldErrors,
   actionSuccess,
   type ActionResult,
 } from "@/lib/action-result";
+import {
+  PASSWORD_CHANGE_REFRESH_COOKIE,
+  passwordChangeRefreshCookieOptions,
+  signPasswordChangeRefresh,
+} from "@/lib/password-change-refresh";
 import {
   assertRateLimits,
   getClientIp,
@@ -75,20 +82,41 @@ export async function changePasswordAction(
       const matches = await compare(data.currentPassword, user.passwordHash);
       if (!matches) return actionError(ActionErrors.currentPasswordWrong);
 
+      const sameAsCurrent = await compare(data.newPassword, user.passwordHash);
+      if (sameAsCurrent) {
+        return {
+          error: ActionErrors.passwordUnchanged,
+          ...actionFieldErrors({
+            newPassword: [ActionErrors.passwordUnchanged],
+          }),
+        };
+      }
+
       const passwordHash = await hash(data.newPassword, 10);
-      await prisma.user.update({
+      const updated = await prisma.user.update({
         where: { id: userId },
         data: {
           passwordHash,
           passwordNeedsUpgrade: false,
           passwordVersion: { increment: 1 },
         },
+        select: { passwordVersion: true },
       });
+
+      // Signed grace cookie for RSC race before Auth.js Set-Cookie sticks.
+      const jar = await cookies();
+      jar.set(
+        PASSWORD_CHANGE_REFRESH_COOKIE,
+        signPasswordChangeRefresh(userId, updated.passwordVersion),
+        passwordChangeRefreshCookieOptions(),
+      );
 
       const { unstable_update } = await import("@/auth");
       await unstable_update({});
 
-      return actionSuccess(ActionErrors.passwordChanged);
+      // Redirect (not actionSuccess) so the next /akun document request carries
+      // Set-Cookie from unstable_update — avoids RSC refresh with a stale JWT.
+      redirect("/akun?toast=password_changed");
     },
   );
 }
