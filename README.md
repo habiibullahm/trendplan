@@ -182,8 +182,10 @@ Catatan penting:
 
 ```
 src/app/(app)/              # Routes: dashboard, tren, rekomendasi, planner, riwayat, akun
+src/app/loadings/           # Route page loading compositions
 src/app/api/auth/           # Auth.js + clear-session handlers
 src/components/layout/      # App shell, nav, toaster
+src/components/loading/     # Shared loading shell + skeleton blocks
 src/components/theme/       # Theme provider, script, ThemeToggle
 src/components/motion/      # Shared motion helpers
 src/components/ui/          # Primitives (Button, FormField, Input, Badge, …)
