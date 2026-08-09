@@ -17,17 +17,20 @@ export default function DemoPlannerPage() {
   return (
     <main className="flex w-full flex-1 flex-col">
       <h1 className="sr-only">Planner</h1>
-      <div className="flex flex-wrap items-end justify-between gap-3">
-        <div>
-          <p className="text-sm text-ink-muted">
-            Minggu {selection.weekIndex} · {demoWeekLabel()}
-          </p>
-        </div>
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <p className="min-w-0 text-sm text-ink-muted">
+          Minggu {selection.weekIndex} · {demoWeekLabel()}
+        </p>
         <div className="flex flex-wrap items-center gap-3">
-          <p className="text-sm font-medium text-ink">
-            Target 5 · isi {DEMO_ITEMS.length}
+          <p
+            className="text-sm font-medium tabular-nums text-ink"
+            aria-label={`${DEMO_ITEMS.length} dari 5 target minggu terisi`}
+          >
+            {DEMO_ITEMS.length}/5 terisi
           </p>
-          <ChipButton disabled>Salin minggu</ChipButton>
+          <ChipButton disabled aria-label="Salin daftar rencana minggu ini">
+            Salin daftar
+          </ChipButton>
         </div>
       </div>
 

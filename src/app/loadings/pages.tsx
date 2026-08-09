@@ -49,7 +49,7 @@ export function DashboardPageLoading({ as }: ShellProps = {}) {
 export function PlannerPageLoading({ as }: ShellProps = {}) {
   return (
     <PageLoading label="Memuat planner…" as={as}>
-      <div className="flex flex-wrap items-end justify-between gap-3" aria-hidden>
+      <div className="flex flex-wrap items-center justify-between gap-3" aria-hidden>
         <Skeleton className="h-4 w-48 max-w-full" />
         <div className="flex flex-wrap items-center gap-3">
           <Skeleton className="h-4 w-28" />
