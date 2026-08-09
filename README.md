@@ -81,6 +81,19 @@ Buka [http://localhost:3000](http://localhost:3000).
 
 Opsional: Postgres terisolasi via Docker — lihat `docker-compose.yml` (pastikan port 5432 bebas).
 
+### 5. E2E (Playwright)
+
+Thin browser smoke (Chromium): public shells, and optional authenticated planner journey.
+
+```bash
+npm run test:e2e
+# or interactive:
+npm run test:e2e:ui
+```
+
+- Without creds: public smoke runs; auth setup/journey are skipped.
+- With auth: copy `.env.e2e.example` → `.env.e2e`, set `E2E_EMAIL` / `E2E_PASSWORD` for an **onboarded** user. Setup writes `.auth/user.json` (gitignored) once per run.
+
 ## Scripts
 
 | Command | Keterangan |
@@ -94,6 +107,8 @@ Opsional: Postgres terisolasi via Docker — lihat `docker-compose.yml` (pastika
 | `npm run db:studio` | Prisma Studio |
 | `npm run smoke` | Happy-path smoke test |
 | `npm run smoke:modal` | Modal/Dialog UI smoke (dismiss-while-loading, avatar picker focus, sheet layout) |
+| `npm run test:e2e` | Playwright e2e (public smoke; auth journeys if `.env.e2e`) |
+| `npm run test:e2e:ui` | Playwright UI mode |
 | `npm run db:copy-to-prod` | Copy data lokal → Neon (butuh `TARGET_DATABASE_URL`) |
 | `npm test` | Unit tests (`src/**/*.test.ts`) — juga di pre-push |
 

@@ -1,9 +1,9 @@
 import { expect, test } from "@playwright/test";
-import {
-  e2eCredentials,
-  loginWithCredentials,
-} from "./helpers/auth";
 
+/**
+ * Public UI smoke — no auth required.
+ * Authenticated login is covered once in `auth.setup.ts` (storageState).
+ */
 test.describe("public shells", () => {
   test("landing shows TrendPlan and auth CTAs", async ({ page }) => {
     await page.goto("/");
@@ -38,18 +38,5 @@ test.describe("public shells", () => {
         /Kirim tautan reset|Reset password via email belum aktif/,
       ),
     ).toBeVisible();
-  });
-});
-
-test.describe("auth happy path", () => {
-  const creds = e2eCredentials();
-
-  test.skip(
-    !creds,
-    "Set E2E_EMAIL and E2E_PASSWORD (e.g. via .env.e2e) to run login",
-  );
-
-  test("login redirects away from /login", async ({ page }) => {
-    await loginWithCredentials(page, creds!);
   });
 });
