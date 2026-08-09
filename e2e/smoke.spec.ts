@@ -1,4 +1,8 @@
 import { expect, test } from "@playwright/test";
+import {
+  e2eCredentials,
+  loginWithCredentials,
+} from "./helpers/auth";
 
 test.describe("public shells", () => {
   test("landing shows TrendPlan and auth CTAs", async ({ page }) => {
@@ -38,23 +42,14 @@ test.describe("public shells", () => {
 });
 
 test.describe("auth happy path", () => {
-  const email = process.env.E2E_EMAIL;
-  const password = process.env.E2E_PASSWORD;
+  const creds = e2eCredentials();
 
   test.skip(
-    !email || !password,
+    !creds,
     "Set E2E_EMAIL and E2E_PASSWORD (e.g. via .env.e2e) to run login",
   );
 
   test("login redirects away from /login", async ({ page }) => {
-    await page.goto("/login");
-    await page.getByLabel("Email").fill(email!);
-    await page.getByLabel("Password").fill(password!);
-    await page.getByRole("button", { name: "Masuk" }).click();
-
-    await expect(page).not.toHaveURL(/\/login(?:\?|$)/, { timeout: 15_000 });
-    await expect(page).toHaveURL(
-      /\/(dashboard|onboarding|verify-email)(?:\?|$)/,
-    );
+    await loginWithCredentials(page, creds!);
   });
 });

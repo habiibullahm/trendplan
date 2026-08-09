@@ -13,6 +13,12 @@ export type UpdateEntry = {
 
 export const UPDATE_LOG: UpdateEntry[] = [
   {
+    id: "2026-08-09-loading-skeletons",
+    date: "9 Agu 2026",
+    title: "Loading halaman lebih jelas",
+    body: "Saat pindah tab aplikasi, skeleton mengikuti layout halaman (Beranda, Planner, Tren, dan lainnya) supaya navigasi terasa lebih responsif.",
+  },
+  {
     id: "2026-08-08-auth-security",
     date: "8 Agu 2026",
     title: "Akun lebih aman",
