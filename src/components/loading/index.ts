@@ -10,11 +10,3 @@ export {
   ShortcutCardSkeleton,
   WeekTargetSkeleton,
 } from "@/components/loading/blocks";
-export {
-  AkunPageLoading,
-  DashboardPageLoading,
-  PlannerPageLoading,
-  RekomendasiPageLoading,
-  RiwayatPageLoading,
-  TrenPageLoading,
-} from "@/components/loading/pages";

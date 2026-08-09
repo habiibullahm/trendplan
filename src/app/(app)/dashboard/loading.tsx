@@ -1,1 +1,1 @@
-export { DashboardPageLoading as default } from "@/components/loading";
+export { DashboardPageLoading as default } from "@/app/loadings";

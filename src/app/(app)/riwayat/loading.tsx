@@ -1,1 +1,1 @@
-export { RiwayatPageLoading as default } from "@/components/loading";
+export { RiwayatPageLoading as default } from "@/app/loadings";

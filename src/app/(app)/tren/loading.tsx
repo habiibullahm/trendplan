@@ -1,1 +1,1 @@
-export { TrenPageLoading as default } from "@/components/loading";
+export { TrenPageLoading as default } from "@/app/loadings";

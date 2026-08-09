@@ -1,1 +1,1 @@
-export { RekomendasiPageLoading as default } from "@/components/loading";
+export { RekomendasiPageLoading as default } from "@/app/loadings";

@@ -7,7 +7,7 @@ import {
   RekomendasiPageLoading,
   RiwayatPageLoading,
   TrenPageLoading,
-} from "@/components/loading";
+} from "@/app/loadings";
 
 export const metadata: Metadata = {
   title: "E2E loading gallery",

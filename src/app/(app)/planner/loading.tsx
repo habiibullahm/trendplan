@@ -1,1 +1,1 @@
-export { PlannerPageLoading as default } from "@/components/loading";
+export { PlannerPageLoading as default } from "@/app/loadings";

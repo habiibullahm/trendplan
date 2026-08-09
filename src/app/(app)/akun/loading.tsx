@@ -1,1 +1,1 @@
-export { AkunPageLoading as default } from "@/components/loading";
+export { AkunPageLoading as default } from "@/app/loadings";

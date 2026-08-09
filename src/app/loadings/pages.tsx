@@ -5,12 +5,12 @@ import {
   MediaCardListSkeleton,
   MediaCardSkeleton,
   PageHeaderSkeleton,
+  PageLoading,
   PlannerBoardSkeleton,
   RowListSkeleton,
   ShortcutCardSkeleton,
   WeekTargetSkeleton,
-} from "@/components/loading/blocks";
-import { PageLoading } from "@/components/loading/page-loading";
+} from "@/components/loading";
 
 type ShellProps = {
   as?: "main" | "div";
