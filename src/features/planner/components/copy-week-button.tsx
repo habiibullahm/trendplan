@@ -14,16 +14,18 @@ export function CopyWeekButton({
 }) {
   async function onCopy() {
     if (items.length === 0) {
-      copyToastError("Belum ada ide minggu ini");
+      copyToastError("Belum ada ide di minggu ini");
       return;
     }
     const text = formatWeekPaste(items, weekLabel);
     const ok = await copyText(text);
-    if (ok) copyToastSuccess("Disalin");
-    else copyToastError("Gagal menyalin");
+    if (ok) copyToastSuccess("Daftar minggu disalin");
+    else copyToastError("Gagal menyalin daftar");
   }
 
   return (
-    <ChipButton onClick={onCopy}>Salin minggu</ChipButton>
+    <ChipButton onClick={onCopy} aria-label="Salin daftar rencana minggu ini">
+      Salin daftar
+    </ChipButton>
   );
 }

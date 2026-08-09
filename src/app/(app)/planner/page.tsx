@@ -60,15 +60,16 @@ export default async function PlannerPage({ searchParams }: Props) {
         <PlannerToastFromQuery />
       </Suspense>
       <h1 className="sr-only">Planner</h1>
-      <div className="flex flex-wrap items-end justify-between gap-3">
-        <div>
-          <p className="text-sm text-ink-muted">
-            Minggu {selection.weekIndex} · {weekLabel}
-          </p>
-        </div>
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <p className="min-w-0 text-sm text-ink-muted">
+          Minggu {selection.weekIndex} · {weekLabel}
+        </p>
         <div className="flex flex-wrap items-center gap-3">
-          <p className="text-sm font-medium text-ink">
-            Target {goal} · isi {weekPlan.items.length}
+          <p
+            className="text-sm font-medium tabular-nums text-ink"
+            aria-label={`${weekPlan.items.length} dari ${goal} target minggu terisi`}
+          >
+            {weekPlan.items.length}/{goal} terisi
           </p>
           <CopyWeekButton
             weekLabel={weekLabel}

@@ -49,5 +49,5 @@ export function formatWeekPaste(
   const lines = items.map(
     (item) => `${item.dayLabel} · ${item.title} · ${item.statusLabel}`,
   );
-  return [`Minggu ${weekLabel}`, ...lines].join("\n");
+  return [`Rencana minggu · ${weekLabel}`, ...lines].join("\n");
 }
