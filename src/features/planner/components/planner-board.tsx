@@ -212,7 +212,7 @@ function DraggableCard({
       <div
         ref={setNodeRef}
         style={style}
-        className={`min-touch min-w-0 touch-none overflow-hidden rounded-2xl border border-border bg-surface ${shellClass}`}
+        className={`min-touch min-w-0 touch-none overflow-hidden rounded-2xl border border-border bg-surface transition-colors hover:border-coral/40 hover:bg-coral/5 ${shellClass}`}
         {...(posted ? {} : listeners)}
         {...(posted ? {} : attributes)}
       >
@@ -246,7 +246,7 @@ function DraggableCard({
     >
       <Link
         href={itemHref(item.id, returnMonth, returnWeek)}
-        className="block min-w-0"
+        className="block min-w-0 rounded-lg transition-colors hover:bg-coral/5"
         onClick={onDetailClick}
         draggable={false}
       >
@@ -370,7 +370,7 @@ function StaticBoard({
                 ) : (
                   <Link
                     href={itemHref(item.id, returnMonth, returnWeek)}
-                    className="min-touch flex items-center justify-between gap-3 rounded-2xl border border-border bg-surface px-4 py-3"
+                    className="min-touch flex items-center justify-between gap-3 rounded-2xl border border-border bg-surface px-4 py-3 transition-colors hover:border-coral/40 hover:bg-coral/5"
                   >
                     <div className="min-w-0">
                       <p className="text-xs font-semibold text-ink-muted">
@@ -398,7 +398,7 @@ function StaticBoard({
                     returnMonth,
                     returnWeek,
                   )}
-                  className="min-touch flex items-center gap-3 rounded-2xl border border-dashed border-border px-4 py-3"
+                  className="min-touch flex items-center gap-3 rounded-2xl border border-dashed border-border px-4 py-3 transition-colors hover:border-coral/50 hover:bg-coral/5"
                 >
                   <p className="text-xs font-semibold text-ink-muted">{label}</p>
                   <p className="text-sm text-ink-muted">+ Buat ide</p>
@@ -414,10 +414,10 @@ function StaticBoard({
           return (
             <div
               key={label}
-              className={`min-h-36 min-w-0 overflow-hidden rounded-2xl border p-3 ${
+              className={`min-h-36 min-w-0 overflow-hidden rounded-2xl border p-3 transition-colors ${
                 item
                   ? "border-border bg-surface"
-                  : "border-dashed border-border"
+                  : "border-dashed border-border hover:border-coral/50 hover:bg-coral/5"
               }`}
             >
               <p className="text-xs font-semibold text-ink-muted">{label}</p>
@@ -437,7 +437,7 @@ function StaticBoard({
                 ) : (
                   <Link
                     href={itemHref(item.id, returnMonth, returnWeek)}
-                    className="mt-2 block min-w-0"
+                    className="mt-2 block min-w-0 rounded-lg transition-colors hover:bg-coral/5"
                   >
                     <p className="line-clamp-3 break-words text-sm font-semibold leading-snug text-ink">
                       {item.title}
@@ -460,7 +460,7 @@ function StaticBoard({
                     returnMonth,
                     returnWeek,
                   )}
-                  className="mt-3 block text-sm text-ink-muted"
+                  className="mt-3 block text-sm text-ink-muted transition-colors hover:text-coral"
                 >
                   + Buat ide
                 </Link>
@@ -478,11 +478,11 @@ function PlannerHint() {
     <p className="mt-4 text-sm text-ink-muted">
       Seret kartu ke hari lain untuk memindahkan atau menukar. Ketuk singkat
       untuk membuka detail. Slot kosong? Ambil ide dari{" "}
-      <Link href="/rekomendasi" className="font-semibold text-coral">
+      <Link href="/rekomendasi" className="font-semibold text-coral transition-colors hover:underline">
         Rekomendasi
       </Link>{" "}
       atau{" "}
-      <Link href="/tren" className="font-semibold text-coral">
+      <Link href="/tren" className="font-semibold text-coral transition-colors hover:underline">
         Tren
       </Link>
       .
