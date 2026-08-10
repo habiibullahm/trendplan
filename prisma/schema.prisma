@@ -41,6 +41,9 @@ model User {
   updatedAt             DateTime    @updatedAt
   weekPlans             WeekPlan[]
   authTokens            AuthToken[]
+  pushSubscriptions     PushSubscription[]
+  reminderDispatches    ReminderDispatch[]
+  feedbacks             Feedback[]
 }
 
 enum AuthTokenType {
@@ -139,4 +142,42 @@ model RateLimitBucket {
   resetAt DateTime
 
   @@index([resetAt])
+}
+
+/** Browser Web Push subscription (Pengingat plan + app updates). */
+model PushSubscription {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  endpoint  String   @unique
+  p256dh    String
+  auth      String
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+}
+
+/** Idempotency for daily H-1 plan reminder sends (targetDate = Jakarta Y-M-D of besok). */
+model ReminderDispatch {
+  id         String   @id @default(cuid())
+  userId     String
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  targetDate String
+  createdAt  DateTime @default(now())
+
+  @@unique([userId, targetDate])
+  @@index([userId])
+}
+
+/** In-app user feedback from Akun (Kirim masukan). */
+model Feedback {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  category  String
+  message   String
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@index([createdAt])
 }

@@ -4,7 +4,7 @@ import { useCallback, useState, useSyncExternalStore } from "react";
 import { ChipButton } from "@/components/ui/chip-button";
 import { Modal } from "@/components/ui/modal";
 import {
-  APP_UPDATE_ID,
+  APP_VERSION,
   UPDATE_LOG,
   UPDATE_STORAGE_KEY,
 } from "@/lib/updates";
@@ -23,7 +23,7 @@ function getSeenSnapshot() {
 }
 
 function getServerSnapshot() {
-  return APP_UPDATE_ID;
+  return APP_VERSION;
 }
 
 export function UpdateLog() {
@@ -33,11 +33,11 @@ export function UpdateLog() {
     getSeenSnapshot,
     getServerSnapshot,
   );
-  const hasNew = seen !== APP_UPDATE_ID;
+  const hasNew = seen !== APP_VERSION;
 
   const markSeen = useCallback(() => {
     try {
-      localStorage.setItem(UPDATE_STORAGE_KEY, APP_UPDATE_ID);
+      localStorage.setItem(UPDATE_STORAGE_KEY, APP_VERSION);
       window.dispatchEvent(new Event("storage"));
     } catch {
       /* ignore */
@@ -76,7 +76,7 @@ export function UpdateLog() {
         open={open}
         onClose={() => setOpen(false)}
         title="Update"
-        description="Perubahan terbaru di TrendPlan."
+        description={`TrendPlan v${APP_VERSION} — perubahan terbaru untuk creator.`}
         size="sm"
       >
         <ul className="max-h-[min(24rem,60vh)] space-y-4 overflow-y-auto">
@@ -85,7 +85,15 @@ export function UpdateLog() {
               key={entry.id}
               className="border-b border-border pb-4 last:border-0 last:pb-0"
             >
-              <p className="text-xs text-ink-muted">{entry.date}</p>
+              <p className="flex flex-wrap items-center gap-2 text-xs text-ink-muted">
+                <span>{entry.date}</span>
+                <span
+                  className="rounded-full border border-border px-1.5 py-0.5 font-semibold text-ink-muted"
+                  aria-label={`Versi ${entry.version}`}
+                >
+                  v{entry.version}
+                </span>
+              </p>
               <p className="mt-1 text-sm font-semibold text-ink">{entry.title}</p>
               <p className="mt-1 text-sm text-ink-muted">{entry.body}</p>
             </li>
