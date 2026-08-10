@@ -43,6 +43,7 @@ model User {
   authTokens            AuthToken[]
   pushSubscriptions     PushSubscription[]
   reminderDispatches    ReminderDispatch[]
+  feedbacks             Feedback[]
 }
 
 enum AuthTokenType {
@@ -152,4 +153,17 @@ model ReminderDispatch {
 
   @@unique([userId, targetDate])
   @@index([userId])
+}
+
+/** In-app user feedback from Akun (Kirim masukan). */
+model Feedback {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  category  String
+  message   String
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@index([createdAt])
 }

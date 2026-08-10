@@ -13,6 +13,12 @@ export type UpdateEntry = {
 
 export const UPDATE_LOG: UpdateEntry[] = [
   {
+    id: "2026-08-11-send-feedback",
+    date: "11 Agu 2026",
+    title: "Kirim masukan dari Akun",
+    body: "Sampaikan saran, bug, atau catatan lain lewat Akun → Masukan. Pesanmu tersimpan agar tim bisa meninjau.",
+  },
+  {
     id: "2026-08-09-loading-skeletons",
     date: "9 Agu 2026",
     title: "Loading halaman lebih jelas",
