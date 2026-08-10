@@ -27,7 +27,7 @@ function vercelBlobRemotePatterns(): NonNullable<
 }
 
 const nextConfig: NextConfig = {
-  serverExternalPackages: ["pg", "@prisma/adapter-pg", "sharp"],
+  serverExternalPackages: ["pg", "@prisma/adapter-pg", "sharp", "web-push"],
   // sharp 0.34+ ships libvips as a sibling optional package; ensure Linux
   // binaries are traced into Vercel serverless functions (avoids ERR_DLOPEN).
   outputFileTracingIncludes: {
