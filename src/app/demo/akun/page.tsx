@@ -61,6 +61,25 @@ export default function DemoAkunPage() {
 
       <hr className="mt-4 border-border" />
 
+      <section className="mt-2">
+        <p className="text-sm font-semibold text-ink">Masukan</p>
+        <div className="mt-1 divide-y divide-border">
+          <div className="flex flex-col gap-1 py-2.5">
+            <div className="flex items-center justify-between gap-3">
+              <div className="min-w-0">
+                <p className="text-sm text-ink-muted">Kirim masukan</p>
+                <p className="text-xs text-ink-muted">
+                  Saran dan laporan bug tersedia di aplikasi live.
+                </p>
+              </div>
+              <span className="text-xs font-semibold text-ink-muted">Demo</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <hr className="mt-4 border-border" />
+
       <section className="mt-4 space-y-3">
         <p className="text-sm font-semibold text-ink">Pintasan</p>
         <Link

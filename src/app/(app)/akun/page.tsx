@@ -10,6 +10,7 @@ import { ChangePasswordForm } from "@/features/auth/components/change-password-f
 import { LogoutButton } from "@/features/auth/components/logout-button";
 import { UpdateLog } from "@/features/auth/components/update-log";
 import { PushReminderToggle } from "@/features/reminders/components/push-reminder-toggle";
+import { FeedbackForm } from "@/features/feedback/components/feedback-form";
 import { prisma } from "@/lib/prisma";
 
 function initialFrom(name: string | null | undefined, email: string): string {
@@ -74,6 +75,15 @@ export default async function AkunPage() {
         <p className="text-sm font-semibold text-ink">Keamanan</p>
         <div className="mt-1 divide-y divide-border">
           <ChangePasswordForm />
+        </div>
+      </section>
+
+      <hr className="mt-2 border-border" />
+
+      <section className="mt-2">
+        <p className="text-sm font-semibold text-ink">Masukan</p>
+        <div className="mt-1 divide-y divide-border">
+          <FeedbackForm />
         </div>
       </section>
 
