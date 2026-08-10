@@ -47,7 +47,7 @@ export default function DemoDashboardPage() {
             </h2>
             <Link
               href="/demo/planner"
-              className="min-touch inline-flex shrink-0 items-center text-sm font-semibold text-coral"
+              className="min-touch inline-flex shrink-0 items-center text-sm font-semibold text-coral transition-colors hover:underline"
             >
               Semua
             </Link>
@@ -60,7 +60,7 @@ export default function DemoDashboardPage() {
               <FadeIn key={item.id} as="li">
                 <Link
                   href="/demo/planner"
-                  className="min-touch flex items-center justify-between gap-2 px-4 py-3 transition-colors hover:bg-paper/60"
+                  className="min-touch flex items-center justify-between gap-2 px-4 py-3 transition-colors hover:bg-coral/5"
                 >
                   <span className="truncate text-sm font-medium text-ink">
                     {item.title}
@@ -82,7 +82,7 @@ export default function DemoDashboardPage() {
           </h2>
             <Link
               href="/demo/rekomendasi"
-              className="min-touch inline-flex shrink-0 items-center text-sm font-semibold text-coral"
+              className="min-touch inline-flex shrink-0 items-center text-sm font-semibold text-coral transition-colors hover:underline"
             >
               Semua
             </Link>

@@ -141,7 +141,17 @@ function DaySlot({
           : "border-dashed border-border bg-transparent hover:border-coral/50 hover:bg-coral/5"
       } ${overRing}`}
     >
-      <p className="text-xs font-semibold text-ink-muted">{label}</p>
+      <div className="flex items-center justify-between gap-1">
+        <p className="min-w-0 text-xs font-semibold text-ink-muted">{label}</p>
+        {item ? (
+          <Badge
+            size="sm"
+            className={`max-w-[calc(100%-1.5rem)] shrink-0 truncate ${STATUS_CLASS[item.status]}`}
+          >
+            {STATUS_LABEL[item.status]}
+          </Badge>
+        ) : null}
+      </div>
       {item ? (
         <DraggableCard
           item={item}
@@ -253,12 +263,6 @@ function DraggableCard({
         <p className="line-clamp-3 break-words text-sm font-semibold leading-snug text-ink">
           {item.title}
         </p>
-        <Badge
-          size="sm"
-          className={`mt-2 inline-flex max-w-full ${STATUS_CLASS[item.status]}`}
-        >
-          {STATUS_LABEL[item.status]}
-        </Badge>
       </Link>
     </div>
   );
@@ -267,11 +271,20 @@ function DraggableCard({
 function OverlayCard({ item }: { item: PlannerBoardItem }) {
   return (
     <div className="max-w-[200px] min-w-0 scale-[1.02] cursor-grabbing overflow-hidden rounded-2xl border border-coral/40 bg-surface p-3 ring-2 ring-coral/30">
-      <p className="line-clamp-3 break-words text-sm font-semibold leading-snug text-ink">
+      <div className="flex items-center justify-between gap-1">
+        <p className="text-xs font-semibold text-ink-muted">
+          {DAY_SHORT[item.dayOfWeek]}
+        </p>
+        <Badge
+          size="sm"
+          className={`max-w-[calc(100%-1.5rem)] shrink-0 truncate ${STATUS_CLASS[item.status]}`}
+        >
+          {STATUS_LABEL[item.status]}
+        </Badge>
+      </div>
+      <p className="mt-2 line-clamp-3 break-words text-sm font-semibold leading-snug text-ink">
         {item.title}
       </p>
-      <Badge
-        size="sm" className={`mt-2 inline-flex ${STATUS_CLASS[item.status]}`}>{STATUS_LABEL[item.status]}</Badge>
     </div>
   );
 }
@@ -398,7 +411,7 @@ function StaticBoard({
                     returnMonth,
                     returnWeek,
                   )}
-                  className="min-touch flex items-center gap-3 rounded-2xl border border-dashed border-border px-4 py-3"
+                  className="min-touch flex items-center gap-3 rounded-2xl border border-dashed border-border px-4 py-3 transition-colors hover:border-coral/50 hover:bg-coral/5"
                 >
                   <p className="text-xs font-semibold text-ink-muted">{label}</p>
                   <p className="text-sm text-ink-muted">+ Buat ide</p>
@@ -414,25 +427,31 @@ function StaticBoard({
           return (
             <div
               key={label}
-              className={`min-h-36 min-w-0 overflow-hidden rounded-2xl border p-3 ${
+              className={`min-h-36 min-w-0 overflow-hidden rounded-2xl border p-3 transition-colors ${
                 item
                   ? "border-border bg-surface"
-                  : "border-dashed border-border"
+                  : "border-dashed border-border hover:border-coral/50 hover:bg-coral/5"
               }`}
             >
-              <p className="text-xs font-semibold text-ink-muted">{label}</p>
+              <div className="flex items-center justify-between gap-1">
+                <p className="min-w-0 text-xs font-semibold text-ink-muted">
+                  {label}
+                </p>
+                {item ? (
+                  <Badge
+                    size="sm"
+                    className={`max-w-[calc(100%-1.5rem)] shrink-0 truncate ${STATUS_CLASS[item.status]}`}
+                  >
+                    {STATUS_LABEL[item.status]}
+                  </Badge>
+                ) : null}
+              </div>
               {item ? (
                 readOnly ? (
                   <div className="mt-2 block min-w-0">
                     <p className="line-clamp-3 break-words text-sm font-semibold leading-snug text-ink">
                       {item.title}
                     </p>
-                    <Badge
-                      size="sm"
-                      className={`mt-2 inline-flex max-w-full ${STATUS_CLASS[item.status]}`}
-                    >
-                      {STATUS_LABEL[item.status]}
-                    </Badge>
                   </div>
                 ) : (
                   <Link
@@ -442,12 +461,6 @@ function StaticBoard({
                     <p className="line-clamp-3 break-words text-sm font-semibold leading-snug text-ink">
                       {item.title}
                     </p>
-                    <Badge
-                      size="sm"
-                      className={`mt-2 inline-flex max-w-full ${STATUS_CLASS[item.status]}`}
-                    >
-                      {STATUS_LABEL[item.status]}
-                    </Badge>
                   </Link>
                 )
               ) : readOnly ? (
@@ -460,7 +473,7 @@ function StaticBoard({
                     returnMonth,
                     returnWeek,
                   )}
-                  className="mt-3 block text-sm text-ink-muted"
+                  className="mt-3 block text-sm text-ink-muted transition-colors hover:text-coral"
                 >
                   + Buat ide
                 </Link>
@@ -478,11 +491,11 @@ function PlannerHint() {
     <p className="mt-4 text-sm text-ink-muted">
       Seret kartu ke hari lain untuk memindahkan atau menukar. Ketuk singkat
       untuk membuka detail. Slot kosong? Ambil ide dari{" "}
-      <Link href="/rekomendasi" className="font-semibold text-coral">
+      <Link href="/rekomendasi" className="font-semibold text-coral transition-colors hover:underline">
         Rekomendasi
       </Link>{" "}
       atau{" "}
-      <Link href="/tren" className="font-semibold text-coral">
+      <Link href="/tren" className="font-semibold text-coral transition-colors hover:underline">
         Tren
       </Link>
       .

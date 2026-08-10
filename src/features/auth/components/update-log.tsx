@@ -54,7 +54,7 @@ export function UpdateLog() {
       <button
         type="button"
         onClick={openLog}
-        className="min-touch flex w-full items-center justify-between rounded-2xl border border-border bg-surface px-4 py-3 text-left transition-colors hover:border-coral/40"
+        className="min-touch flex w-full items-center justify-between rounded-2xl border border-border bg-surface px-4 py-3 text-left transition-colors hover:border-coral/40 hover:bg-coral/5"
       >
         <span>
           <span className="flex items-center gap-2">

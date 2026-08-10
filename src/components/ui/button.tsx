@@ -9,9 +9,9 @@ export const buttonVariants = cva(
     variants: {
       variant: {
         primary:
-          "rounded-xl bg-coral text-white transition-transform active:scale-[0.98] disabled:opacity-60",
+          "rounded-xl bg-coral text-white shadow-sm transition-[transform,filter,box-shadow] hover:brightness-110 hover:shadow-md active:scale-[0.98] disabled:opacity-60",
         secondary:
-          "rounded-xl border border-border bg-surface text-ink transition-colors hover:bg-paper active:scale-[0.98] disabled:opacity-60",
+          "rounded-xl border border-border bg-surface text-ink transition hover:border-coral/40 hover:bg-coral/5 active:scale-[0.98] disabled:opacity-60",
         danger:
           "rounded-none bg-transparent text-ink-muted transition-colors hover:text-coral hover:underline disabled:opacity-60",
       },
