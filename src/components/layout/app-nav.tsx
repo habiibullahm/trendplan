@@ -57,8 +57,8 @@ export function TopNav({ basePath = "" }: { basePath?: string }) {
                 }}
                 className={`min-touch inline-flex items-center justify-center rounded-xl px-4 text-sm font-semibold transition-colors duration-200 ${
                   active
-                    ? "bg-coral/10 text-coral"
-                    : "text-ink-muted hover:bg-paper hover:text-ink"
+                    ? "bg-coral/10 text-coral hover:bg-coral/15"
+                    : "text-ink-muted hover:bg-coral/5 hover:text-ink"
                 }`}
               >
                 {item.label}
@@ -90,13 +90,17 @@ export function BottomNav({ basePath = "" }: { basePath?: string }) {
                 onClick={() => {
                   if (item.href === "/tren") scrollWindowTop();
                 }}
-                className={`min-touch flex flex-col items-center justify-center gap-0.5 px-1 text-xs font-semibold transition-colors duration-200 ${
-                  active ? "text-coral" : "text-ink-muted"
+                className={`group min-touch flex flex-col items-center justify-center gap-0.5 px-1 text-xs font-semibold transition-colors duration-200 ${
+                  active
+                    ? "text-coral"
+                    : "text-ink-muted hover:text-ink"
                 }`}
               >
                 <span
                   className={`h-1 w-1 rounded-full transition-colors duration-200 ${
-                    active ? "bg-coral" : "bg-transparent"
+                    active
+                      ? "bg-coral"
+                      : "bg-transparent group-hover:bg-ink-muted/50"
                   }`}
                   aria-hidden
                 />

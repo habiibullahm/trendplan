@@ -93,7 +93,7 @@ export default async function AkunPage() {
         <p className="text-sm font-semibold text-ink">Pintasan</p>
         <Link
           href="/riwayat"
-          className="min-touch flex items-center justify-between rounded-2xl border border-border bg-surface px-4 py-3"
+          className="min-touch flex items-center justify-between rounded-2xl border border-border bg-surface px-4 py-3 transition-colors hover:border-coral/40 hover:bg-coral/5"
         >
           <span>
             <span className="block text-sm font-semibold text-ink">Riwayat</span>
@@ -103,7 +103,7 @@ export default async function AkunPage() {
         </Link>
         <Link
           href="/rekomendasi"
-          className="min-touch flex items-center justify-between rounded-2xl border border-border bg-surface px-4 py-3"
+          className="min-touch flex items-center justify-between rounded-2xl border border-border bg-surface px-4 py-3 transition-colors hover:border-coral/40 hover:bg-coral/5"
         >
           <span>
             <span className="block text-sm font-semibold text-ink">

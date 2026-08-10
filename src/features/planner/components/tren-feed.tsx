@@ -129,8 +129,8 @@ function FilterChip({
       aria-pressed={active}
       className={`min-touch shrink-0 rounded-xl border px-3 text-xs font-semibold transition-colors ${
         active
-          ? "border-coral bg-coral text-white"
-          : "border-border bg-surface text-ink"
+          ? "border-coral bg-coral text-white hover:brightness-110"
+          : "border-border bg-surface text-ink hover:border-coral/40 hover:bg-coral/5"
       }`}
     >
       {label}

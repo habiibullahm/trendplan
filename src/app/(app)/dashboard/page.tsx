@@ -62,7 +62,7 @@ export default async function DashboardPage() {
             </h2>
             <Link
               href="/planner"
-              className="min-touch inline-flex shrink-0 items-center text-sm font-semibold text-coral"
+              className="min-touch inline-flex shrink-0 items-center text-sm font-semibold text-coral transition-colors hover:underline"
             >
               Semua
             </Link>
@@ -75,7 +75,7 @@ export default async function DashboardPage() {
               <FadeIn key={item.id} as="li">
                 <Link
                   href={`/planner/${item.id}`}
-                  className="min-touch flex items-center justify-between gap-2 px-4 py-3 transition-colors hover:bg-paper/60"
+                  className="min-touch flex items-center justify-between gap-2 px-4 py-3 transition-colors hover:bg-coral/5"
                 >
                   <span className="truncate text-sm font-medium text-ink">
                     {item.title}
@@ -97,7 +97,7 @@ export default async function DashboardPage() {
           </h2>
             <Link
               href="/rekomendasi"
-              className="min-touch inline-flex shrink-0 items-center text-sm font-semibold text-coral"
+              className="min-touch inline-flex shrink-0 items-center text-sm font-semibold text-coral transition-colors hover:underline"
             >
               Semua
             </Link>
@@ -123,7 +123,7 @@ export default async function DashboardPage() {
               <p className="font-medium text-ink">Belum ada rekomendasi</p>
               <p className="mt-1">
                 Data masih kosong. Cek{" "}
-                <Link href="/tren" className="font-semibold text-coral">
+                <Link href="/tren" className="font-semibold text-coral transition-colors hover:underline">
                   Tren
                 </Link>{" "}
                 atau ubah niche di Akun.

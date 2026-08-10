@@ -49,8 +49,8 @@ function GoalPicker({
             onClick={() => onSelect(value)}
             className={`min-touch rounded-xl border text-sm font-semibold transition-colors disabled:opacity-60 ${
               active
-                ? "border-coral bg-coral text-white"
-                : "border-border bg-paper text-ink"
+                ? "border-coral bg-coral text-white hover:brightness-110"
+                : "border-border bg-paper text-ink hover:border-coral/40 hover:bg-coral/5"
             }`}
           >
             {value}
