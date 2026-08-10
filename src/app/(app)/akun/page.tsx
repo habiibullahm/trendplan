@@ -9,6 +9,7 @@ import { AkunToastFromQuery } from "@/features/auth/components/akun-toast-from-q
 import { ChangePasswordForm } from "@/features/auth/components/change-password-form";
 import { LogoutButton } from "@/features/auth/components/logout-button";
 import { UpdateLog } from "@/features/auth/components/update-log";
+import { PushReminderToggle } from "@/features/reminders/components/push-reminder-toggle";
 import { prisma } from "@/lib/prisma";
 
 function initialFrom(name: string | null | undefined, email: string): string {
@@ -32,6 +33,10 @@ export default async function AkunPage() {
   });
 
   if (!user) redirect("/login");
+
+  const pushCount = await prisma.pushSubscription.count({
+    where: { userId: session.user.id },
+  });
 
   const displayName = user.name?.trim() || "Creator";
   const initial = initialFrom(user.name, user.email);
@@ -59,6 +64,7 @@ export default async function AkunPage() {
         <div className="mt-1 divide-y divide-border">
           <AkunNicheEditor key={user.niche} niche={user.niche} />
           <AkunGoalEditor key={user.weeklyGoal} weeklyGoal={user.weeklyGoal} />
+          <PushReminderToggle initialEnabled={pushCount > 0} />
         </div>
       </section>
 

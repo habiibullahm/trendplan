@@ -13,6 +13,7 @@ Perencanaan konten TikTok mingguan berbasis tren — niche **Couple Date Ideas**
 - **shadcn/ui** (initialized; `Card` / `Separator` / `Skeleton` / `Button` / `Dialog` available). App code still imports TrendPlan `Button` and `Modal` wrappers (shadcn-backed, same props); `ChipButton` stays custom. Prefer shadcn primitives for new UI where they exist; brand tokens (`coral`, `paper`, `ink`) map to shadcn CSS variables.
 - Deploy: Vercel + Neon (Vercel Postgres / Marketplace)
 - Vercel Blob (foto profil Akun)
+- Web Push (`web-push` + VAPID) — pengingat plan H-1 + kabar update
 
 ## Fitur MVP
 
@@ -22,7 +23,7 @@ Perencanaan konten TikTok mingguan berbasis tren — niche **Couple Date Ideas**
 - Salin caption siap TikTok (detail) dan Salin minggu (daftar hari)
 - Hapus dengan toast Urungkan singkat, lalu hapus permanen
 - Dashboard progress + riwayat
-- Akun: identitas, foto profil (unggah), target mingguan (ubah), pintasan Riwayat/Rekomendasi, keluar
+- Akun: identitas, foto profil (unggah), target mingguan (ubah), **pengingat plan** (Web Push), pintasan Riwayat/Rekomendasi, keluar
 - Demo baca saja di `/demo` (embed portfolio)
 - Toast sukses/error (Bahasa Indonesia)
 
@@ -80,6 +81,38 @@ npm run dev
 Buka [http://localhost:3000](http://localhost:3000).
 
 Opsional: Postgres terisolasi via Docker — lihat `docker-compose.yml` (pastikan port 5432 bebas).
+
+### Web Push (pengingat plan)
+
+Satu toggle di **Akun → Pengingat plan** mengaktifkan:
+
+- Reminder **H-1 jam 20:00 WIB** (besok ada ide belum Posted, atau target minggu belum penuh)
+- Kabar **update aplikasi** (broadcast ops)
+
+Generate kunci:
+
+```bash
+npx web-push generate-vapid-keys
+```
+
+Isi `.env` / `.env.local`: `NEXT_PUBLIC_VAPID_PUBLIC_KEY`, `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`, `VAPID_SUBJECT`, `CRON_SECRET`.
+
+Uji lokal (setelah Aktifkan di `/akun` dan ada ide di **hari besok**):
+
+```bash
+curl -H "Authorization: Bearer $CRON_SECRET" http://localhost:3000/api/cron/reminders
+```
+
+Broadcast update (ops):
+
+```bash
+curl -X POST http://localhost:3000/api/push/broadcast \
+  -H "Authorization: Bearer $CRON_SECRET" \
+  -H "Content-Type: application/json" \
+  -d '{"title":"Update TrendPlan","body":"Fitur baru di Akun — cek sekarang.","url":"/akun"}'
+```
+
+**Catatan iOS:** Web Push biasanya butuh Add to Home Screen; desktop Chrome/Firefox/Edge lebih mudah untuk uji lokal.
 
 ### 5. E2E (Playwright)
 
@@ -155,8 +188,13 @@ TARGET_DATABASE_URL="postgresql://...@....neon.tech/neondb?sslmode=require" npm 
 | `NEXT_PUBLIC_TRANSACTIONAL_EMAIL_ENABLED` | `true` agar UI tampilkan “Lupa password?” |
 | `EMAIL_VERIFICATION_REQUIRED` | Opt-in `true`; **default off** |
 | `BLOB_READ_WRITE_TOKEN` | (dari Vercel Blob store) |
+| `NEXT_PUBLIC_VAPID_PUBLIC_KEY` | Public VAPID (sama dengan `VAPID_PUBLIC_KEY`) |
+| `VAPID_PUBLIC_KEY` | Public VAPID |
+| `VAPID_PRIVATE_KEY` | Private VAPID (server only) |
+| `VAPID_SUBJECT` | `mailto:you@example.com` |
+| `CRON_SECRET` | Bearer untuk cron H-1 + `/api/push/broadcast` |
 
-4. Deploy — build menjalankan `prisma migrate deploy` (`vercel.json`).
+4. Deploy — build menjalankan `prisma migrate deploy` (`vercel.json`). Cron harian `0 13 * * *` UTC (= **20:00 WIB**) memanggil `/api/cron/reminders`.
 5. Seed sekali ke Neon:
 
 ```bash

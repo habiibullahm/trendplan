@@ -41,9 +41,21 @@ export default function DemoAkunPage() {
             <span className="text-sm text-ink-muted">Target / minggu</span>
             <span className="text-sm font-semibold text-ink">3 ide</span>
           </div>
+          <div className="flex flex-col gap-1 py-2.5">
+            <div className="flex items-center justify-between gap-3">
+              <div className="min-w-0">
+                <p className="text-sm text-ink-muted">Pengingat plan</p>
+                <p className="text-xs text-ink-muted">
+                  Push H-1 dan update app tersedia di aplikasi live.
+                </p>
+              </div>
+              <span className="text-xs font-semibold text-ink-muted">Demo</span>
+            </div>
+          </div>
         </div>
         <p className="mt-2 text-xs text-ink-muted">
-          Ubah target & foto profil tersedia setelah daftar / masuk.
+          Ubah target, foto profil, dan pengingat push tersedia setelah daftar /
+          masuk.
         </p>
       </section>
 
