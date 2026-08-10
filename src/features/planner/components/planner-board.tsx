@@ -141,7 +141,17 @@ function DaySlot({
           : "border-dashed border-border bg-transparent hover:border-coral/50 hover:bg-coral/5"
       } ${overRing}`}
     >
-      <p className="text-xs font-semibold text-ink-muted">{label}</p>
+      <div className="flex items-center justify-between gap-1">
+        <p className="min-w-0 text-xs font-semibold text-ink-muted">{label}</p>
+        {item ? (
+          <Badge
+            size="sm"
+            className={`max-w-[calc(100%-1.5rem)] shrink-0 truncate ${STATUS_CLASS[item.status]}`}
+          >
+            {STATUS_LABEL[item.status]}
+          </Badge>
+        ) : null}
+      </div>
       {item ? (
         <DraggableCard
           item={item}
@@ -212,7 +222,7 @@ function DraggableCard({
       <div
         ref={setNodeRef}
         style={style}
-        className={`min-touch min-w-0 touch-none overflow-hidden rounded-2xl border border-border bg-surface transition-colors hover:border-coral/40 hover:bg-coral/5 ${shellClass}`}
+        className={`min-touch min-w-0 touch-none overflow-hidden rounded-2xl border border-border bg-surface ${shellClass}`}
         {...(posted ? {} : listeners)}
         {...(posted ? {} : attributes)}
       >
@@ -246,19 +256,13 @@ function DraggableCard({
     >
       <Link
         href={itemHref(item.id, returnMonth, returnWeek)}
-        className="block min-w-0 rounded-lg transition-colors hover:bg-coral/5"
+        className="block min-w-0"
         onClick={onDetailClick}
         draggable={false}
       >
         <p className="line-clamp-3 break-words text-sm font-semibold leading-snug text-ink">
           {item.title}
         </p>
-        <Badge
-          size="sm"
-          className={`mt-2 inline-flex max-w-full ${STATUS_CLASS[item.status]}`}
-        >
-          {STATUS_LABEL[item.status]}
-        </Badge>
       </Link>
     </div>
   );
@@ -267,11 +271,20 @@ function DraggableCard({
 function OverlayCard({ item }: { item: PlannerBoardItem }) {
   return (
     <div className="max-w-[200px] min-w-0 scale-[1.02] cursor-grabbing overflow-hidden rounded-2xl border border-coral/40 bg-surface p-3 ring-2 ring-coral/30">
-      <p className="line-clamp-3 break-words text-sm font-semibold leading-snug text-ink">
+      <div className="flex items-center justify-between gap-1">
+        <p className="text-xs font-semibold text-ink-muted">
+          {DAY_SHORT[item.dayOfWeek]}
+        </p>
+        <Badge
+          size="sm"
+          className={`max-w-[calc(100%-1.5rem)] shrink-0 truncate ${STATUS_CLASS[item.status]}`}
+        >
+          {STATUS_LABEL[item.status]}
+        </Badge>
+      </div>
+      <p className="mt-2 line-clamp-3 break-words text-sm font-semibold leading-snug text-ink">
         {item.title}
       </p>
-      <Badge
-        size="sm" className={`mt-2 inline-flex ${STATUS_CLASS[item.status]}`}>{STATUS_LABEL[item.status]}</Badge>
     </div>
   );
 }
@@ -370,7 +383,7 @@ function StaticBoard({
                 ) : (
                   <Link
                     href={itemHref(item.id, returnMonth, returnWeek)}
-                    className="min-touch flex items-center justify-between gap-3 rounded-2xl border border-border bg-surface px-4 py-3 transition-colors hover:border-coral/40 hover:bg-coral/5"
+                    className="min-touch flex items-center justify-between gap-3 rounded-2xl border border-border bg-surface px-4 py-3"
                   >
                     <div className="min-w-0">
                       <p className="text-xs font-semibold text-ink-muted">
@@ -420,34 +433,34 @@ function StaticBoard({
                   : "border-dashed border-border hover:border-coral/50 hover:bg-coral/5"
               }`}
             >
-              <p className="text-xs font-semibold text-ink-muted">{label}</p>
+              <div className="flex items-center justify-between gap-1">
+                <p className="min-w-0 text-xs font-semibold text-ink-muted">
+                  {label}
+                </p>
+                {item ? (
+                  <Badge
+                    size="sm"
+                    className={`max-w-[calc(100%-1.5rem)] shrink-0 truncate ${STATUS_CLASS[item.status]}`}
+                  >
+                    {STATUS_LABEL[item.status]}
+                  </Badge>
+                ) : null}
+              </div>
               {item ? (
                 readOnly ? (
                   <div className="mt-2 block min-w-0">
                     <p className="line-clamp-3 break-words text-sm font-semibold leading-snug text-ink">
                       {item.title}
                     </p>
-                    <Badge
-                      size="sm"
-                      className={`mt-2 inline-flex max-w-full ${STATUS_CLASS[item.status]}`}
-                    >
-                      {STATUS_LABEL[item.status]}
-                    </Badge>
                   </div>
                 ) : (
                   <Link
                     href={itemHref(item.id, returnMonth, returnWeek)}
-                    className="mt-2 block min-w-0 rounded-lg transition-colors hover:bg-coral/5"
+                    className="mt-2 block min-w-0"
                   >
                     <p className="line-clamp-3 break-words text-sm font-semibold leading-snug text-ink">
                       {item.title}
                     </p>
-                    <Badge
-                      size="sm"
-                      className={`mt-2 inline-flex max-w-full ${STATUS_CLASS[item.status]}`}
-                    >
-                      {STATUS_LABEL[item.status]}
-                    </Badge>
                   </Link>
                 )
               ) : readOnly ? (
