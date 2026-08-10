@@ -12,6 +12,10 @@ import { SOFT_DELETE_UNDO_MS } from "@/features/planner/lib/soft-delete";
 const MESSAGES: Record<string, string> = {
   created: "Ide ditambahkan ke planner",
   saved: "Perubahan disimpan",
+  "activity-created": "Aktivitas ditambahkan",
+  "activities-created": "Beberapa aktivitas ditambahkan",
+  "activity-saved": "Aktivitas disimpan",
+  "activity-deleted": "Aktivitas dihapus",
 };
 
 const ERROR_MESSAGES: Record<string, string> = {

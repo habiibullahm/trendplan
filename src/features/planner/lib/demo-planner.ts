@@ -78,6 +78,21 @@ export const DEMO_ITEMS: DemoPlannerItem[] = [
   },
 ];
 
+export type DemoActivityItem = {
+  id: string;
+  dayOfWeek: number;
+  title: string;
+};
+
+/** Daily activities mock — independent from content slots. */
+export const DEMO_ACTIVITIES: DemoActivityItem[] = [
+  { id: "demo-act-1", dayOfWeek: 0, title: "Picnic di taman" },
+  { id: "demo-act-2", dayOfWeek: 0, title: "Nonton malam" },
+  { id: "demo-act-3", dayOfWeek: 5, title: "Date TMII" },
+  { id: "demo-act-4", dayOfWeek: 5, title: "Bianglala" },
+  { id: "demo-act-5", dayOfWeek: 6, title: "Brunch cafe" },
+];
+
 /**
  * Rekomendasi mock = katalog tren (format/hook viral).
  * Bukan item planner; user masih perlu “Pakai” untuk masuk plan.
