@@ -215,13 +215,20 @@ export function monthForWeekStart(weekStart: Date): {
   };
 }
 
-/** Build /planner?month=&week= with optional toast/undo. Prefer viewed month when valid. */
+export type PlannerTab = "konten" | "aktivitas";
+
+export function parsePlannerTab(raw?: string | null): PlannerTab {
+  return raw === "aktivitas" ? "aktivitas" : "konten";
+}
+
+/** Build /planner?month=&week= with optional toast/undo/tab. Prefer viewed month when valid. */
 export function plannerHref(opts: {
   weekStart: Date;
   monthParam?: string | null;
   weekParam?: string | null;
   toast?: string;
   undo?: string;
+  tab?: PlannerTab | string | null;
 }): string {
   const canonical = getWeekStart(opts.weekStart);
   let year: number;
@@ -249,6 +256,8 @@ export function plannerHref(opts: {
     month: formatMonthParam(year, month),
     week: String(weekIndex),
   });
+  const tab = parsePlannerTab(opts.tab);
+  if (tab === "aktivitas") q.set("tab", "aktivitas");
   if (opts.toast) q.set("toast", opts.toast);
   if (opts.undo) q.set("undo", opts.undo);
   return `/planner?${q.toString()}`;

@@ -113,5 +113,14 @@ describe("legacy weekStart keying + return month", () => {
         String(monthForWeekStart(weekStart).weekIndex) +
         "&toast=saved",
     );
+    assert.equal(
+      plannerHref({
+        weekStart,
+        monthParam: "2026-08",
+        weekParam: "1",
+        tab: "aktivitas",
+      }),
+      "/planner?month=2026-08&week=1&tab=aktivitas",
+    );
   });
 });

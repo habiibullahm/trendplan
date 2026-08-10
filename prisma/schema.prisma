@@ -86,16 +86,30 @@ model Trend {
 }
 
 model WeekPlan {
-  id        String        @id @default(cuid())
-  userId    String
-  weekStart DateTime
-  createdAt DateTime      @default(now())
-  updatedAt DateTime      @updatedAt
-  user      User          @relation(fields: [userId], references: [id], onDelete: Cascade)
-  items     ContentItem[]
+  id         String        @id @default(cuid())
+  userId     String
+  weekStart  DateTime
+  createdAt  DateTime      @default(now())
+  updatedAt  DateTime      @updatedAt
+  user       User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  items      ContentItem[]
+  activities Activity[]
 
   @@unique([userId, weekStart])
   @@index([userId])
+}
+
+/** Daily life / date activities — many per day; not content. */
+model Activity {
+  id         String   @id @default(cuid())
+  weekPlanId String
+  dayOfWeek  Int
+  title      String
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  weekPlan   WeekPlan @relation(fields: [weekPlanId], references: [id], onDelete: Cascade)
+
+  @@index([weekPlanId, dayOfWeek])
 }
 
 model ContentItem {

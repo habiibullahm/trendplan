@@ -22,6 +22,20 @@ export const APP_VERSION = packageJson.version;
 
 export const UPDATE_LOG: UpdateEntry[] = [
   {
+    id: "2026-08-11-planner-aktivitas",
+    version: "0.3.0",
+    date: "11 Agu 2026",
+    title: "Tab Aktivitas di Plan",
+    body: "Di Plan, pilih Konten atau Aktivitas. Catat banyak kegiatan harian (bisa beberapa baris sekaligus) terpisah dari slot ide konten.",
+  },
+  {
+    id: "2026-08-11-action-hover",
+    version: "0.3.0",
+    date: "11 Agu 2026",
+    title: "Hover aksi lebih jelas",
+    body: "Tombol, chip, navigasi, dan pintasan memberi umpan balik hover yang konsisten. Status Draft/Posted di grid Plan sejajar di samping nama hari.",
+  },
+  {
     id: "2026-08-11-send-feedback",
     version: "0.2.0",
     date: "11 Agu 2026",

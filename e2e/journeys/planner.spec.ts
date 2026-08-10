@@ -7,13 +7,13 @@ async function findCreateIdeLink(page: Page): Promise<Locator | null> {
   const createLink = page.getByRole("link", { name: /\+ Buat ide/ });
   if ((await createLink.count()) > 0) return createLink.first();
 
-  // Week chips include "isi N/7" in the accessible name.
-  const chips = page.getByRole("link", { name: /isi \d+\/7/ });
+  // Week chips include "N ide" in the accessible name.
+  const chips = page.getByRole("link", { name: /\d+ ide/ });
   const n = await chips.count();
   for (let i = 0; i < n; i++) {
     const chip = chips.nth(i);
     const label = (await chip.innerText()).replace(/\s+/g, " ");
-    if (/isi 7\/7/.test(label)) continue;
+    if (/\b7 ide\b/.test(label)) continue;
     await chip.click();
     await expect(page).toHaveURL(/\/planner\?/);
     try {
@@ -55,7 +55,7 @@ test.describe("planner journey", () => {
     await expect(page.getByText(/Minggu \d+ ·/)).toBeVisible();
     await expect(page.getByText(/\d+\/\d+ terisi/)).toBeVisible();
     await expect(
-      page.getByRole("link", { name: /isi \d+\/7/ }).first(),
+      page.getByRole("link", { name: /\d+ ide/ }).first(),
     ).toBeVisible();
 
     const createLink = await findCreateIdeLink(page);
