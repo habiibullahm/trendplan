@@ -13,15 +13,11 @@ import {
   getClientIp,
   withValidation,
 } from "@/lib/action-middleware";
-import {
-  appBaseUrl,
-  createAuthToken,
-  consumeAuthTokenThen,
-  invalidateUnusedAuthTokens,
-} from "@/lib/auth/tokens";
+import { consumeAuthTokenThen } from "@/lib/auth/tokens";
 import { isTransactionalEmailEnabled } from "@/lib/auth/env";
+import { requireAppUserAction } from "@/lib/auth/require-app-user";
+import { sendVerificationEmailForUser } from "@/lib/auth/send-verification-email";
 import { verifyEmailTokenSchema } from "@/lib/auth/validation";
-import { sendMail } from "@/lib/mail";
 import { prisma } from "@/lib/prisma";
 
 const RESEND_USER_LIMIT = { limit: 3, windowMs: 60 * 60 * 1000 };
@@ -29,29 +25,6 @@ const RESEND_IP_LIMIT = { limit: 5, windowMs: 60 * 60 * 1000 };
 const VERIFY_IP_LIMIT = { limit: 20, windowMs: 60 * 60 * 1000 };
 
 export type EmailVerificationState = ActionResult;
-
-export async function sendVerificationEmailForUser(
-  userId: string,
-  email: string,
-): Promise<void> {
-  if (!isTransactionalEmailEnabled()) {
-    throw new Error("Email belum diaktifkan.");
-  }
-
-  const raw = await createAuthToken(userId, "EMAIL_VERIFY");
-  try {
-    const link = `${appBaseUrl()}/verify-email?token=${encodeURIComponent(raw)}`;
-    await sendMail({
-      to: email,
-      subject: "Verifikasi email TrendPlan",
-      text: `Verifikasi email kamu (berlaku 1 jam):\n\n${link}\n`,
-      html: `<p>Verifikasi email kamu (berlaku 1 jam):</p><p><a href="${link}">${link}</a></p>`,
-    });
-  } catch (error) {
-    await invalidateUnusedAuthTokens(userId, "EMAIL_VERIFY");
-    throw error;
-  }
-}
 
 async function postVerifyRedirectPath(userId: string): Promise<string> {
   const user = await prisma.user.findUnique({
@@ -109,14 +82,14 @@ export async function resendVerificationEmailAction(
   formData: FormData,
 ): Promise<EmailVerificationState> {
   void formData;
-  const session = await auth();
-  const userId = session?.user?.id;
-  if (!userId) return actionError(ActionErrors.unauthorized);
+  const gated = await requireAppUserAction({ requireVerified: false });
+  if (!gated.ok) return gated.result;
 
   if (!isTransactionalEmailEnabled()) {
     return actionError(ActionErrors.emailDisabled);
   }
 
+  const userId = gated.userId;
   const ip = await getClientIp();
   const limited = await assertRateLimits(
     { key: `email-verify-resend:user:${userId}`, options: RESEND_USER_LIMIT },

@@ -4,8 +4,17 @@ import { del, put } from "@vercel/blob";
 import { revalidatePath } from "next/cache";
 import { AVATAR_MAX_BYTES } from "@/features/auth/lib/avatar-image";
 import { prepareAvatarUpload } from "@/features/auth/lib/prepare-avatar-upload";
-import { prisma } from "@/lib/prisma";
+import {
+  assertRateLimits,
+  getClientIp,
+} from "@/lib/action-middleware";
+import { ActionErrors } from "@/lib/action-result";
 import { requireAppUserAction } from "@/lib/auth/require-app-user";
+import { prisma } from "@/lib/prisma";
+import {
+  AVATAR_UPLOAD_IP_LIMIT,
+  AVATAR_UPLOAD_USER_LIMIT,
+} from "@/lib/rate-limit-policies";
 
 export type ProfileImageActionState = {
   error?: string;
@@ -56,6 +65,18 @@ export async function uploadProfileImageAction(
   }
   if (file.size > AVATAR_MAX_BYTES) {
     return { error: "Ukuran maksimal 2 MB." };
+  }
+
+  const ip = await getClientIp();
+  const limited = await assertRateLimits(
+    {
+      key: `avatar-upload:user:${gated.userId}`,
+      options: AVATAR_UPLOAD_USER_LIMIT,
+    },
+    { key: `avatar-upload:ip:${ip}`, options: AVATAR_UPLOAD_IP_LIMIT },
+  );
+  if (limited) {
+    return { error: limited.error ?? ActionErrors.rateLimited };
   }
 
   const raw = Buffer.from(await file.arrayBuffer());

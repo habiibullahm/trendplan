@@ -14,6 +14,11 @@ import {
 } from "@/features/planner/lib/soft-delete";
 import { resolveStatusUpdate } from "@/lib/labels";
 import { getWeekStart, parseWeekStartParam, plannerHref } from "@/lib/week";
+import {
+  captionSchema,
+  hashtagsSchema,
+  hookSchema,
+} from "@/features/planner/lib/content-field-schemas";
 
 const daySchema = z.coerce.number().int().min(0).max(6);
 const statusSchema = z.enum(["IDE", "POSTED"]);
@@ -110,7 +115,11 @@ export async function createContentItemAction(
     return { error: "Judul wajib diisi." };
   }
 
-  const hook = String(formData.get("hook") ?? "").trim() || null;
+  const hookParsed = hookSchema.safeParse(formData.get("hook") ?? "");
+  if (!hookParsed.success) {
+    return { error: "Hook terlalu panjang." };
+  }
+  const hook = hookParsed.data || null;
   const weekStart = resolveWeekStartFromForm(formData);
 
   const weekPlan = await getOrCreateWeekPlan(userId, weekStart);
@@ -147,6 +156,17 @@ export async function updateContentItemAction(
     return { error: "Data tidak valid." };
   }
 
+  const captionParsed = captionSchema.safeParse(formData.get("caption") ?? "");
+  const hashtagsParsed = hashtagsSchema.safeParse(
+    formData.get("hashtags") ?? "",
+  );
+  if (!captionParsed.success) {
+    return { error: "Caption terlalu panjang." };
+  }
+  if (!hashtagsParsed.success) {
+    return { error: "Hashtag terlalu panjang." };
+  }
+
   const item = await prisma.contentItem.findFirst({
     where: { id: itemId, deletedAt: null, weekPlan: { userId } },
     include: { weekPlan: { select: { weekStart: true } } },
@@ -160,8 +180,8 @@ export async function updateContentItemAction(
   await prisma.contentItem.update({
     where: { id: itemId },
     data: {
-      caption: String(formData.get("caption") ?? "").trim() || null,
-      hashtags: String(formData.get("hashtags") ?? "").trim() || null,
+      caption: captionParsed.data || null,
+      hashtags: hashtagsParsed.data || null,
       status: resolveStatusUpdate(item.status, statusParsed.data),
       // Legacy field — no longer editable in UI; clear leftovers on save.
       performanceNote: null,
