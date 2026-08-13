@@ -29,7 +29,7 @@ Perencanaan konten TikTok mingguan berbasis tren — niche **Couple Date Ideas**
 
 ## Roadmap
 
-- **AI bantu rencana konten** — saran ide, caption, dan hashtag dari tren/niche user (bukan ganti planner manual; membantu mengisi slot mingguan lebih cepat). Arah teknis kasar: streaming UI (mis. Vercel AI SDK), tool calling ke data tren/planner, tetap UI ringan (Tailwind / komponen sendiri).
+- **AI bantu rencana konten** — tombol **Bantu AI** di detail ide mengisi caption & hashtag dari niche + tren/ide yang sudah ada di DB (Vercel AI SDK + OpenAI). Bukan riset FYP live / scraper TikTok; planner tetap manual-first. Aktifkan dengan `AI_ASSIST_ENABLED=true` dan `OPENAI_API_KEY` (lihat `.env.example`). Tanpa key, saran template lokal tetap dipakai.
 
 ## Setup lokal
 

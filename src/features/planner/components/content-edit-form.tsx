@@ -81,13 +81,9 @@ export function ContentEditForm({
   const busy = savePending || deletePending;
   const [caption, setCaption] = useState(item.caption ?? "");
   const [hashtags, setHashtags] = useState(item.hashtags ?? "");
+  const [aiPending, setAiPending] = useState(false);
 
-  function isiSaran() {
-    const nextCaption = suggestCaption({
-      title: item.title,
-      hook: item.hook,
-    });
-    const nextHashtags = suggestHashtags();
+  function applySaran(nextCaption: string, nextHashtags: string) {
     const captionDirty =
       caption.trim().length > 0 && caption.trim() !== nextCaption;
     const hashtagsDirty =
@@ -97,12 +93,70 @@ export function ContentEditForm({
       const ok = window.confirm(
         "Ganti caption & hashtag dengan saran? Teks di field akan ditimpa.",
       );
-      if (!ok) return;
+      if (!ok) return false;
     }
 
     setCaption(nextCaption);
     setHashtags(nextHashtags);
+    return true;
+  }
+
+  /** Local template fallback (no network) — used if AI request fails hard. */
+  function isiSaranTemplate() {
+    const nextCaption = suggestCaption({
+      title: item.title,
+      hook: item.hook,
+    });
+    const nextHashtags = suggestHashtags();
+    if (!applySaran(nextCaption, nextHashtags)) return;
     copyToastSuccess("Saran diisi");
+  }
+
+  async function bantuAi() {
+    if (aiPending || busy) return;
+    setAiPending(true);
+    try {
+      const res = await fetch("/api/ai/caption", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ contentItemId: item.id }),
+      });
+
+      if (res.status === 429) {
+        copyToastError("Terlalu banyak permintaan. Coba lagi nanti.");
+        return;
+      }
+
+      if (!res.ok) {
+        isiSaranTemplate();
+        return;
+      }
+
+      const data = (await res.json()) as {
+        caption?: string;
+        hashtags?: string;
+        source?: "ai" | "template";
+      };
+
+      const nextCaption =
+        typeof data.caption === "string"
+          ? data.caption
+          : suggestCaption({ title: item.title, hook: item.hook });
+      const nextHashtags =
+        typeof data.hashtags === "string" ? data.hashtags : suggestHashtags();
+
+      if (!applySaran(nextCaption, nextHashtags)) return;
+
+      if (data.source === "ai") {
+        copyToastSuccess("Saran AI diisi");
+      } else {
+        copyToastSuccess("Saran template diisi");
+      }
+    } catch {
+      isiSaranTemplate();
+    } finally {
+      setAiPending(false);
+    }
   }
 
   async function salin() {
@@ -121,6 +175,8 @@ export function ContentEditForm({
     else copyToastError("Gagal menyalin");
   }
 
+  const controlsBusy = busy || aiPending;
+
   return (
     <div className="flex flex-col gap-5">
       <form action={action} className="flex flex-col gap-4">
@@ -134,7 +190,7 @@ export function ContentEditForm({
               <label
                 key={status}
                 className={`min-touch flex items-center justify-center rounded-xl border border-border bg-surface px-2 text-center text-xs font-semibold has-[:checked]:border-coral has-[:checked]:bg-coral/10 has-[:checked]:text-coral ${
-                  busy
+                  controlsBusy
                     ? "cursor-not-allowed opacity-60"
                     : "cursor-pointer"
                 }`}
@@ -144,7 +200,7 @@ export function ContentEditForm({
                   name="status"
                   value={status}
                   defaultChecked={normalizeStatus(item.status) === status}
-                  disabled={busy}
+                  disabled={controlsBusy}
                   className="sr-only"
                 />
                 {STATUS_LABEL[status]}
@@ -157,8 +213,13 @@ export function ContentEditForm({
           label="Caption"
           htmlFor="caption-field"
           action={
-            <ChipButton variant="ghost" onClick={isiSaran} disabled={busy}>
-              Isi saran
+            <ChipButton
+              variant="ghost"
+              onClick={bantuAi}
+              disabled={controlsBusy}
+              aria-busy={aiPending}
+            >
+              {aiPending ? "Menyusun…" : "Bantu AI"}
             </ChipButton>
           }
         >
@@ -169,7 +230,7 @@ export function ContentEditForm({
             value={caption}
             onChange={(e) => setCaption(e.target.value)}
             placeholder="Tulis caption draft…"
-            disabled={busy}
+            disabled={controlsBusy}
           />
         </FormField>
 
@@ -178,7 +239,7 @@ export function ContentEditForm({
             name="hashtags"
             value={hashtags}
             onChange={(e) => setHashtags(e.target.value)}
-            disabled={busy}
+            disabled={controlsBusy}
           />
         </FormField>
 
@@ -186,12 +247,12 @@ export function ContentEditForm({
           <Button
             type="submit"
             loading={savePending}
-            disabled={deletePending}
+            disabled={deletePending || aiPending}
             loadingText="Menyimpan..."
           >
             Simpan
           </Button>
-          <ChipButton onClick={salin} disabled={busy}>
+          <ChipButton onClick={salin} disabled={controlsBusy}>
             Salin
           </ChipButton>
         </div>
@@ -210,7 +271,7 @@ export function ContentEditForm({
           <Button
             type="submit"
             variant="danger"
-            disabled={savePending}
+            disabled={savePending || aiPending}
             loading={deletePending}
             loadingText="Menghapus..."
           >
