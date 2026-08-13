@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="720" height="1280" viewBox="0 0 720 1280">
+  <defs>
+    <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#292524"/>
+      <stop offset="100%" stop-color="#0c0a09"/>
+    </linearGradient>
+  </defs>
+  <rect width="720" height="1280" fill="url(#g)"/>
+  <circle cx="360" cy="420" r="8" fill="#e24e3b"/>
+  <circle cx="300" cy="380" r="3" fill="rgba(250,250,249,0.6)"/>
+  <circle cx="420" cy="360" r="2" fill="rgba(250,250,249,0.5)"/>
+  <circle cx="480" cy="440" r="2.5" fill="rgba(250,250,249,0.4)"/>
+  <text x="360" y="580" text-anchor="middle" fill="rgba(250,250,249,0.9)" font-family="Georgia,serif" font-size="42">TrendPlan</text>
+  <text x="360" y="630" text-anchor="middle" fill="rgba(250,250,249,0.5)" font-family="system-ui,sans-serif" font-size="22">Tech · night</text>
+</svg>

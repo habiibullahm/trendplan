@@ -2,64 +2,24 @@ import "dotenv/config";
 import { ContentFormat } from "../src/generated/prisma/client";
 import { createPrismaClientFromEnv } from "../src/lib/db";
 import { NICHES } from "../src/lib/niches";
+import {
+  applyCoverOnly,
+  applyEmptyMedia,
+  attachCuratedMedia,
+  type CuratedTrendSeedRow,
+} from "../src/features/planner/lib/curated-trend-media";
 
 const { prisma, pool } = createPrismaClientFromEnv();
 
-const COVERS = [
-  "/mocks/covers/coral.svg",
-  "/mocks/covers/sage.svg",
-  "/mocks/covers/ink.svg",
-  "/mocks/covers/warm.svg",
-] as const;
-
-const AUDIO_TITLES = [
-  "original sound — date night",
-  "soft piano loop",
-  "cafe ambience (mock)",
-  "lofi beat — mock",
-  "trending audio (mock)",
-] as const;
-
-const AUDIO_URLS = [
-  "/mocks/audio/tone-a.wav",
-  "/mocks/audio/tone-b.wav",
-] as const;
-
-type TrendSeed = {
+type TrendSeedInput = {
   title: string;
   hook: string;
   format: ContentFormat;
   score: number;
   reason: string;
-  niche: (typeof NICHES)[number];
-  coverUrl?: string | null;
-  videoUrl?: string | null;
-  audioTitle?: string | null;
-  audioUrl?: string | null;
 };
 
-function withMockMedia(
-  trends: Omit<TrendSeed, "niche" | "coverUrl" | "videoUrl" | "audioTitle" | "audioUrl">[],
-  niche: (typeof NICHES)[number],
-): TrendSeed[] {
-  return trends.map((t, index) => {
-    const coverUrl = COVERS[index % COVERS.length];
-    const audioTitle = AUDIO_TITLES[index % AUDIO_TITLES.length];
-    // Every other card gets playable audio.
-    const audioUrl = index % 2 === 0 ? AUDIO_URLS[index % AUDIO_URLS.length] : null;
-    // Every trend gets sample video + cover (cover-only demo is applied once globally below).
-    return {
-      ...t,
-      niche,
-      coverUrl,
-      videoUrl: "/mocks/video/sample.mp4",
-      audioTitle,
-      audioUrl,
-    };
-  });
-}
-
-const coupleTrends: Omit<TrendSeed, "niche">[] = [
+const coupleTrends: TrendSeedInput[] = [
   {
     title: "Format: 3 date di bawah 100rb",
     hook: "3 date ideas that feel expensive…",
@@ -146,7 +106,7 @@ const coupleTrends: Omit<TrendSeed, "niche">[] = [
   },
 ];
 
-const techTrends: Omit<TrendSeed, "niche">[] = [
+const techTrends: TrendSeedInput[] = [
   {
     title: "List: 3 fitur tersembunyi HP kamu",
     hook: "Yakin udah tau semua fitur HP kamu?",
@@ -205,7 +165,7 @@ const techTrends: Omit<TrendSeed, "niche">[] = [
   },
 ];
 
-const foodTrends: Omit<TrendSeed, "niche">[] = [
+const foodTrends: TrendSeedInput[] = [
   {
     title: "List: meal prep 3 menu hemat",
     hook: "3 meal prep recipes under 20k…",
@@ -264,19 +224,18 @@ const foodTrends: Omit<TrendSeed, "niche">[] = [
   },
 ];
 
-const trends: TrendSeed[] = [
-  ...withMockMedia(coupleTrends, "Couple Date Ideas"),
-  ...withMockMedia(techTrends, "Tech & Gadget"),
-  ...withMockMedia(foodTrends, "Food & Cooking"),
+const trendsBase: CuratedTrendSeedRow[] = [
+  ...attachCuratedMedia(coupleTrends, "Couple Date Ideas"),
+  ...attachCuratedMedia(techTrends, "Tech & Gadget"),
+  ...attachCuratedMedia(foodTrends, "Food & Cooking"),
 ];
 
-// One intentional cover/video-less row (lowest-score food card) for empty-state UI demos.
-const last = trends[trends.length - 1];
-if (last) {
-  last.coverUrl = null;
-  last.videoUrl = null;
-  last.audioUrl = null;
-}
+// Cover-only (second-to-last food) + empty media (last food) for UI path coverage.
+const trends: CuratedTrendSeedRow[] = trendsBase.map((row, i, arr) => {
+  if (i === arr.length - 2) return applyCoverOnly(row);
+  if (i === arr.length - 1) return applyEmptyMedia(row);
+  return row;
+});
 
 async function main() {
   await prisma.trend.deleteMany({
