@@ -1,5 +1,10 @@
 import type { ContentFormat, ContentStatus } from "@/generated/prisma/client";
 import { formatWeekRange, getWeekStart } from "@/lib/week";
+import {
+  CURATED_AUDIO_URLS,
+  CURATED_COVERS,
+  CURATED_VIDEOS,
+} from "@/features/planner/lib/curated-trend-media";
 import type { TrendMediaFields } from "@/features/planner/lib/trend-media-types";
 
 export type DemoPlannerItem = {
@@ -23,23 +28,20 @@ export const DEMO_WEEKLY_GOAL = 5;
 export const DEMO_USER_NAME = "Demo Creator";
 export const DEMO_NICHE = "Couple Date Ideas";
 
-const COVERS = [
-  "/mocks/covers/coral.svg",
-  "/mocks/covers/sage.svg",
-  "/mocks/covers/ink.svg",
-  "/mocks/covers/warm.svg",
-] as const;
+const COVERS = CURATED_COVERS;
 
 const AUDIO = [
   {
     audioTitle: "original sound — date night",
-    audioUrl: "/mocks/audio/tone-a.wav",
+    audioUrl: CURATED_AUDIO_URLS[0],
   },
   {
     audioTitle: "soft piano loop",
-    audioUrl: "/mocks/audio/tone-b.wav",
+    audioUrl: CURATED_AUDIO_URLS[1],
   },
 ] as const;
+
+const VIDEO = CURATED_VIDEOS[0];
 
 /**
  * Planner mock = konten milik creator (judul kerja di plan).
@@ -107,7 +109,7 @@ export const DEMO_TRENDS: DemoTrend[] = [
     reason: "Tren hemat — cocok diisi ke slot kosong minggu ini",
     niche: "Couple Date Ideas",
     coverUrl: COVERS[0],
-    videoUrl: "/mocks/video/sample.mp4",
+    videoUrl: VIDEO,
     ...AUDIO[0],
   },
   {
@@ -119,7 +121,7 @@ export const DEMO_TRENDS: DemoTrend[] = [
     reason: "POV low effort, mudah diambil creator solo",
     niche: "Couple Date Ideas",
     coverUrl: COVERS[1],
-    videoUrl: "/mocks/video/sample.mp4",
+    videoUrl: VIDEO,
     ...AUDIO[1],
   },
   {
@@ -131,8 +133,8 @@ export const DEMO_TRENDS: DemoTrend[] = [
     reason: "Visual cafe + storytelling pas niche couple",
     niche: "Couple Date Ideas",
     coverUrl: COVERS[2],
-    videoUrl: "/mocks/video/sample.mp4",
-    audioTitle: "cafe ambience (mock)",
+    videoUrl: VIDEO,
+    audioTitle: "cafe ambience",
   },
   {
     id: "demo-trend-4",
@@ -143,7 +145,7 @@ export const DEMO_TRENDS: DemoTrend[] = [
     reason: "Checklist sering di-save audiens dating",
     niche: "Couple Date Ideas",
     coverUrl: COVERS[3],
-    videoUrl: "/mocks/video/sample.mp4",
+    videoUrl: VIDEO,
     ...AUDIO[0],
   },
   {
@@ -155,7 +157,7 @@ export const DEMO_TRENDS: DemoTrend[] = [
     reason: "POV + musik malam masih sering naik di FYP",
     niche: "Couple Date Ideas",
     coverUrl: COVERS[0],
-    videoUrl: "/mocks/video/sample.mp4",
+    videoUrl: VIDEO,
     ...AUDIO[1],
   },
   {

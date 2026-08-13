@@ -1,5 +1,6 @@
 import "dotenv/config";
 import { createPrismaClientFromEnv } from "../src/lib/db";
+import { isMockMediaUrl } from "../src/features/planner/lib/curated-trend-media";
 
 async function main() {
   const { prisma, pool } = createPrismaClientFromEnv();
@@ -10,6 +11,9 @@ async function main() {
     });
     const withCover = await prisma.trend.count({
       where: { coverUrl: { not: null } },
+    });
+    const withCuratedCover = await prisma.trend.count({
+      where: { coverUrl: { startsWith: "/media/trends/" } },
     });
     const samples = await prisma.trend.findMany({
       take: 5,
@@ -26,14 +30,24 @@ async function main() {
     const nullBoth = await prisma.trend.count({
       where: { coverUrl: null, videoUrl: null },
     });
-    const masak = await prisma.trend.findMany({
-      where: { title: { contains: "masak" } },
-      select: { title: true, coverUrl: true, videoUrl: true, niche: true },
+    const coverOnly = await prisma.trend.findMany({
+      where: { coverUrl: { not: null }, videoUrl: null },
+      select: { title: true, coverUrl: true, niche: true },
     });
     const noVideo = await prisma.trend.findMany({
       where: { videoUrl: null },
       select: { title: true, coverUrl: true, niche: true },
     });
+    const all = await prisma.trend.findMany({
+      select: { coverUrl: true, videoUrl: true, audioUrl: true },
+    });
+    const stillMock = all.filter(
+      (r) =>
+        isMockMediaUrl(r.coverUrl) ||
+        isMockMediaUrl(r.videoUrl) ||
+        isMockMediaUrl(r.audioUrl),
+    ).length;
+
     console.log(
       JSON.stringify(
         {
@@ -41,9 +55,11 @@ async function main() {
           total,
           withVideo,
           withCover,
+          withCuratedCover,
           nullBoth,
+          stillMock,
           samples,
-          masak,
+          coverOnly,
           noVideo,
         },
         null,

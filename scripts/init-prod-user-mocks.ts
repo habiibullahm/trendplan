@@ -1,6 +1,10 @@
 /**
  * Run migrate + ensure trend media + user mocks against production Neon.
  *
+ * Prod deploy: after curated `/media/trends/` lands, run this (or
+ * `npm run db:ensure-trend-media`) in the same release for DBs still on
+ * `/mocks/` URLs — otherwise trend media 404s.
+ *
  * Requires `.env.prod.local` from:
  *   vercel env pull .env.prod.local --environment=production --yes
  *

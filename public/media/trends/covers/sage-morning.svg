@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="720" height="1280" viewBox="0 0 720 1280">
+  <defs>
+    <linearGradient id="g" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#8fbc8f"/>
+      <stop offset="100%" stop-color="#2f3e34"/>
+    </linearGradient>
+  </defs>
+  <rect width="720" height="1280" fill="url(#g)"/>
+  <ellipse cx="360" cy="480" rx="200" ry="120" fill="none" stroke="rgba(250,250,249,0.3)" stroke-width="3"/>
+  <text x="360" y="580" text-anchor="middle" fill="rgba(250,250,249,0.9)" font-family="Georgia,serif" font-size="42">TrendPlan</text>
+  <text x="360" y="630" text-anchor="middle" fill="rgba(250,250,249,0.5)" font-family="system-ui,sans-serif" font-size="22">Food · morning</text>
+</svg>

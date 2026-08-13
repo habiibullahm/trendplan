@@ -78,26 +78,12 @@ function mediaUrl(value?: string | null): string | null {
 const EMPTY_COVER_GRADIENT =
   "linear-gradient(145deg, color-mix(in srgb, var(--color-coral) 72%, white), color-mix(in srgb, var(--color-coral) 35%, var(--color-surface)), color-mix(in srgb, var(--color-coral) 18%, var(--color-paper)))";
 
-/**
- * Media chrome must NOT use `bg-ink` / `text-ink`: in dark mode ink flips to
- * near-white, so `bg-ink/65 text-white` becomes white-on-white (invisible Putar).
- */
-function MockBadge() {
-  return (
-    <span className="pointer-events-none absolute bottom-2 right-2 z-20 rounded bg-black/55 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-white backdrop-blur-sm">
-      Mock
-    </span>
-  );
-}
-
 function CoverPlaceholder({
   coverUrl,
   className,
-  showBadge = true,
 }: {
   coverUrl?: string | null;
   className?: string;
-  showBadge?: boolean;
 }) {
   const src = mediaUrl(coverUrl);
   return (
@@ -112,14 +98,13 @@ function CoverPlaceholder({
       }
     >
       {src ? (
-        // eslint-disable-next-line @next/next/no-img-element -- local mock SVG/poster
+        // eslint-disable-next-line @next/next/no-img-element -- curated local posters under /media/trends
         <img
           src={src}
           alt=""
           className="absolute inset-0 h-full w-full object-cover"
         />
       ) : null}
-      {showBadge ? <MockBadge /> : null}
     </div>
   );
 }
@@ -294,7 +279,6 @@ export function TrendMediaBlock({ media }: { media: TrendMediaFields }) {
         <CoverPlaceholder
           coverUrl={coverSrc}
           className="absolute inset-0 z-0"
-          showBadge={!hasVideo}
         />
         {hasVideo ? (
           <>
@@ -329,7 +313,6 @@ export function TrendMediaBlock({ media }: { media: TrendMediaFields }) {
                 </span>
               )}
             </button>
-            <MockBadge />
           </>
         ) : null}
       </div>

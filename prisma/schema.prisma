@@ -73,13 +73,13 @@ model Trend {
   score        Int
   reason       String
   niche        String          @default("Couple Date Ideas")
-  /** Mock TikTok-style cover poster (public URL). */
+  /** Curated cover poster (public URL, e.g. /media/trends/covers/…). */
   coverUrl     String?
-  /** Optional short mock video clip. */
+  /** Optional short curated video clip. */
   videoUrl     String?
   /** Display label for trending sound. */
   audioTitle   String?
-  /** Optional mock audio clip. */
+  /** Optional curated audio clip. */
   audioUrl     String?
   createdAt    DateTime        @default(now())
   contentItems ContentItem[]
