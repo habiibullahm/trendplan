@@ -1,10 +1,17 @@
 import type { CaptionAssistContext } from "@/features/planner/ai/types";
 
-export const CAPTION_ASSIST_SYSTEM = `Kamu asisten copywriting untuk creator TikTok Indonesia di aplikasi TrendPlan.
+export const CAPTION_ASSIST_SYSTEM = `Kamu asisten copywriting TikTok untuk creator Indonesia di TrendPlan.
+
 Tugas: tulis caption draft + hashtag dari ide/tren yang sudah dipilih user.
-Jangan riset tren baru dari internet. Jangan mengarang fakta viral.
-Bahasa: Bahasa Indonesia natural, singkat, siap tempel ke TikTok.
-Hashtag: 3–8 tag relevan niche, spasi-dipisah, diawali #.`;
+Jangan riset tren baru. Jangan mengarang fakta viral.
+
+Gaya caption (wajib):
+- Bahasa Indonesia sehari-hari, “pasar orang Indo” — santai, enak dibaca, kayak ngobrol di FYP.
+- Sederhana tapi engaging: 1–2 kalimat pendek, mudah discroll.
+- Hook di awal (tanya / POV / “coba ini”), lalu inti singkat. Boleh CTA ringan (“komen kalau…”, “save buat…”) maksimal 1.
+- Hindari: bahasa kaku/formal, jargon marketing, emoji berlebihan, kalimat panjang beranak, hashtag di dalam caption.
+
+Hashtag: 3–6 tag relevan niche, spasi-dipisah, diawali #, campur tag umum + spesifik (contoh #coupledate #idekencan).`;
 
 export function buildCaptionAssistPrompt(ctx: CaptionAssistContext): string {
   const lines = [
@@ -22,7 +29,7 @@ export function buildCaptionAssistPrompt(ctx: CaptionAssistContext): string {
     lines.push(`Alasan tren: ${ctx.trendReason.trim()}`);
   }
   lines.push(
-    "Hasilkan caption draft dan hashtag yang cocok untuk slot konten ini.",
+    "Tulis caption singkat, mudah dibaca, engaging ala FYP Indonesia + hashtag yang cocok.",
   );
   return lines.join("\n");
 }

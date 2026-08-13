@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useActionState, useState } from "react";
+import { useActionState, useEffect, useRef, useState } from "react";
 import {
   updateContentItemAction,
   softDeleteContentItemAction,
@@ -14,6 +14,7 @@ import { Input } from "@/components/ui/input";
 import { LabelText } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Spinner } from "@/components/ui/spinner";
+import { usePrefersReducedMotion } from "@/components/motion";
 import { useActionToasts } from "@/hooks/use-action-toasts";
 import { ALL_STATUSES, STATUS_LABEL, normalizeStatus } from "@/lib/labels";
 import { copyText } from "@/features/planner/lib/clipboard";
@@ -81,6 +82,31 @@ function toastForAssistResult(data: {
   else copyToastError(feedback.message);
 }
 
+function sleep(ms: number) {
+  return new Promise<void>((resolve) => {
+    setTimeout(resolve, ms);
+  });
+}
+
+/** Type `full` into `onChunk` in small steps; no-op if `gen` is stale. */
+async function typeText(
+  full: string,
+  onChunk: (partial: string) => void,
+  opts: {
+    isCurrent: () => boolean;
+    charsPerChunk: number;
+    msPerChunk: number;
+  },
+) {
+  onChunk("");
+  if (!full) return;
+  for (let i = 0; i < full.length; i += opts.charsPerChunk) {
+    if (!opts.isCurrent()) return;
+    onChunk(full.slice(0, Math.min(i + opts.charsPerChunk, full.length)));
+    await sleep(opts.msPerChunk);
+  }
+}
+
 export function ContentEditForm({
   item,
   returnMonth,
@@ -100,43 +126,64 @@ export function ContentEditForm({
   );
   useActionToasts(state);
 
+  const reduceMotion = usePrefersReducedMotion();
+  const writeGenRef = useRef(0);
+
   const busy = savePending || deletePending;
   const [caption, setCaption] = useState(item.caption ?? "");
   const [hashtags, setHashtags] = useState(item.hashtags ?? "");
   const [aiPending, setAiPending] = useState(false);
+  const [aiWriting, setAiWriting] = useState(false);
 
-  function applySaran(nextCaption: string, nextHashtags: string) {
-    const captionDirty =
-      caption.trim().length > 0 && caption.trim() !== nextCaption;
-    const hashtagsDirty =
-      hashtags.trim().length > 0 && hashtags.trim() !== nextHashtags;
+  useEffect(() => {
+    return () => {
+      writeGenRef.current += 1;
+    };
+  }, []);
 
-    if (captionDirty || hashtagsDirty) {
-      const ok = window.confirm(
-        "Ganti caption & hashtag dengan saran? Teks di field akan ditimpa.",
-      );
-      if (!ok) return false;
+  async function writeSaran(nextCaption: string, nextHashtags: string) {
+    const gen = ++writeGenRef.current;
+    const isCurrent = () => writeGenRef.current === gen;
+
+    if (reduceMotion) {
+      setCaption(nextCaption);
+      setHashtags(nextHashtags);
+      return;
     }
 
-    setCaption(nextCaption);
-    setHashtags(nextHashtags);
-    return true;
+    setAiWriting(true);
+    try {
+      await typeText(nextCaption, setCaption, {
+        isCurrent,
+        charsPerChunk: 2,
+        msPerChunk: 14,
+      });
+      if (!isCurrent()) return;
+      await typeText(nextHashtags, setHashtags, {
+        isCurrent,
+        charsPerChunk: 3,
+        msPerChunk: 12,
+      });
+    } finally {
+      if (isCurrent()) setAiWriting(false);
+    }
   }
 
   /** Local template fallback (no network) — used if AI request fails hard. */
-  function isiSaranTemplate(reason: "error" | "disabled" = "error") {
+  async function isiSaranTemplate(reason: "error" | "disabled" = "error") {
     const nextCaption = suggestCaption({
       title: item.title,
       hook: item.hook,
     });
     const nextHashtags = suggestHashtags();
-    if (!applySaran(nextCaption, nextHashtags)) return;
+    await writeSaran(nextCaption, nextHashtags);
     toastForAssistResult({ source: "template", reason });
   }
 
   async function bantuAi() {
     if (aiPending || busy) return;
     setAiPending(true);
+    setAiWriting(false);
     try {
       const res = await fetch("/api/ai/caption", {
         method: "POST",
@@ -179,14 +226,14 @@ export function ContentEditForm({
       const nextHashtags =
         typeof data.hashtags === "string" ? data.hashtags : suggestHashtags();
 
-      if (!applySaran(nextCaption, nextHashtags)) return;
-
+      await writeSaran(nextCaption, nextHashtags);
       toastForAssistResult(data);
     } catch {
       // Network / parse failure — local template still helps when the API is unreachable.
-      isiSaranTemplate("error");
+      await isiSaranTemplate("error");
     } finally {
       setAiPending(false);
+      setAiWriting(false);
     }
   }
 
@@ -208,8 +255,8 @@ export function ContentEditForm({
 
   const controlsBusy = busy || aiPending;
   const fieldBusyClass = cn(
-    aiPending &&
-      "rounded-xl ring-1 ring-coral/30 animate-pulse transition-shadow",
+    aiPending && "rounded-xl ring-1 ring-coral/30 transition-shadow",
+    aiPending && !aiWriting && "animate-pulse",
   );
 
   return (

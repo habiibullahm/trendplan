@@ -8,11 +8,13 @@ export const CAPTION_ASSIST_MAX_HASHTAGS = 500;
 export const captionAssistSchema = z.object({
   caption: z
     .string()
-    .describe("Draft caption TikTok dalam Bahasa Indonesia, 1–4 kalimat."),
+    .describe(
+      "Caption TikTok singkat (1–2 kalimat), Bahasa Indonesia santai, mudah dibaca, engaging.",
+    ),
   hashtags: z
     .string()
     .describe(
-      "Satu baris hashtag dipisah spasi, diawali #, tanpa emoji berlebih.",
+      "3–6 hashtag dipisah spasi, diawali #, relevan niche, tanpa emoji.",
     ),
 });
 
