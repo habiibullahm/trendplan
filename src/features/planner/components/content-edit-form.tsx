@@ -13,16 +13,23 @@ import { FormField } from "@/components/ui/form-field";
 import { Input } from "@/components/ui/input";
 import { LabelText } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { Spinner } from "@/components/ui/spinner";
 import { useActionToasts } from "@/hooks/use-action-toasts";
 import { ALL_STATUSES, STATUS_LABEL, normalizeStatus } from "@/lib/labels";
 import { copyText } from "@/features/planner/lib/clipboard";
-import { copyToastError, copyToastSuccess } from "@/features/planner/lib/copy-toast";
+import {
+  copyToastError,
+  copyToastSuccess,
+  copyToastWarning,
+} from "@/features/planner/lib/copy-toast";
+import { assistFeedbackForResult } from "@/features/planner/ai/assist-feedback";
 import {
   formatItemPaste,
   suggestCaption,
   suggestHashtags,
 } from "@/features/planner/lib/export-text";
 import type { ContentStatus } from "@/generated/prisma/client";
+import { cn } from "@/lib/cn";
 
 const initial: PlannerActionState = {};
 
@@ -57,6 +64,21 @@ function ReturnFields({
       ) : null}
     </>
   );
+}
+
+function toastForAssistResult(data: {
+  source?: "ai" | "template";
+  reason?:
+    | "disabled"
+    | "missing_key"
+    | "quota"
+    | "unsupported_model"
+    | "error";
+}) {
+  const feedback = assistFeedbackForResult(data);
+  if (feedback.tone === "success") copyToastSuccess(feedback.message);
+  else if (feedback.tone === "warning") copyToastWarning(feedback.message);
+  else copyToastError(feedback.message);
 }
 
 export function ContentEditForm({
@@ -102,14 +124,14 @@ export function ContentEditForm({
   }
 
   /** Local template fallback (no network) — used if AI request fails hard. */
-  function isiSaranTemplate() {
+  function isiSaranTemplate(reason: "error" | "disabled" = "error") {
     const nextCaption = suggestCaption({
       title: item.title,
       hook: item.hook,
     });
     const nextHashtags = suggestHashtags();
     if (!applySaran(nextCaption, nextHashtags)) return;
-    copyToastSuccess("Saran diisi");
+    toastForAssistResult({ source: "template", reason });
   }
 
   async function bantuAi() {
@@ -128,7 +150,13 @@ export function ContentEditForm({
       }
 
       if (!res.ok) {
-        isiSaranTemplate();
+        if (res.status === 401 || res.status === 403) {
+          copyToastError("Sesi tidak valid. Masuk lagi untuk memakai Bantu AI.");
+        } else if (res.status === 404) {
+          copyToastError("Ide tidak ditemukan.");
+        } else {
+          copyToastError("Gagal meminta saran AI.");
+        }
         return;
       }
 
@@ -136,6 +164,12 @@ export function ContentEditForm({
         caption?: string;
         hashtags?: string;
         source?: "ai" | "template";
+        reason?:
+          | "disabled"
+          | "missing_key"
+          | "quota"
+          | "unsupported_model"
+          | "error";
       };
 
       const nextCaption =
@@ -147,13 +181,10 @@ export function ContentEditForm({
 
       if (!applySaran(nextCaption, nextHashtags)) return;
 
-      if (data.source === "ai") {
-        copyToastSuccess("Saran AI diisi");
-      } else {
-        copyToastSuccess("Saran template diisi");
-      }
+      toastForAssistResult(data);
     } catch {
-      isiSaranTemplate();
+      // Network / parse failure — local template still helps when the API is unreachable.
+      isiSaranTemplate("error");
     } finally {
       setAiPending(false);
     }
@@ -176,6 +207,10 @@ export function ContentEditForm({
   }
 
   const controlsBusy = busy || aiPending;
+  const fieldBusyClass = cn(
+    aiPending &&
+      "rounded-xl ring-1 ring-coral/30 animate-pulse transition-shadow",
+  );
 
   return (
     <div className="flex flex-col gap-5">
@@ -217,30 +252,41 @@ export function ContentEditForm({
               variant="ghost"
               onClick={bantuAi}
               disabled={controlsBusy}
-              aria-busy={aiPending}
+              aria-busy={aiPending || undefined}
             >
-              {aiPending ? "Menyusun…" : "Bantu AI"}
+              {aiPending ? (
+                <span className="inline-flex items-center gap-1.5">
+                  <Spinner className="size-3.5 text-coral" />
+                  Menyusun…
+                </span>
+              ) : (
+                "Bantu AI"
+              )}
             </ChipButton>
           }
         >
-          <Textarea
-            id="caption-field"
-            name="caption"
-            rows={4}
-            value={caption}
-            onChange={(e) => setCaption(e.target.value)}
-            placeholder="Tulis caption draft…"
-            disabled={controlsBusy}
-          />
+          <div className={fieldBusyClass} aria-busy={aiPending || undefined}>
+            <Textarea
+              id="caption-field"
+              name="caption"
+              rows={4}
+              value={caption}
+              onChange={(e) => setCaption(e.target.value)}
+              placeholder="Tulis caption draft…"
+              disabled={controlsBusy}
+            />
+          </div>
         </FormField>
 
         <FormField label="Hashtag">
-          <Input
-            name="hashtags"
-            value={hashtags}
-            onChange={(e) => setHashtags(e.target.value)}
-            disabled={controlsBusy}
-          />
+          <div className={fieldBusyClass} aria-busy={aiPending || undefined}>
+            <Input
+              name="hashtags"
+              value={hashtags}
+              onChange={(e) => setHashtags(e.target.value)}
+              disabled={controlsBusy}
+            />
+          </div>
         </FormField>
 
         <div className="flex flex-wrap items-center gap-2">

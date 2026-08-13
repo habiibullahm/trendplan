@@ -1,5 +1,7 @@
 import { gateAppUser } from "@/lib/auth/require-app-user";
+import { canCallCaptionModel } from "@/features/planner/ai/env";
 import { generateCaptionAssist } from "@/features/planner/ai/generate-caption";
+import { publicAssistReason } from "@/features/planner/ai/types";
 import { ActionErrors } from "@/lib/action-result";
 import { checkRateLimit } from "@/lib/rate-limit";
 import { prisma } from "@/lib/prisma";
@@ -47,17 +49,6 @@ export async function POST(req: Request) {
     return Response.json({ error: "contentItemId wajib" }, { status: 400 });
   }
 
-  const limited = await checkRateLimit(`ai-caption:${gate.userId}`, RATE);
-  if (!limited.ok) {
-    return Response.json(
-      { error: ActionErrors.rateLimited },
-      {
-        status: 429,
-        headers: { "Retry-After": String(limited.retryAfterSec) },
-      },
-    );
-  }
-
   const item = await prisma.contentItem.findFirst({
     where: {
       id: contentItemId,
@@ -82,6 +73,20 @@ export async function POST(req: Request) {
     return Response.json({ error: "Ide tidak ditemukan" }, { status: 404 });
   }
 
+  // Only burn rate-limit budget when we will call Groq (not template-only).
+  if (canCallCaptionModel()) {
+    const limited = await checkRateLimit(`ai-caption:${gate.userId}`, RATE);
+    if (!limited.ok) {
+      return Response.json(
+        { error: ActionErrors.rateLimited },
+        {
+          status: 429,
+          headers: { "Retry-After": String(limited.retryAfterSec) },
+        },
+      );
+    }
+  }
+
   const result = await generateCaptionAssist({
     title: item.title,
     hook: item.hook,
@@ -91,5 +96,8 @@ export async function POST(req: Request) {
     trendFormat: item.trend?.format ?? null,
   });
 
-  return Response.json(result);
+  const reason = publicAssistReason(result.reason);
+  return Response.json(
+    reason === undefined ? result : { ...result, reason },
+  );
 }

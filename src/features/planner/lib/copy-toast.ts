@@ -6,6 +6,10 @@ export function copyToastSuccess(message: string) {
   toast.success(message, { id: COPY_TOAST_ID });
 }
 
+export function copyToastWarning(message: string) {
+  toast.warning(message, { id: COPY_TOAST_ID });
+}
+
 export function copyToastError(message: string) {
   toast.error(message, { id: COPY_TOAST_ID });
 }
