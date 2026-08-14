@@ -4,7 +4,7 @@ import { hash } from "bcryptjs";
 import { AuthError } from "next-auth";
 import { redirect } from "next/navigation";
 import { signIn } from "@/auth";
-import { sendVerificationEmailForUser } from "@/features/auth/actions/email-verification";
+import { sendVerificationEmailForUser } from "@/lib/auth/send-verification-email";
 import {
   ActionErrors,
   actionError,

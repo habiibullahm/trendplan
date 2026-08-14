@@ -1,62 +1,75 @@
-import { auth } from "@/auth";
+import { gateAppUser } from "@/lib/auth/require-app-user";
+import { ActionErrors } from "@/lib/action-result";
+import { gateFailureResponse } from "@/lib/gate-http";
+import {
+  pushSubscribeBodySchema,
+  pushUnsubscribeBodySchema,
+} from "@/lib/push-subscription-schema";
+import { checkRateLimit } from "@/lib/rate-limit";
+import {
+  PUSH_SUBSCRIBE_USER_LIMIT,
+  PUSH_UNSUBSCRIBE_USER_LIMIT,
+} from "@/lib/rate-limit-policies";
 import { prisma } from "@/lib/prisma";
 
 export const runtime = "nodejs";
 
-type SubscribeBody = {
-  endpoint?: unknown;
-  keys?: { p256dh?: unknown; auth?: unknown };
-};
-
-function parseBody(data: SubscribeBody) {
-  const endpoint = typeof data.endpoint === "string" ? data.endpoint.trim() : "";
-  const p256dh =
-    typeof data.keys?.p256dh === "string" ? data.keys.p256dh.trim() : "";
-  const authKey =
-    typeof data.keys?.auth === "string" ? data.keys.auth.trim() : "";
-  if (!endpoint || !p256dh || !authKey) return null;
-  if (!/^https:\/\//i.test(endpoint)) return null;
-  return { endpoint, p256dh, auth: authKey };
+function rateLimitedResponse(retryAfterSec: number) {
+  return Response.json(
+    { error: ActionErrors.rateLimited },
+    {
+      status: 429,
+      headers: { "Retry-After": String(retryAfterSec) },
+    },
+  );
 }
 
 export async function POST(req: Request) {
-  const session = await auth();
-  if (!session?.user?.id) {
-    return Response.json({ error: "Unauthorized" }, { status: 401 });
-  }
+  const gate = await gateAppUser();
+  if (!gate.ok) return gateFailureResponse(gate);
 
-  let json: SubscribeBody;
+  let json: unknown;
   try {
-    json = (await req.json()) as SubscribeBody;
+    json = await req.json();
   } catch {
     return Response.json({ error: "Invalid JSON" }, { status: 400 });
   }
 
-  const parsed = parseBody(json);
-  if (!parsed) {
+  const parsed = pushSubscribeBodySchema.safeParse(json);
+  if (!parsed.success) {
     return Response.json({ error: "Invalid subscription" }, { status: 400 });
   }
 
+  const limited = await checkRateLimit(
+    `push-subscribe:user:${gate.userId}`,
+    PUSH_SUBSCRIBE_USER_LIMIT,
+  );
+  if (!limited.ok) {
+    return rateLimitedResponse(limited.retryAfterSec);
+  }
+
+  const { endpoint, keys } = parsed.data;
+
   const existing = await prisma.pushSubscription.findUnique({
-    where: { endpoint: parsed.endpoint },
+    where: { endpoint },
     select: { userId: true },
   });
-  if (existing && existing.userId !== session.user.id) {
+  if (existing && existing.userId !== gate.userId) {
     return Response.json({ error: "Subscription conflict" }, { status: 409 });
   }
 
   try {
     await prisma.pushSubscription.upsert({
-      where: { endpoint: parsed.endpoint },
+      where: { endpoint },
       create: {
-        userId: session.user.id,
-        endpoint: parsed.endpoint,
-        p256dh: parsed.p256dh,
-        auth: parsed.auth,
+        userId: gate.userId,
+        endpoint,
+        p256dh: keys.p256dh,
+        auth: keys.auth,
       },
       update: {
-        p256dh: parsed.p256dh,
-        auth: parsed.auth,
+        p256dh: keys.p256dh,
+        auth: keys.auth,
       },
     });
   } catch {
@@ -68,28 +81,36 @@ export async function POST(req: Request) {
 }
 
 export async function DELETE(req: Request) {
-  const session = await auth();
-  if (!session?.user?.id) {
-    return Response.json({ error: "Unauthorized" }, { status: 401 });
-  }
+  const gate = await gateAppUser();
+  if (!gate.ok) return gateFailureResponse(gate);
 
   let endpoint: string | undefined;
   try {
-    const json = (await req.json()) as { endpoint?: unknown };
-    if (typeof json.endpoint === "string" && json.endpoint.trim()) {
-      endpoint = json.endpoint.trim();
+    const json: unknown = await req.json();
+    const parsed = pushUnsubscribeBodySchema.safeParse(json);
+    if (!parsed.success) {
+      return Response.json({ error: "Invalid subscription" }, { status: 400 });
     }
+    endpoint = parsed.data.endpoint;
   } catch {
-    // empty body → delete all for user
+    // empty / non-JSON body → delete all for user
+  }
+
+  const limited = await checkRateLimit(
+    `push-subscribe-del:user:${gate.userId}`,
+    PUSH_UNSUBSCRIBE_USER_LIMIT,
+  );
+  if (!limited.ok) {
+    return rateLimitedResponse(limited.retryAfterSec);
   }
 
   if (endpoint) {
     await prisma.pushSubscription.deleteMany({
-      where: { userId: session.user.id, endpoint },
+      where: { userId: gate.userId, endpoint },
     });
   } else {
     await prisma.pushSubscription.deleteMany({
-      where: { userId: session.user.id },
+      where: { userId: gate.userId },
     });
   }
 
