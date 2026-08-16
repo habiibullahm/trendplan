@@ -30,7 +30,19 @@ Perencanaan konten TikTok mingguan berbasis tren — niche **Couple Date Ideas**
 
 ## User stories
 
+See [docs/user-stories/](docs/user-stories/README.md) for the full set. Highlights:
+
+- [Auth & onboarding](docs/user-stories/auth-onboarding.md)
+- [Weekly planner](docs/user-stories/weekly-planner.md)
 - [Partner week share](docs/user-stories/partner-week-share.md)
+- [AI caption assist](docs/user-stories/ai-caption-assist.md)
+
+## Guides
+
+- [App structure](docs/app-structure.md)
+- [How to add a feature](docs/how-to-add-feature.md)
+- [Conventions](docs/conventions.md)
+- [E2E guide](docs/e2e-guide.md)
 
 ## Roadmap
 
@@ -121,7 +133,7 @@ curl -X POST http://localhost:3000/api/push/broadcast \
 
 ### 5. E2E (Playwright)
 
-Thin browser smoke (Chromium): public shells, and optional authenticated planner journey.
+Thin browser smoke (Chromium): public shells, and optional authenticated planner journey. Best practices: [docs/e2e-guide.md](docs/e2e-guide.md).
 
 ```bash
 npm run test:e2e
