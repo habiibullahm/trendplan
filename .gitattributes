@@ -1,0 +1,2 @@
+# Force LF for shell hooks (CRLF breaks husky on Unix).
+.husky/** text eol=lf
