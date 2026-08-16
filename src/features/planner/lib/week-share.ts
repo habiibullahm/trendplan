@@ -1,0 +1,542 @@
+import "server-only";
+
+import { Prisma, type Prisma as PrismaTypes } from "@/generated/prisma/client";
+import { appBaseUrl } from "@/lib/auth/env";
+import { prisma } from "@/lib/prisma";
+import { formatWeekStartParam, getWeekStart } from "@/lib/week";
+import {
+  createWeekInviteRawToken,
+  hashWeekInviteToken,
+  WEEK_INVITE_TTL_MS,
+} from "@/features/planner/lib/week-share-tokens";
+import {
+  buildInviteUrl,
+  partnerDisplayName,
+  shareRoleForUser,
+  type ShareRole,
+} from "@/features/planner/lib/week-share-pure";
+import { softDeleteStaleBefore } from "@/features/planner/lib/soft-delete";
+
+export {
+  partnerDisplayName,
+  shareRoleForUser,
+  type ShareRole,
+} from "@/features/planner/lib/week-share-pure";
+
+/** ±14h around UTC midnight covers legacy Asia/Jakarta local-midnight rows. */
+const LEGACY_OFFSET_MS = 14 * 60 * 60 * 1000;
+
+const weekPlanItemsInclude = {
+  items: {
+    where: { deletedAt: null, dayOfWeek: { gte: 0 } },
+    include: { trend: true },
+    orderBy: { dayOfWeek: "asc" as const },
+  },
+  user: { select: { id: true, name: true, email: true, imageUrl: true } },
+  members: {
+    include: {
+      user: { select: { id: true, name: true, email: true, imageUrl: true } },
+    },
+    take: 1,
+  },
+} satisfies PrismaTypes.WeekPlanInclude;
+
+export type WeekPlanForViewer = PrismaTypes.WeekPlanGetPayload<{
+  include: typeof weekPlanItemsInclude;
+}>;
+
+/** Prisma where: user owns the week or is an active partner member. */
+export function weekPlanAccessWhere(
+  userId: string,
+): PrismaTypes.WeekPlanWhereInput {
+  return {
+    OR: [{ userId }, { members: { some: { userId } } }],
+  };
+}
+
+export async function canEditWeekPlan(
+  userId: string,
+  weekPlanId: string,
+): Promise<boolean> {
+  const plan = await prisma.weekPlan.findFirst({
+    where: { id: weekPlanId, ...weekPlanAccessWhere(userId) },
+    select: { id: true },
+  });
+  return Boolean(plan);
+}
+
+export async function assertCanEditWeekPlan(
+  userId: string,
+  weekPlanId: string,
+): Promise<void> {
+  const ok = await canEditWeekPlan(userId, weekPlanId);
+  if (!ok) throw new Error("Unauthorized");
+}
+
+export function inviteUrl(rawToken: string): string {
+  return buildInviteUrl(appBaseUrl(), rawToken);
+}
+
+async function purgeStaleSoftDeletesForAccessible(userId: string) {
+  await prisma.contentItem.deleteMany({
+    where: {
+      deletedAt: { lt: softDeleteStaleBefore() },
+      weekPlan: weekPlanAccessWhere(userId),
+    },
+  });
+}
+
+async function findMembershipWeekPlan(
+  userId: string,
+  weekStart: Date,
+): Promise<WeekPlanForViewer | null> {
+  const canonical = getWeekStart(weekStart);
+  const key = formatWeekStartParam(canonical);
+
+  const membership = await prisma.weekPlanMember.findFirst({
+    where: {
+      userId,
+      weekPlan: {
+        weekStart: {
+          gte: new Date(canonical.getTime() - LEGACY_OFFSET_MS),
+          lte: new Date(canonical.getTime() + LEGACY_OFFSET_MS),
+        },
+      },
+    },
+    include: {
+      weekPlan: { include: weekPlanItemsInclude },
+    },
+  });
+
+  if (!membership) return null;
+  if (formatWeekStartParam(membership.weekPlan.weekStart) !== key) {
+    return null;
+  }
+  return membership.weekPlan;
+}
+
+/**
+ * Prefer shared membership week for this weekStart; else owner getOrCreate.
+ */
+export async function getWeekPlanForViewer(
+  userId: string,
+  date = new Date(),
+): Promise<WeekPlanForViewer> {
+  await purgeStaleSoftDeletesForAccessible(userId);
+
+  const weekStart = getWeekStart(date);
+  const shared = await findMembershipWeekPlan(userId, weekStart);
+  if (shared) return shared;
+
+  const { getOrCreateWeekPlan } = await import(
+    "@/features/planner/lib/planner"
+  );
+  const owned = await getOrCreateWeekPlan(userId, weekStart);
+  // Re-fetch with share includes for consistent shape.
+  const full = await prisma.weekPlan.findUniqueOrThrow({
+    where: { id: owned.id },
+    include: weekPlanItemsInclude,
+  });
+  return full;
+}
+
+/**
+ * Read-only week items for reminders: prefer shared membership for weekStart,
+ * else the user's owned plan. Does not create empty weeks.
+ */
+export async function listWeekPlanItemsForReminder(
+  userId: string,
+  weekStart: Date,
+): Promise<{ title: string; dayOfWeek: number; status: string }[]> {
+  const canonical = getWeekStart(weekStart);
+  const shared = await findMembershipWeekPlan(userId, canonical);
+  if (shared) {
+    return shared.items.map((i) => ({
+      title: i.title,
+      dayOfWeek: i.dayOfWeek,
+      status: i.status,
+    }));
+  }
+
+  const owned = await prisma.weekPlan.findUnique({
+    where: { userId_weekStart: { userId, weekStart: canonical } },
+    select: {
+      items: {
+        where: { deletedAt: null },
+        select: { title: true, dayOfWeek: true, status: true },
+      },
+    },
+  });
+  return owned?.items ?? [];
+}
+
+export type WeekShareSnapshot = {
+  role: ShareRole;
+  weekPlanId: string;
+  weekStart: Date;
+  owner: { id: string; name: string | null; email: string; imageUrl: string | null };
+  partner: {
+    id: string;
+    name: string | null;
+    email: string;
+    imageUrl: string | null;
+  } | null;
+  pendingInvite: {
+    id: string;
+    invitedEmail: string | null;
+    expiresAt: Date;
+  } | null;
+  /** Only set when rotating/creating for owner copy — never persisted raw. */
+  inviteLinkPreview?: string;
+};
+
+export async function getWeekShareSnapshot(
+  userId: string,
+  weekPlanId: string,
+): Promise<WeekShareSnapshot | null> {
+  const plan = await prisma.weekPlan.findFirst({
+    where: { id: weekPlanId, ...weekPlanAccessWhere(userId) },
+    include: {
+      user: { select: { id: true, name: true, email: true, imageUrl: true } },
+      members: {
+        include: {
+          user: {
+            select: { id: true, name: true, email: true, imageUrl: true },
+          },
+        },
+        take: 1,
+      },
+      invites: {
+        where: {
+          revokedAt: null,
+          acceptedAt: null,
+          expiresAt: { gt: new Date() },
+        },
+        orderBy: { createdAt: "desc" },
+        take: 1,
+        select: { id: true, invitedEmail: true, expiresAt: true },
+      },
+    },
+  });
+  if (!plan) return null;
+
+  const role = shareRoleForUser(plan, userId);
+  const partner = plan.members[0]?.user ?? null;
+  const pendingInvite = partner ? null : (plan.invites[0] ?? null);
+
+  return {
+    role,
+    weekPlanId: plan.id,
+    weekStart: plan.weekStart,
+    owner: plan.user,
+    partner,
+    pendingInvite,
+  };
+}
+
+/** Revoke outstanding unused invites for a week, then create a fresh token. */
+export async function createOrRotateWeekInvite(params: {
+  weekPlanId: string;
+  createdByUserId: string;
+  invitedEmail?: string | null;
+  /**
+   * When false, keep existing pending invites until the caller finalizes
+   * (e.g. after email send succeeds). Default true for copy-link flows.
+   */
+  revokePrevious?: boolean;
+}): Promise<{ rawToken: string; inviteId: string; url: string }> {
+  const existingPartner = await prisma.weekPlanMember.findUnique({
+    where: { weekPlanId: params.weekPlanId },
+    select: { id: true },
+  });
+  if (existingPartner) {
+    throw new Error("PARTNER_EXISTS");
+  }
+
+  const revokePrevious = params.revokePrevious !== false;
+  const rawToken = createWeekInviteRawToken();
+  const tokenHash = hashWeekInviteToken(rawToken);
+  const expiresAt = new Date(Date.now() + WEEK_INVITE_TTL_MS);
+
+  const invite = await prisma.$transaction(async (tx) => {
+    if (revokePrevious) {
+      await tx.weekPlanInvite.updateMany({
+        where: {
+          weekPlanId: params.weekPlanId,
+          acceptedAt: null,
+          revokedAt: null,
+        },
+        data: { revokedAt: new Date() },
+      });
+    }
+    return tx.weekPlanInvite.create({
+      data: {
+        weekPlanId: params.weekPlanId,
+        createdByUserId: params.createdByUserId,
+        tokenHash,
+        invitedEmail: params.invitedEmail?.trim().toLowerCase() || null,
+        expiresAt,
+      },
+    });
+  });
+
+  return {
+    rawToken,
+    inviteId: invite.id,
+    url: inviteUrl(rawToken),
+  };
+}
+
+/** After a successful send, invalidate every other pending invite for the week. */
+export async function revokeOtherPendingInvites(
+  weekPlanId: string,
+  keepInviteId: string,
+): Promise<void> {
+  await prisma.weekPlanInvite.updateMany({
+    where: {
+      weekPlanId,
+      id: { not: keepInviteId },
+      acceptedAt: null,
+      revokedAt: null,
+    },
+    data: { revokedAt: new Date() },
+  });
+}
+
+/** Discard an invite that was created but never delivered (e.g. mail failed). */
+export async function revokeInviteById(inviteId: string): Promise<void> {
+  await prisma.weekPlanInvite.updateMany({
+    where: { id: inviteId, acceptedAt: null, revokedAt: null },
+    data: { revokedAt: new Date() },
+  });
+}
+
+export async function revokePendingInvites(weekPlanId: string): Promise<void> {
+  await prisma.weekPlanInvite.updateMany({
+    where: {
+      weekPlanId,
+      acceptedAt: null,
+      revokedAt: null,
+    },
+    data: { revokedAt: new Date() },
+  });
+}
+
+export async function removePartner(
+  weekPlanId: string,
+  ownerUserId: string,
+): Promise<boolean> {
+  const plan = await prisma.weekPlan.findFirst({
+    where: { id: weekPlanId, userId: ownerUserId },
+    select: { id: true },
+  });
+  if (!plan) return false;
+
+  await prisma.$transaction([
+    prisma.weekPlanMember.deleteMany({ where: { weekPlanId } }),
+    prisma.weekPlanInvite.updateMany({
+      where: { weekPlanId, revokedAt: null, acceptedAt: null },
+      data: { revokedAt: new Date() },
+    }),
+  ]);
+  return true;
+}
+
+export async function leaveSharedPlan(
+  weekPlanId: string,
+  partnerUserId: string,
+): Promise<boolean> {
+  const result = await prisma.weekPlanMember.deleteMany({
+    where: { weekPlanId, userId: partnerUserId },
+  });
+  return result.count > 0;
+}
+
+export type AcceptInviteResult =
+  | { ok: true; weekPlanId: string; weekStart: Date }
+  | {
+      ok: false;
+      code:
+        | "invalid"
+        | "expired"
+        | "revoked"
+        | "self"
+        | "partner_exists"
+        | "already_member";
+    };
+
+export async function acceptWeekInvite(
+  rawToken: string,
+  userId: string,
+): Promise<AcceptInviteResult> {
+  const tokenHash = hashWeekInviteToken(rawToken);
+  const now = new Date();
+
+  try {
+    return await prisma.$transaction(async (tx) => {
+      const invite = await tx.weekPlanInvite.findUnique({
+        where: { tokenHash },
+        include: {
+          weekPlan: {
+            select: {
+              id: true,
+              userId: true,
+              weekStart: true,
+            },
+          },
+        },
+      });
+
+      if (!invite || invite.acceptedAt) {
+        return { ok: false, code: "invalid" };
+      }
+      if (invite.revokedAt) {
+        return { ok: false, code: "revoked" };
+      }
+      if (invite.expiresAt <= now) {
+        return { ok: false, code: "expired" };
+      }
+      if (invite.weekPlan.userId === userId) {
+        return { ok: false, code: "self" };
+      }
+
+      // Serialize concurrent accepts for this week (advisory + unique weekPlanId).
+      await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtext(${invite.weekPlanId}))`;
+
+      const existingSeat = await tx.weekPlanMember.findUnique({
+        where: { weekPlanId: invite.weekPlanId },
+        select: { userId: true },
+      });
+      if (existingSeat) {
+        if (existingSeat.userId === userId) {
+          return { ok: false, code: "already_member" };
+        }
+        return { ok: false, code: "partner_exists" };
+      }
+
+      // Partner may only hold one membership per weekStart — drop prior seats for that calendar week.
+      await tx.weekPlanMember.deleteMany({
+        where: {
+          userId,
+          weekPlan: {
+            weekStart: invite.weekPlan.weekStart,
+            NOT: { id: invite.weekPlanId },
+          },
+        },
+      });
+
+      await tx.weekPlanMember.create({
+        data: { weekPlanId: invite.weekPlanId, userId },
+      });
+      await tx.weekPlanInvite.update({
+        where: { id: invite.id },
+        data: { acceptedAt: now },
+      });
+      await tx.weekPlanInvite.updateMany({
+        where: {
+          weekPlanId: invite.weekPlanId,
+          id: { not: invite.id },
+          acceptedAt: null,
+          revokedAt: null,
+        },
+        data: { revokedAt: now },
+      });
+
+      return {
+        ok: true,
+        weekPlanId: invite.weekPlanId,
+        weekStart: invite.weekPlan.weekStart,
+      };
+    });
+  } catch (error) {
+    if (
+      error instanceof Prisma.PrismaClientKnownRequestError &&
+      error.code === "P2002"
+    ) {
+      return { ok: false, code: "partner_exists" };
+    }
+    throw error;
+  }
+}
+
+export async function rejectWeekInvite(
+  rawToken: string,
+): Promise<"ok" | "invalid"> {
+  const tokenHash = hashWeekInviteToken(rawToken);
+  const invite = await prisma.weekPlanInvite.findUnique({
+    where: { tokenHash },
+  });
+  if (!invite || invite.acceptedAt || invite.revokedAt) {
+    return "invalid";
+  }
+  if (invite.expiresAt <= new Date()) {
+    return "invalid";
+  }
+  await prisma.weekPlanInvite.update({
+    where: { id: invite.id },
+    data: { revokedAt: new Date() },
+  });
+  return "ok";
+}
+
+export async function peekWeekInvite(rawToken: string): Promise<{
+  status: "ok" | "invalid" | "expired" | "revoked" | "partner_exists";
+  ownerName: string;
+  weekStart: Date | null;
+  weekPlanId: string | null;
+}> {
+  const tokenHash = hashWeekInviteToken(rawToken);
+  const invite = await prisma.weekPlanInvite.findUnique({
+    where: { tokenHash },
+    include: {
+      weekPlan: {
+        select: {
+          id: true,
+          weekStart: true,
+          user: { select: { name: true, email: true } },
+          _count: { select: { members: true } },
+        },
+      },
+    },
+  });
+
+  if (!invite || invite.acceptedAt) {
+    return {
+      status: "invalid",
+      ownerName: "",
+      weekStart: null,
+      weekPlanId: null,
+    };
+  }
+  if (invite.revokedAt) {
+    return {
+      status: "revoked",
+      ownerName: "",
+      weekStart: null,
+      weekPlanId: null,
+    };
+  }
+  if (invite.expiresAt <= new Date()) {
+    return {
+      status: "expired",
+      ownerName: "",
+      weekStart: null,
+      weekPlanId: null,
+    };
+  }
+  if (invite.weekPlan._count.members > 0) {
+    return {
+      status: "partner_exists",
+      ownerName: partnerDisplayName(invite.weekPlan.user),
+      weekStart: invite.weekPlan.weekStart,
+      weekPlanId: invite.weekPlan.id,
+    };
+  }
+
+  return {
+    status: "ok",
+    ownerName: partnerDisplayName(invite.weekPlan.user),
+    weekStart: invite.weekPlan.weekStart,
+    weekPlanId: invite.weekPlan.id,
+  };
+}

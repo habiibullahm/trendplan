@@ -8,9 +8,9 @@ import { CompactTrendMedia } from "@/features/planner/components/trend-media";
 import { WeekTargetCard } from "@/features/planner/components/week-target-card";
 import { prisma } from "@/lib/prisma";
 import {
-  getOrCreateWeekPlan,
   getRecommendations,
 } from "@/features/planner/lib/planner";
+import { getWeekPlanForViewer } from "@/features/planner/lib/week-share";
 import { listInProgressContentItems } from "@/features/planner/lib/in-progress-items";
 import { formatWeekRange } from "@/lib/week";
 import { STATUS_LABEL } from "@/lib/labels";
@@ -27,7 +27,7 @@ export default async function DashboardPage() {
   });
 
   const niche = resolveNiche(user?.niche);
-  const weekPlan = await getOrCreateWeekPlan(userId);
+  const weekPlan = await getWeekPlanForViewer(userId);
   const scheduled = weekPlan.items.length;
   const goal = user?.weeklyGoal ?? 3;
   const progress = Math.min(100, Math.round((scheduled / goal) * 100));

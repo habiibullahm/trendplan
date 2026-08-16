@@ -16,6 +16,7 @@ const MESSAGES: Record<string, string> = {
   "activities-created": "Beberapa aktivitas ditambahkan",
   "activity-saved": "Aktivitas disimpan",
   "activity-deleted": "Aktivitas dihapus",
+  joined_share: "Kamu bergabung ke plan bersama.",
 };
 
 const ERROR_MESSAGES: Record<string, string> = {
