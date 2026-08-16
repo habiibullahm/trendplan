@@ -2,6 +2,13 @@ import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 import { isClearSessionRequestAllowed } from "@/app/api/auth/clear-session/route";
 
+/** `process.env.NODE_ENV` is typed read-only; cast for test stubs. */
+function setNodeEnv(value: string | undefined) {
+  const env = process.env as { NODE_ENV?: string };
+  if (value === undefined) delete env.NODE_ENV;
+  else env.NODE_ENV = value;
+}
+
 describe("isClearSessionRequestAllowed", () => {
   const prevAuth = process.env.AUTH_URL;
 
@@ -59,7 +66,7 @@ describe("isClearSessionRequestAllowed", () => {
     delete process.env.AUTH_URL;
     delete process.env.VERCEL_URL;
     delete process.env.NEXT_PUBLIC_APP_URL;
-    process.env.NODE_ENV = "production";
+    setNodeEnv("production");
     try {
       const req = new Request("https://trendplan.vercel.app/api/auth/clear-session", {
         headers: { Origin: "https://evil.example" },
@@ -72,8 +79,7 @@ describe("isClearSessionRequestAllowed", () => {
       else process.env.VERCEL_URL = prevVercelUrl;
       if (prevPublic === undefined) delete process.env.NEXT_PUBLIC_APP_URL;
       else process.env.NEXT_PUBLIC_APP_URL = prevPublic;
-      if (prevNodeEnv === undefined) delete process.env.NODE_ENV;
-      else process.env.NODE_ENV = prevNodeEnv;
+      setNodeEnv(prevNodeEnv);
     }
   });
 });
