@@ -249,8 +249,6 @@ export async function createOrRotateWeekInvite(params: {
   weekPlanId: string;
   createdByUserId: string;
   invitedEmail?: string | null;
-  /** When set, skip a second User lookup for the self-invite check. */
-  ownerEmail?: string | null;
   /**
    * When false, keep existing pending invites until the caller finalizes
    * (e.g. after email send succeeds). Default true for copy-link flows.
@@ -269,15 +267,12 @@ export async function createOrRotateWeekInvite(params: {
     ? normalizeInviteEmail(params.invitedEmail)
     : null;
   if (invitedEmail) {
-    let ownerEmail = params.ownerEmail;
-    if (ownerEmail === undefined) {
-      const creator = await prisma.user.findUnique({
-        where: { id: params.createdByUserId },
-        select: { email: true },
-      });
-      ownerEmail = creator?.email;
-    }
-    if (isSelfInviteEmail(ownerEmail, invitedEmail)) {
+    // Always load creator email from DB — do not trust caller-supplied ownerEmail.
+    const creator = await prisma.user.findUnique({
+      where: { id: params.createdByUserId },
+      select: { email: true },
+    });
+    if (isSelfInviteEmail(creator?.email, invitedEmail)) {
       return { ok: false, code: "self_invite" };
     }
   }
