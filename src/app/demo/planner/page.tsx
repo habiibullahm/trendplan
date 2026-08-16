@@ -52,6 +52,9 @@ export default async function DemoPlannerPage({ searchParams }: Props) {
               <ChipButton disabled aria-label="Salin daftar rencana minggu ini">
                 Salin daftar
               </ChipButton>
+              <ChipButton disabled aria-label="Bagikan minggu ke partner">
+                Bagikan
+              </ChipButton>
             </>
           )}
         </div>

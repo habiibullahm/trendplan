@@ -3,6 +3,7 @@ import { auth } from "@/auth";
 import { FadeIn, Stagger } from "@/components/motion";
 import { EmptyState } from "@/components/ui/empty-state";
 import { RiwayatPostedCard } from "@/features/planner/components/riwayat-posted-card";
+import { weekPlanAccessWhere } from "@/features/planner/lib/week-share";
 import { prisma } from "@/lib/prisma";
 import { DAY_SHORT, formatWeekRange } from "@/lib/week";
 
@@ -16,7 +17,7 @@ export default async function RiwayatPage() {
       status: "POSTED",
       deletedAt: null,
       dayOfWeek: { gte: 0 },
-      weekPlan: { userId },
+      weekPlan: weekPlanAccessWhere(userId),
     },
     include: {
       weekPlan: { select: { weekStart: true } },

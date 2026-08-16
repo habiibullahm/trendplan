@@ -2,6 +2,7 @@ import { gateAppUser } from "@/lib/auth/require-app-user";
 import { canCallCaptionModel } from "@/features/planner/ai/env";
 import { generateCaptionAssist } from "@/features/planner/ai/generate-caption";
 import { publicAssistReason } from "@/features/planner/ai/types";
+import { weekPlanAccessWhere } from "@/features/planner/lib/week-share";
 import { ActionErrors } from "@/lib/action-result";
 import { checkRateLimit } from "@/lib/rate-limit";
 import { prisma } from "@/lib/prisma";
@@ -53,7 +54,7 @@ export async function POST(req: Request) {
     where: {
       id: contentItemId,
       deletedAt: null,
-      weekPlan: { userId: gate.userId },
+      weekPlan: weekPlanAccessWhere(gate.userId),
     },
     select: {
       title: true,
