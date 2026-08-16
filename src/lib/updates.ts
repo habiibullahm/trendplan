@@ -22,6 +22,13 @@ export const APP_VERSION = packageJson.version;
 
 export const UPDATE_LOG: UpdateEntry[] = [
   {
+    id: "2026-08-16-week-share-invite-guard",
+    version: "0.4.1",
+    date: "16 Agu 2026",
+    title: "Undangan partner lebih aman",
+    body: "Tidak bisa mengundang email sendiri. Jika sesi bermasalah saat menerima undangan, muncul pesan jelas (bukan error halaman). Kirim email undangan memberi feedback yang lebih jelas saat gagal.",
+  },
+  {
     id: "2026-08-16-partner-week-share",
     version: "0.4.0",
     date: "16 Agu 2026",

@@ -4,7 +4,7 @@ import { useActionState } from "react";
 import {
   createContentItemAction,
   type PlannerActionState,
-} from "@/features/planner/actions";
+} from "@/features/planner/actions/content";
 import { Button } from "@/components/ui/button";
 import { ButtonLink } from "@/components/ui/button-link";
 import { FormField } from "@/components/ui/form-field";

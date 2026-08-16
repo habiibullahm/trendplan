@@ -1,38 +1,45 @@
 # Conventions (actions, auth, UI)
 
-Short rules that keep new code consistent with the rest of TrendPlan.
+Short rules that keep new code consistent with the rest of TrendPlan. Folder layout: [app-structure.md](app-structure.md).
+
+## Feature folders
+
+- Always `actions/` (directory), `components/`, `lib/`.
+- Split action files by topic when a domain grows (`content.ts`, `week-share.ts`).
+- Shared multi-file infra goes under `src/lib/<concern>/` (`auth/`, `mail/`, `errors/`).
 
 ## Server actions
 
 - Mark files with `"use server"`.
-- Return `ActionResult` (`actionSuccess` / `actionError` / field errors) — don’t leak stacks to the client.
+- Gate with `requireAppUserAction` (return `ActionResult` — don’t throw `Unauthorized`).
+- Return `ActionResult` (`actionSuccess` / `actionError` / `actionErrorCode` / field errors) — don’t leak stacks.
 - Validate with **zod** (`withValidation` or `safeParse`).
-- Authorize before mutate (`gateAppUser`, ownership, or `weekPlanAccessWhere`).
-- `revalidatePath` the screens that show the changed data; use `redirect` for post-success navigation when that’s the existing pattern.
+- Authorize before mutate (ownership or `weekPlanAccessWhere`).
+- `revalidatePath` screens that show the change; `redirect` when that’s the existing pattern.
 - Rethrow Next control-flow errors (`unstable_rethrow` inside `withValidation`).
 
 ## Auth & sessions
 
-- Product mutations: `requireAppUserAction` / `gateAppUser` (handles unverified / stale session).
-- Prefer canonical `AUTH_URL` for links in mail; don’t invent host from untrusted headers.
-- Email / verification features stay behind env flags until Resend domain is ready.
+- Product mutations: `requireAppUserAction` / `gateAppUser`.
+- Prefer canonical `AUTH_URL` for links in mail.
+- Email / verification stay behind env flags until Resend domain is ready.
 
 ## Planner access
 
-- Read/edit shared weeks through **viewer + ACL** helpers, not raw `weekPlan.userId === me` alone.
+- Read/edit shared weeks through viewer + ACL helpers, not raw `weekPlan.userId === me` alone.
 - Share admin (create/revoke invite): **owner only**.
 - Partner seat: DB unique on `weekPlanId` + locked accept transaction.
 
 ## UI / UX
 
 - Indonesian copy for user-facing strings.
-- Prefer `getByRole` / labels in e2e; same accessibility mindset in components (`aria-*`, real buttons/links).
+- Prefer `getByRole` / labels in e2e; accessible components (`aria-*`, real buttons/links).
 - Toast feedback for action success/error (`useActionToasts`).
-- Avoid new card/dashboard chrome on marketing surfaces; inside the app, match existing planner/dashboard patterns.
+- Match existing planner/dashboard patterns inside the app.
 
 ## Testing defaults
 
-- Unit: pure functions and schemas.
+- Unit: pure functions and schemas next to source.
 - E2E: smoke without auth; journeys with `storageState`.
 - Don’t commit `.env.e2e` or `.auth/`.
 

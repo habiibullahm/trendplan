@@ -158,12 +158,10 @@ export async function sendWeekInviteEmailAction(
   if (!rl.ok) return actionErrorCode("rateLimited");
 
   // Create without revoking older pending links until mail succeeds.
-  // Pass owner email so create skips a second user lookup for self-check.
   const created = await createOrRotateWeekInvite({
     weekPlanId,
     createdByUserId: gated.userId,
     invitedEmail: emailParsed.data,
-    ownerEmail: owner?.email,
     revokePrevious: false,
   });
   if (!created.ok) return CREATE_INVITE_ERRORS[created.code];

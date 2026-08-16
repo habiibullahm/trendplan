@@ -4,7 +4,7 @@ import { useActionState } from "react";
 import {
   addTrendToPlannerAction,
   type PlannerActionState,
-} from "@/features/planner/actions";
+} from "@/features/planner/actions/content";
 import { Button } from "@/components/ui/button";
 import { Select } from "@/components/ui/select";
 import { useActionToasts } from "@/hooks/use-action-toasts";

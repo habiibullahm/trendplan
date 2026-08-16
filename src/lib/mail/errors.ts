@@ -1,4 +1,4 @@
-import { CodedError } from "@/lib/coded-error";
+import { CodedError } from "@/lib/errors/coded-error";
 
 /** Stable failure codes for callers (map to UI copy; never leak provider text). */
 export type MailErrorCode =
