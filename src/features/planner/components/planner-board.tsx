@@ -28,7 +28,7 @@ import {
 } from "@dnd-kit/core";
 import { CSS } from "@dnd-kit/utilities";
 import { toast } from "sonner";
-import { moveContentItemAction } from "@/features/planner/actions";
+import { moveContentItemAction } from "@/features/planner/actions/content";
 import { usePlannerLayout } from "@/components/motion";
 import { dragId, dropId, parseDropDay } from "@/features/planner/lib/planner-dnd";
 import { Badge } from "@/components/ui/badge";

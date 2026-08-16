@@ -6,7 +6,7 @@ import { toast } from "sonner";
 import {
   purgeDeletedContentItemAction,
   restoreContentItemAction,
-} from "@/features/planner/actions";
+} from "@/features/planner/actions/content";
 import { SOFT_DELETE_UNDO_MS } from "@/features/planner/lib/soft-delete";
 
 const MESSAGES: Record<string, string> = {

@@ -6,7 +6,7 @@ import {
   updateContentItemAction,
   softDeleteContentItemAction,
   type PlannerActionState,
-} from "@/features/planner/actions";
+} from "@/features/planner/actions/content";
 import { ChipButton } from "@/components/ui/chip-button";
 import { Button } from "@/components/ui/button";
 import { FormField } from "@/components/ui/form-field";

@@ -1,93 +1,90 @@
 # How to add a feature
 
-Checklist for shipping a new capability in TrendPlan without fighting existing conventions.
+Checklist for shipping a new capability using the **canonical** layout in [app-structure.md](app-structure.md).
 
 ## 1. Decide the domain
 
-- **New product area** → new folder under `src/features/<name>/`.
-- **Extension of planner/auth/…** → add under that feature (`lib/`, `actions/`, `components/`).
-- **Only a new URL** that reuses existing logic → thin `app/.../page.tsx` + existing feature imports.
+- **New product area** → `src/features/<name>/` with the full skeleton below.
+- **Extension of an existing domain** → add under that feature’s `actions/`, `lib/`, `components/`.
+- **Only a new URL** → thin `app/.../page.tsx` + existing feature imports.
 
-Write a short user story under `docs/user-stories/` when the behavior is non-obvious (see partner week share).
+Add a short user story under `docs/user-stories/` when behavior is non-obvious.
 
-## 2. Data model (if needed)
+## 2. Scaffold (required shape)
+
+```
+features/<name>/
+  actions/
+    index.ts              # or <topic>.ts — "use server"
+  components/
+    <name>-panel.tsx
+  lib/
+    <name>.ts
+    <name>.test.ts
+
+app/(app)/<route>/page.tsx   # only if it needs its own screen
+```
+
+Never place `actions.ts` at the feature root. Always use `actions/`.
+
+## 3. Data model (if needed)
 
 1. Edit `prisma/schema.prisma`.
-2. Add a migration (`prisma/migrations/…`).
-3. Run migrate locally; keep deploy path (`db:deploy`) in mind for Vercel.
+2. Add `prisma/migrations/…`.
+3. Prefer DB constraints for race-sensitive rules (uniques, FKs).
 
-Prefer constraints in the DB (uniques, FKs) for rules that must never race — e.g. one partner seat per week.
+## 4. Domain logic
 
-## 3. Domain logic
+- Pure helpers: `lib/*-pure.ts` (unit-test friendly).
+- DB/orchestration: `lib/*.ts` (`"server-only"` when appropriate).
+- Reuse `@/lib/auth`, `@/lib/mail`, rate limits, ACL helpers — don’t reinvent.
 
-- Put **pure** helpers in `features/<name>/lib/*-pure.ts` (easy unit tests).
-- Put DB/orchestration in `lib/*.ts` with `"server-only"` when appropriate.
-- Reuse shared gates: `gateAppUser`, `weekPlanAccessWhere`, `appBaseUrl`, rate limits.
-
-## 4. Server actions / API
-
-Mutations that forms call:
+## 5. Server actions
 
 ```ts
 "use server";
-// validate (zod + withValidation) → authorize → mutate → revalidatePath / redirect
+// requireAppUserAction → validate → authorize → mutate → revalidatePath / redirect
 ```
 
-Patterns to copy:
+Copy patterns from:
 
-- `withValidation` + `ActionResult` / `actionError` / `actionSuccess`
-- Rate limits via `assertRateLimits` / `checkRateLimit` for sensitive endpoints
-- Catch Prisma `P2002` when uniques matter to UX
-- Prefer Server Actions for form flows; Route Handlers for cron, webhooks, or non-form clients (`app/api/…`)
+- `features/feedback/actions` — `withValidation` + `ActionResult`
+- `features/planner/actions/week-share` — coded errors, soft auth fail
+- Prefer Server Actions for forms; Route Handlers under `app/api/` for cron/webhooks/non-form clients
 
-Never trust client-sent ids without an ownership/ACL check.
+Never trust client ids without ownership/ACL checks. Don’t throw raw `Unauthorized` from actions — return `ActionResult`.
 
-## 5. UI
+## 6. UI
 
-1. Add components under `features/<name>/components/`.
-2. Wire them from a thin `app/(app)/…/page.tsx` (or extend an existing page).
-3. Use existing Button/Modal/FormField patterns; keep Indonesian copy consistent with the rest of the app.
-4. Demo surfaces (`/demo`) stay read-only — disable or stub mutating controls.
+1. Components under `features/<name>/components/`.
+2. Wire from a thin page.
+3. Indonesian copy; existing Button/Modal/FormField.
+4. Demo (`/demo`) stays read-only for mutating controls.
 
-## 6. Tests
+## 7. Tests
 
 | Change | Prefer |
 |--------|--------|
-| Pure logic / schemas | Unit next to file |
-| ACL, transactions, invites | Integration or focused unit with mocked prisma only if needed |
-| Critical UI journey | E2E journey under `e2e/journeys/` — see [e2e-guide.md](e2e-guide.md) |
+| Pure / schemas | Unit next to file |
+| ACL / transactions | Integration test |
+| Critical journey | `e2e/journeys/<name>.spec.ts` — [e2e-guide.md](e2e-guide.md) |
 
-Do not put multi-user / heavy setup into unrelated journeys (e.g. week-share ≠ planner smoke).
+One journey file per heavy fixture (don’t dump multi-user share into planner smoke).
 
-## 7. Config & docs
+## 8. Config & docs
 
-- New env vars → `.env.example` (+ `.env.e2e.example` if e2e needs them).
-- Feature flags: follow existing `*_ENABLED` patterns (email, AI assist).
-- Link user story / eng notes from README only when the feature is user-visible or ops-critical.
+- Env → `.env.example` (+ `.env.e2e.example` if needed).
+- Flags → `*_ENABLED` pattern.
+- Shared multi-file infra → `src/lib/<concern>/` (see app-structure).
 
-## 8. In-app update log (required for user-visible features)
+## 9. In-app update log (user-visible features)
 
-When shipping a change users should notice (new Plan/Akun capability, not pure refactors):
-
-1. Bump `package.json` `"version"` (semver).
-2. Prepend an entry at the top of `UPDATE_LOG` in `src/lib/updates.ts` with that `version`, Indonesian title/body, and a unique `id`.
-3. Confirm unit tests in `src/lib/updates.test.ts` still pass (`APP_UPDATE_ID` = first entry).
-
-This drives Akun → Update and the “Baru” badge.
-
-## Minimal skeleton
-
-```
-features/my-feature/
-  actions.ts
-  lib/my-feature.ts
-  lib/my-feature.test.ts
-  components/my-feature-panel.tsx
-
-app/(app)/my-feature/page.tsx   # if it needs its own route
-```
+1. Bump `package.json` version.
+2. Prepend `UPDATE_LOG` in `src/lib/updates.ts`.
+3. Keep `updates.test.ts` green.
 
 ## Related
 
 - [App structure](app-structure.md)
+- [Conventions](conventions.md)
 - [E2E guide](e2e-guide.md)
