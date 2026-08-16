@@ -16,7 +16,9 @@ type Props = {
   searchParams: Promise<{ callbackUrl?: string }>;
 };
 
-export default async function OnboardingPage({ searchParams }: Props) {
+export default async function OnboardingPage({
+  searchParams,
+}: Readonly<Props>) {
   const session = await getSafeSession();
   if (!session?.user) redirectToLoginClearingSession();
 

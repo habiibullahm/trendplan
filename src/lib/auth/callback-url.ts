@@ -22,7 +22,7 @@ export function withAuthCallbackQuery(
   const safe = safeAuthCallbackUrl(callbackUrl);
   if (!safe) return pathWithQuery;
 
-  const url = new URL(pathWithQuery, "http://local.invalid");
+  const url = new URL(pathWithQuery, "https://local.invalid");
   url.searchParams.set("callbackUrl", safe);
   return `${url.pathname}${url.search}`;
 }
@@ -33,7 +33,7 @@ export function loginPath(options?: {
   verified?: boolean;
   callbackUrl?: string | null;
 }): string {
-  const url = new URL("/login", "http://local.invalid");
+  const url = new URL("/login", "https://local.invalid");
   if (options?.registered) url.searchParams.set("registered", "1");
   if (options?.verified) url.searchParams.set("verified", "1");
   const safe = safeAuthCallbackUrl(options?.callbackUrl);

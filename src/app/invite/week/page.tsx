@@ -15,7 +15,9 @@ type Props = {
   searchParams: Promise<{ token?: string }>;
 };
 
-export default async function InviteWeekPage({ searchParams }: Props) {
+export default async function InviteWeekPage({
+  searchParams,
+}: Readonly<Props>) {
   const { token: rawToken } = await searchParams;
   const token = rawToken?.trim() ?? "";
 

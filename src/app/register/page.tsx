@@ -6,7 +6,7 @@ type Props = {
   searchParams: Promise<{ callbackUrl?: string }>;
 };
 
-export default async function RegisterPage({ searchParams }: Props) {
+export default async function RegisterPage({ searchParams }: Readonly<Props>) {
   const { callbackUrl } = await searchParams;
   const safeCallback = safeAuthCallbackUrl(callbackUrl) ?? undefined;
 

@@ -16,7 +16,10 @@ type Props = {
   searchParams: Promise<{ month?: string; week?: string }>;
 };
 
-export default async function PlannerItemPage({ params, searchParams }: Props) {
+export default async function PlannerItemPage({
+  params,
+  searchParams,
+}: Readonly<Props>) {
   const session = await auth();
   if (!session?.user?.id) redirect("/login");
 
@@ -42,7 +45,7 @@ export default async function PlannerItemPage({ params, searchParams }: Props) {
     monthParam: month,
     weekParam: week,
   });
-  const backUrl = new URL(backHref, "http://local");
+  const backUrl = new URL(backHref, "https://local");
   const returnMonth = backUrl.searchParams.get("month") ?? undefined;
   const returnWeekRaw = backUrl.searchParams.get("week");
   const returnWeek = returnWeekRaw ? Number(returnWeekRaw) : undefined;

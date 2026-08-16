@@ -7,7 +7,7 @@ type Props = SelectHTMLAttributes<HTMLSelectElement>;
  * Native select with shared field chrome.
  * Not the shadcn popup Select — keeps planner day pickers unchanged.
  */
-export function Select({ className, children, ...props }: Props) {
+export function Select({ className, children, ...props }: Readonly<Props>) {
   return (
     <select
       data-slot="select"

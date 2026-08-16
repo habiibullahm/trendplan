@@ -4,7 +4,7 @@ import { fieldClassName } from "@/components/ui/field-styles";
 type Props = TextareaHTMLAttributes<HTMLTextAreaElement>;
 
 /** TrendPlan textarea — native element, shadcn-compatible field chrome. */
-export function Textarea({ className, ...props }: Props) {
+export function Textarea({ className, ...props }: Readonly<Props>) {
   return (
     <textarea
       data-slot="textarea"

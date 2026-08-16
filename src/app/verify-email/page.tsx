@@ -15,7 +15,9 @@ type Props = {
   searchParams: Promise<{ token?: string; callbackUrl?: string }>;
 };
 
-export default async function VerifyEmailPage({ searchParams }: Props) {
+export default async function VerifyEmailPage({
+  searchParams,
+}: Readonly<Props>) {
   const { token, callbackUrl: rawCallback } = await searchParams;
   const callbackUrl = safeAuthCallbackUrl(rawCallback);
   const session = await auth();
