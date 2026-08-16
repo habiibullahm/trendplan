@@ -3,6 +3,7 @@ import path from "node:path";
 import { expect, type Page } from "@playwright/test";
 
 export const AUTH_STORAGE_PATH = path.join(".auth", "user.json");
+export const PARTNER_AUTH_STORAGE_PATH = path.join(".auth", "partner.json");
 
 export type E2ECredentials = {
   email: string;
@@ -25,6 +26,7 @@ export async function loginWithCredentials(
   creds: E2ECredentials,
 ) {
   await page.goto("/login");
+  await expect(page.getByLabel("Email")).toBeVisible({ timeout: 20_000 });
   await page.getByLabel("Email").fill(creds.email);
   await page.getByLabel("Password").fill(creds.password);
   await page.getByRole("button", { name: "Masuk" }).click();
@@ -42,11 +44,12 @@ export async function loginWithCredentials(
 export async function saveAuthenticatedStorageState(
   page: Page,
   creds: E2ECredentials,
+  storagePath: string = AUTH_STORAGE_PATH,
 ) {
   await loginWithCredentials(page, creds);
   await expect(page).toHaveURL(/\/dashboard(?:\?|$)/, {
     timeout: 15_000,
   });
-  await mkdir(path.dirname(AUTH_STORAGE_PATH), { recursive: true });
-  await page.context().storageState({ path: AUTH_STORAGE_PATH });
+  await mkdir(path.dirname(storagePath), { recursive: true });
+  await page.context().storageState({ path: storagePath });
 }

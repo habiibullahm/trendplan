@@ -12,7 +12,7 @@ import {
 import { isTransactionalEmailEnabled } from "@/lib/auth/env";
 import { sendMail } from "@/lib/mail";
 import { checkRateLimit } from "@/lib/rate-limit";
-import { formatWeekRange, formatWeekStartParam, plannerHref } from "@/lib/week";
+import { formatWeekRange, plannerHref } from "@/lib/week";
 import { requireUserId } from "@/features/planner/lib/planner";
 import {
   acceptWeekInvite,
@@ -276,15 +276,4 @@ export async function ensureInviteLinkAction(
     }
     return actionError(ActionErrors.generic);
   }
-}
-
-export function sharedWeekPlannerHref(weekStart: Date) {
-  return plannerHref({
-    weekStart,
-    weekParam: undefined,
-  });
-}
-
-export function weekStartParamFromShare(weekStart: Date) {
-  return formatWeekStartParam(weekStart);
 }

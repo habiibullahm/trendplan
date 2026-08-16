@@ -39,4 +39,24 @@ test.describe("public shells", () => {
       ),
     ).toBeVisible();
   });
+
+  test("demo planner shows disabled Bagikan", async ({ page }) => {
+    await page.goto("/demo/planner");
+    const bagikan = page.getByRole("button", {
+      name: "Bagikan minggu ke partner",
+    });
+    await expect(bagikan).toBeVisible();
+    await expect(bagikan).toBeDisabled();
+  });
+
+  test("invite week without auth redirects to login with callback", async ({
+    page,
+  }) => {
+    await page.goto("/invite/week?token=e2e-smoke-token");
+    await expect(page).toHaveURL(/\/login\?/);
+    expect(page.url()).toMatch(/callbackUrl=/);
+    expect(decodeURIComponent(page.url())).toMatch(
+      /\/invite\/week\?token=e2e-smoke-token/,
+    );
+  });
 });

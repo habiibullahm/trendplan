@@ -18,9 +18,11 @@ const original = {
 };
 
 function setNodeEnv(value: string | undefined) {
-  const env = process.env as { NODE_ENV?: string };
-  if (value === undefined) delete env.NODE_ENV;
-  else env.NODE_ENV = value;
+  if (value === undefined) {
+    Reflect.deleteProperty(process.env, "NODE_ENV");
+  } else {
+    Reflect.set(process.env, "NODE_ENV", value);
+  }
 }
 
 afterEach(() => {
