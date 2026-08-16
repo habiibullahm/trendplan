@@ -7,10 +7,13 @@ const LEGACY_OFFSET_MS = 14 * 60 * 60 * 1000;
 
 /** Hard-delete soft-parked rows past the undo window (owned by this user). */
 export async function purgeStaleSoftDeletes(userId: string) {
+  const { weekPlanAccessWhere } = await import(
+    "@/features/planner/lib/week-share"
+  );
   await prisma.contentItem.deleteMany({
     where: {
       deletedAt: { lt: softDeleteStaleBefore() },
-      weekPlan: { userId },
+      weekPlan: weekPlanAccessWhere(userId),
     },
   });
 }
@@ -113,14 +116,20 @@ export async function countActiveItemsByWeekStarts(
 
   const plans = await prisma.weekPlan.findMany({
     where: {
-      userId,
-      weekStart: {
-        gte: new Date(min),
-        lte: new Date(max),
-      },
+      AND: [
+        { OR: [{ userId }, { members: { some: { userId } } }] },
+        {
+          weekStart: {
+            gte: new Date(min),
+            lte: new Date(max),
+          },
+        },
+      ],
     },
     select: {
       weekStart: true,
+      userId: true,
+      members: { where: { userId }, select: { id: true } },
       _count: {
         select: {
           items: {
@@ -131,11 +140,20 @@ export async function countActiveItemsByWeekStarts(
     },
   });
 
+  const byKey = new Map<string, { count: number; foreign: boolean }>();
   for (const plan of plans) {
     const key = formatWeekStartParam(plan.weekStart);
-    if (map.has(key)) {
-      map.set(key, plan._count.items);
+    if (!map.has(key)) continue;
+    const foreign = plan.userId !== userId;
+    const prev = byKey.get(key);
+    if (foreign) {
+      byKey.set(key, { count: plan._count.items, foreign: true });
+    } else if (!prev?.foreign) {
+      byKey.set(key, { count: plan._count.items, foreign: false });
     }
+  }
+  for (const [key, value] of byKey) {
+    map.set(key, value.count);
   }
   return map;
 }

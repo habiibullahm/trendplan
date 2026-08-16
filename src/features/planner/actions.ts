@@ -5,7 +5,8 @@ import { redirect } from "next/navigation";
 import { z } from "zod";
 import { ContentStatus } from "@/generated/prisma/client";
 import { prisma } from "@/lib/prisma";
-import { getOrCreateWeekPlan, requireUserId } from "@/features/planner/lib/planner";
+import { requireUserId } from "@/features/planner/lib/planner";
+import { getWeekPlanForViewer, weekPlanAccessWhere } from "@/features/planner/lib/week-share";
 import { suggestCaption, suggestHashtags } from "@/features/planner/lib/export-text";
 import {
   isParkedSoftDeleteDay,
@@ -74,7 +75,7 @@ export async function addTrendToPlannerAction(
   const trend = await prisma.trend.findUnique({ where: { id: trendId } });
   if (!trend) return { error: "Tren tidak ditemukan." };
 
-  const weekPlan = await getOrCreateWeekPlan(
+  const weekPlan = await getWeekPlanForViewer(
     userId,
     resolveWeekStartFromForm(formData),
   );
@@ -122,7 +123,7 @@ export async function createContentItemAction(
   const hook = hookParsed.data || null;
   const weekStart = resolveWeekStartFromForm(formData);
 
-  const weekPlan = await getOrCreateWeekPlan(userId, weekStart);
+  const weekPlan = await getWeekPlanForViewer(userId, weekStart);
   const existing = weekPlan.items.find((i) => i.dayOfWeek === dayParsed.data);
   if (existing) {
     return { error: "Hari itu sudah ada ide — pilih hari lain." };
@@ -168,7 +169,7 @@ export async function updateContentItemAction(
   }
 
   const item = await prisma.contentItem.findFirst({
-    where: { id: itemId, deletedAt: null, weekPlan: { userId } },
+    where: { id: itemId, deletedAt: null, weekPlan: weekPlanAccessWhere(userId) },
     include: { weekPlan: { select: { weekStart: true } } },
   });
   if (!item) return { error: "Konten tidak ditemukan." };
@@ -204,7 +205,7 @@ export async function softDeleteContentItemAction(formData: FormData) {
       id: itemId,
       deletedAt: null,
       dayOfWeek: { gte: 0 },
-      weekPlan: { userId },
+      weekPlan: weekPlanAccessWhere(userId),
     },
     include: { weekPlan: { select: { weekStart: true } } },
   });
@@ -262,7 +263,7 @@ export async function restoreContentItemAction(
         where: {
           id: itemId,
           deletedAt: { not: null },
-          weekPlan: { userId },
+          weekPlan: weekPlanAccessWhere(userId),
         },
       });
       if (!item) return { error: "Ide sudah tidak bisa diurungkan." } as const;
@@ -311,7 +312,7 @@ export async function purgeDeletedContentItemAction(
     where: {
       id: itemId,
       deletedAt: { not: null },
-      weekPlan: { userId },
+      weekPlan: weekPlanAccessWhere(userId),
     },
   });
 
@@ -340,7 +341,7 @@ export async function moveContentItemAction(
           id: itemId,
           deletedAt: null,
           dayOfWeek: { gte: 0 },
-          weekPlan: { userId },
+          weekPlan: weekPlanAccessWhere(userId),
         },
       });
       if (!item) return { error: "Konten tidak ditemukan." } as const;

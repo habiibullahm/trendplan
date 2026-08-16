@@ -8,6 +8,7 @@ import {
   formatWeekRange,
   plannerHref,
 } from "@/lib/week";
+import { weekPlanAccessWhere } from "@/features/planner/lib/week-share";
 import { prisma } from "@/lib/prisma";
 
 type Props = {
@@ -26,7 +27,7 @@ export default async function PlannerItemPage({ params, searchParams }: Props) {
       id: itemId,
       deletedAt: null,
       dayOfWeek: { gte: 0 },
-      weekPlan: { userId: session.user.id },
+      weekPlan: weekPlanAccessWhere(session.user.id),
     },
     include: {
       trend: true,
