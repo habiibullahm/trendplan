@@ -2,6 +2,8 @@ import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 import {
   buildInviteUrl,
+  isSelfInviteEmail,
+  normalizeInviteEmail,
   partnerDisplayName,
   shareRoleForUser,
 } from "./week-share-pure";
@@ -37,6 +39,14 @@ describe("week-share-pure", () => {
       buildInviteUrl("https://trendplan.vercel.app", "abc+/=xyz"),
       "https://trendplan.vercel.app/invite/week?token=abc%2B%2F%3Dxyz",
     );
+  });
+
+  it("isSelfInviteEmail compares case-insensitively after trim", () => {
+    assert.equal(normalizeInviteEmail("  Me@Example.COM "), "me@example.com");
+    assert.equal(isSelfInviteEmail("me@example.com", "Me@Example.COM"), true);
+    assert.equal(isSelfInviteEmail("me@example.com", "partner@example.com"), false);
+    assert.equal(isSelfInviteEmail(null, "me@example.com"), false);
+    assert.equal(isSelfInviteEmail(undefined, "me@example.com"), false);
   });
 });
 

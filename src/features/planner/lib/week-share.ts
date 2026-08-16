@@ -11,6 +11,8 @@ import {
 } from "@/features/planner/lib/week-share-tokens";
 import {
   buildInviteUrl,
+  isSelfInviteEmail,
+  normalizeInviteEmail,
   partnerDisplayName,
   shareRoleForUser,
   type ShareRole,
@@ -18,6 +20,8 @@ import {
 import { softDeleteStaleBefore } from "@/features/planner/lib/soft-delete";
 
 export {
+  isSelfInviteEmail,
+  normalizeInviteEmail,
   partnerDisplayName,
   shareRoleForUser,
   type ShareRole,
@@ -235,22 +239,47 @@ export async function getWeekShareSnapshot(
 }
 
 /** Revoke outstanding unused invites for a week, then create a fresh token. */
+export type CreateWeekInviteErrorCode = "partner_exists" | "self_invite";
+
+export type CreateWeekInviteResult =
+  | { ok: true; rawToken: string; inviteId: string; url: string }
+  | { ok: false; code: CreateWeekInviteErrorCode };
+
 export async function createOrRotateWeekInvite(params: {
   weekPlanId: string;
   createdByUserId: string;
   invitedEmail?: string | null;
+  /** When set, skip a second User lookup for the self-invite check. */
+  ownerEmail?: string | null;
   /**
    * When false, keep existing pending invites until the caller finalizes
    * (e.g. after email send succeeds). Default true for copy-link flows.
    */
   revokePrevious?: boolean;
-}): Promise<{ rawToken: string; inviteId: string; url: string }> {
+}): Promise<CreateWeekInviteResult> {
   const existingPartner = await prisma.weekPlanMember.findUnique({
     where: { weekPlanId: params.weekPlanId },
     select: { id: true },
   });
   if (existingPartner) {
-    throw new Error("PARTNER_EXISTS");
+    return { ok: false, code: "partner_exists" };
+  }
+
+  const invitedEmail = params.invitedEmail
+    ? normalizeInviteEmail(params.invitedEmail)
+    : null;
+  if (invitedEmail) {
+    let ownerEmail = params.ownerEmail;
+    if (ownerEmail === undefined) {
+      const creator = await prisma.user.findUnique({
+        where: { id: params.createdByUserId },
+        select: { email: true },
+      });
+      ownerEmail = creator?.email;
+    }
+    if (isSelfInviteEmail(ownerEmail, invitedEmail)) {
+      return { ok: false, code: "self_invite" };
+    }
   }
 
   const revokePrevious = params.revokePrevious !== false;
@@ -274,13 +303,14 @@ export async function createOrRotateWeekInvite(params: {
         weekPlanId: params.weekPlanId,
         createdByUserId: params.createdByUserId,
         tokenHash,
-        invitedEmail: params.invitedEmail?.trim().toLowerCase() || null,
+        invitedEmail,
         expiresAt,
       },
     });
   });
 
   return {
+    ok: true,
     rawToken,
     inviteId: invite.id,
     url: inviteUrl(rawToken),
