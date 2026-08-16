@@ -4,13 +4,17 @@ import {
   ActionErrors,
   actionErrorCode,
   type ActionErrorCode,
-} from "./action-result";
-import { CodedError, isCodedError, isCodedErrorWithCode } from "./coded-error";
+} from "@/lib/action-result";
+import {
+  CodedError,
+  isCodedError,
+  isCodedErrorWithCode,
+} from "@/lib/errors/coded-error";
 import {
   classifyResendFailure,
   isMailSendError,
   MailSendError,
-} from "./mail-errors";
+} from "@/lib/mail/errors";
 
 describe("actionErrorCode", () => {
   it("maps ActionErrorCode including generic", () => {

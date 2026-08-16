@@ -5,14 +5,14 @@ import {
   classifyResendFailure,
   isMailSendError,
   MailSendError,
-} from "@/lib/mail-errors";
+} from "@/lib/mail/errors";
 
 export {
   classifyResendFailure,
   isMailSendError,
   MailSendError,
   type MailErrorCode,
-} from "@/lib/mail-errors";
+} from "@/lib/mail/errors";
 
 export type MailMessage = {
   to: string;
