@@ -160,20 +160,31 @@ npm run test:e2e:ui
 | `npm run test:e2e` | Playwright e2e (public smoke; auth journeys if `.env.e2e`) |
 | `npm run test:e2e:ui` | Playwright UI mode |
 | `npm run db:copy-to-prod` | Copy data lokal → Neon (butuh `TARGET_DATABASE_URL`) |
-| `npm test` | Unit tests (`src/**/*.test.ts`) — juga di pre-push |
+| `npm test` | Unit tests (`src/**/*.test.ts`) |
+| `npm run verify` | typecheck + unit + e2e + build (sama dengan CI) |
 
 ## Git hooks (Husky)
 
 Setelah `npm install`, Husky aktif otomatis (`prepare`).
 
-| Hook | Isi | Tujuan |
-|------|-----|--------|
-| **pre-commit** | Block staged `.env`/credential filenames + `lint-staged` → ESLint **hanya** file staged `*.{ts,tsx,js,mjs}` | Commit cepat (~detik) |
-| **pre-push** | `npm test` | Cek ringan sebelum push |
+| Surface | Isi | Tujuan |
+|---------|-----|--------|
+| **pre-commit** | Block staged `.env`/credential filenames + `lint-staged` (ESLint file staged saja) | Commit cepat (~detik) |
+| **pre-push** | *(dihapus)* | Gate penuh di CI, bukan lokal |
+| **CI** (GitHub Actions) | `npm run verify` pada `pull_request` + `push` ke `main` | Melindungi `main` |
 
-Tidak dijalankan di pre-commit: `eslint .`, full smoke, `prisma generate`, `next build`.
+Tidak dijalankan di pre-commit: typecheck, unit, e2e, `eslint .`, `next build`. Jalankan lokal dengan `npm run verify` sebelum push jika mau.
 
-Darurat (skip hooks):
+### Branch protection (manual)
+
+Setelah workflow `CI` / job `verify` pernah jalan di repo:
+
+1. GitHub → **Settings** → **Branches** → rule untuk `main`.
+2. Enable **Require a pull request before merging** (disarankan).
+3. Enable **Require status checks to pass** → pilih check **verify**.
+4. Simpan rule.
+
+Darurat (skip hooks lokal saja; CI tetap jalan di GitHub):
 
 ```bash
 HUSKY=0 git commit -m "…"
