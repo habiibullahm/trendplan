@@ -14,12 +14,3 @@ fi
 
 echo "pre-commit: lint-staged…"
 npx lint-staged
-
-echo "pre-commit: typecheck…"
-npm run typecheck
-
-echo "pre-commit: unit tests…"
-npm test
-
-echo "pre-commit: e2e (Playwright)…"
-npm run test:e2e

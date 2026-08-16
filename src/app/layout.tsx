@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import type { ReactNode } from "react";
 import { DM_Sans, Fraunces } from "next/font/google";
 import { AppToaster } from "@/components/layout/toaster";
 import { ThemeProvider } from "@/components/theme/theme-provider";
@@ -22,7 +23,9 @@ export const metadata: Metadata = {
   applicationName: "TrendPlan",
 };
 
-export default function RootLayout({ children }: LayoutProps<"/">) {
+export default function RootLayout({
+  children,
+}: Readonly<{ children: ReactNode }>) {
   return (
     <html
       lang="id"
