@@ -65,6 +65,16 @@ Do not put multi-user / heavy setup into unrelated journeys (e.g. week-share ≠
 - Feature flags: follow existing `*_ENABLED` patterns (email, AI assist).
 - Link user story / eng notes from README only when the feature is user-visible or ops-critical.
 
+## 8. In-app update log (required for user-visible features)
+
+When shipping a change users should notice (new Plan/Akun capability, not pure refactors):
+
+1. Bump `package.json` `"version"` (semver).
+2. Prepend an entry at the top of `UPDATE_LOG` in `src/lib/updates.ts` with that `version`, Indonesian title/body, and a unique `id`.
+3. Confirm unit tests in `src/lib/updates.test.ts` still pass (`APP_UPDATE_ID` = first entry).
+
+This drives Akun → Update and the “Baru” badge.
+
 ## Minimal skeleton
 
 ```

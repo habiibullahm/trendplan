@@ -22,6 +22,13 @@ export const APP_VERSION = packageJson.version;
 
 export const UPDATE_LOG: UpdateEntry[] = [
   {
+    id: "2026-08-16-partner-week-share",
+    version: "0.4.0",
+    date: "16 Agu 2026",
+    title: "Bagikan minggu ke partner",
+    body: "Undang satu partner ke minggu Plan lewat tautan (atau email jika aktif). Kalian bisa isi ide dan aktivitas bareng; cabut akses kapan saja.",
+  },
+  {
     id: "2026-08-11-planner-aktivitas",
     version: "0.3.0",
     date: "11 Agu 2026",
