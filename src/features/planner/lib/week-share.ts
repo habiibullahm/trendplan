@@ -267,7 +267,7 @@ export async function createOrRotateWeekInvite(params: {
     ? normalizeInviteEmail(params.invitedEmail)
     : null;
   if (invitedEmail) {
-    // Always load creator email from DB — do not trust caller-supplied ownerEmail.
+    // Always load creator email from DB — do not trust caller-supplied addresses.
     const creator = await prisma.user.findUnique({
       where: { id: params.createdByUserId },
       select: { email: true },
