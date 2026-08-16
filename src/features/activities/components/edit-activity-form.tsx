@@ -12,7 +12,7 @@ import { FormField } from "@/components/ui/form-field";
 import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
 import { useActionToasts } from "@/hooks/use-action-toasts";
-import { DAY_LABELS } from "@/lib/week";
+import { DAY_LABELS, type PlannerView } from "@/lib/week";
 
 const initial: ActivityActionState = {};
 
@@ -22,6 +22,7 @@ export function EditActivityForm({
   dayOfWeek,
   returnMonth,
   returnWeek,
+  view,
   cancelHref,
 }: {
   activityId: string;
@@ -29,6 +30,7 @@ export function EditActivityForm({
   dayOfWeek: number;
   returnMonth?: string;
   returnWeek?: number;
+  view?: PlannerView;
   cancelHref: string;
 }) {
   const [state, action, pending] = useActionState(
@@ -44,6 +46,11 @@ export function EditActivityForm({
   );
   useActionToasts(state);
 
+  const viewField =
+    view === "shared" ? (
+      <input type="hidden" name="view" value="shared" />
+    ) : null;
+
   return (
     <div className="flex flex-col gap-6">
       <form action={action} className="flex flex-col gap-4">
@@ -54,6 +61,7 @@ export function EditActivityForm({
         {returnWeek != null ? (
           <input type="hidden" name="returnWeek" value={String(returnWeek)} />
         ) : null}
+        {viewField}
 
         <FormField label="Hari">
           <Select name="dayOfWeek" defaultValue={String(dayOfWeek)}>
@@ -98,6 +106,7 @@ export function EditActivityForm({
         {returnWeek != null ? (
           <input type="hidden" name="returnWeek" value={String(returnWeek)} />
         ) : null}
+        {viewField}
         <Button
           type="submit"
           variant="danger"

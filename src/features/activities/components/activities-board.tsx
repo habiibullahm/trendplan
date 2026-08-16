@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { DAY_SHORT } from "@/lib/week";
+import { DAY_SHORT, type PlannerView } from "@/lib/week";
 
 export type ActivitiesBoardItem = {
   id: string;
@@ -12,11 +12,13 @@ function newActivityHref(
   weekStartParam?: string,
   returnMonth?: string,
   returnWeek?: number,
+  view?: PlannerView,
 ) {
   const q = new URLSearchParams({ day: String(day) });
   if (weekStartParam) q.set("weekStart", weekStartParam);
   if (returnMonth) q.set("month", returnMonth);
   if (returnWeek != null) q.set("week", String(returnWeek));
+  if (view === "shared") q.set("view", "shared");
   return `/planner/aktivitas/new?${q.toString()}`;
 }
 
@@ -24,10 +26,12 @@ function activityHref(
   activityId: string,
   returnMonth?: string,
   returnWeek?: number,
+  view?: PlannerView,
 ) {
   const q = new URLSearchParams();
   if (returnMonth) q.set("month", returnMonth);
   if (returnWeek != null) q.set("week", String(returnWeek));
+  if (view === "shared") q.set("view", "shared");
   const qs = q.toString();
   return qs
     ? `/planner/aktivitas/${activityId}?${qs}`
@@ -50,12 +54,14 @@ function ActivityRow({
   readOnly,
   returnMonth,
   returnWeek,
+  view,
 }: {
   item: ActivitiesBoardItem;
   index: number;
   readOnly: boolean;
   returnMonth?: string;
   returnWeek?: number;
+  view?: PlannerView;
 }) {
   const content = (
     <>
@@ -80,7 +86,7 @@ function ActivityRow({
   return (
     <li>
       <Link
-        href={activityHref(item.id, returnMonth, returnWeek)}
+        href={activityHref(item.id, returnMonth, returnWeek, view)}
         className="min-touch flex items-start gap-3 px-4 py-3 transition-colors hover:bg-coral/5"
       >
         {content}
@@ -94,12 +100,14 @@ export function ActivitiesBoard({
   weekStartParam,
   returnMonth,
   returnWeek,
+  view,
   readOnly = false,
 }: {
   items: ActivitiesBoardItem[];
   weekStartParam?: string;
   returnMonth?: string;
   returnWeek?: number;
+  view?: PlannerView;
   readOnly?: boolean;
 }) {
   const byDay = groupByDay(items);
@@ -129,6 +137,7 @@ export function ActivitiesBoard({
                     weekStartParam,
                     returnMonth,
                     returnWeek,
+                    view,
                   )}
                   className="text-xs font-semibold text-coral transition-colors hover:text-coral/80"
                 >
@@ -147,6 +156,7 @@ export function ActivitiesBoard({
                     weekStartParam,
                     returnMonth,
                     returnWeek,
+                    view,
                   )}
                   className="min-touch block px-4 py-3 text-sm text-ink-muted transition-colors hover:bg-coral/5 hover:text-coral"
                 >
@@ -163,6 +173,7 @@ export function ActivitiesBoard({
                     readOnly={readOnly}
                     returnMonth={returnMonth}
                     returnWeek={returnWeek}
+                    view={view}
                   />
                 ))}
               </ul>

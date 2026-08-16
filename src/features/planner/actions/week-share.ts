@@ -241,7 +241,8 @@ export async function leaveSharedPlanAction(
 
   await leaveSharedPlan(weekPlanId, gated.userId);
   revalidateShare(weekPlanId);
-  return actionSuccess("Kamu keluar dari plan");
+  // Land on Plan saya (no view=shared) so toggle/URL stay consistent after leave.
+  redirect(plannerHref({ weekStart: snap.weekStart, toast: "left_share" }));
 }
 
 export async function acceptWeekInviteAction(
@@ -271,6 +272,7 @@ export async function acceptWeekInviteAction(
     plannerHref({
       weekStart: result.weekStart,
       toast: "joined_share",
+      view: "shared",
     }),
   );
 }

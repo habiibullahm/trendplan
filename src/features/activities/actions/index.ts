@@ -7,7 +7,12 @@ import { parseActivityTitles } from "@/features/activities/lib/parse-titles";
 import { prisma } from "@/lib/prisma";
 import { requireUserId } from "@/features/planner/lib/planner";
 import { getWeekPlanForViewer, weekPlanAccessWhere } from "@/features/planner/lib/week-share";
-import { getWeekStart, parseWeekStartParam, plannerHref } from "@/lib/week";
+import {
+  getWeekStart,
+  parsePlannerView,
+  parseWeekStartParam,
+  plannerHref,
+} from "@/lib/week";
 
 const daySchema = z.coerce.number().int().min(0).max(6);
 const titleSchema = z.string().trim().min(1).max(120);
@@ -24,6 +29,10 @@ function resolveWeekStartFromForm(formData: FormData): Date {
   );
 }
 
+function formView(formData: FormData) {
+  return parsePlannerView(String(formData.get("view") ?? ""));
+}
+
 function returnHref(
   formData: FormData,
   weekStart: Date,
@@ -34,6 +43,7 @@ function returnHref(
     monthParam: String(formData.get("returnMonth") ?? "") || null,
     weekParam: String(formData.get("returnWeek") ?? "") || null,
     tab: "aktivitas",
+    view: formView(formData),
     toast: extra?.toast,
   });
 }
@@ -64,7 +74,9 @@ export async function createActivityAction(
   const titles = parsed.titles;
 
   const weekStart = resolveWeekStartFromForm(formData);
-  const weekPlan = await getWeekPlanForViewer(userId, weekStart);
+  const weekPlan = await getWeekPlanForViewer(userId, weekStart, {
+    view: formView(formData),
+  });
 
   await prisma.activity.createMany({
     data: titles.map((title) => ({
@@ -138,6 +150,7 @@ export async function deleteActivityAction(formData: FormData) {
       plannerHref({
         weekStart: getWeekStart(),
         tab: "aktivitas",
+        view: formView(formData),
       }),
     );
   }

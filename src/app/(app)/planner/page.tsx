@@ -11,6 +11,7 @@ import { MonthWeekNav } from "@/features/planner/components/month-week-nav";
 import { PlannerBoard } from "@/features/planner/components/planner-board";
 import { PlannerTabs } from "@/features/planner/components/planner-tabs";
 import { PlannerToastFromQuery } from "@/features/planner/components/planner-toast";
+import { PlannerViewToggle } from "@/features/planner/components/planner-view-toggle";
 import {
   ShareWeekButton,
   SharedWeekBanner,
@@ -23,12 +24,15 @@ import {
   getWeekShareSnapshot,
   partnerDisplayName,
   shareRoleForUser,
+  userHasPartnerSeatForWeek,
 } from "@/features/planner/lib/week-share";
 import {
   DAY_SHORT,
   formatWeekRange,
   formatWeekStartParam,
   parsePlannerTab,
+  parsePlannerView,
+  plannerHref,
   resolvePlannerSelection,
 } from "@/lib/week";
 import { prisma } from "@/lib/prisma";
@@ -39,6 +43,7 @@ type Props = {
     week?: string;
     toast?: string;
     tab?: string;
+    view?: string;
   }>;
 };
 
@@ -49,6 +54,7 @@ export default async function PlannerPage({ searchParams }: Readonly<Props>) {
 
   const params = await searchParams;
   const tab = parsePlannerTab(params.tab);
+  const view = parsePlannerView(params.view);
   const selection = resolvePlannerSelection({
     monthParam: params.month,
     weekParam: params.week,
@@ -63,11 +69,34 @@ export default async function PlannerPage({ searchParams }: Readonly<Props>) {
   const weekLabel = formatWeekRange(selection.weekStart);
   const goal = user?.weeklyGoal ?? 3;
 
-  const weekPlan = await getWeekPlanForViewer(userId, selection.weekStart);
+  const canToggleShareView = await userHasPartnerSeatForWeek(
+    userId,
+    selection.weekStart,
+  );
+  // Drop stale view=shared when this week has no partner seat (nav / after leave).
+  if (view === "shared" && !canToggleShareView) {
+    redirect(
+      plannerHref({
+        weekStart: selection.weekStart,
+        monthParam: selection.monthParam,
+        weekParam: String(selection.weekIndex),
+        tab,
+        toast: params.toast,
+      }),
+    );
+  }
+
+  const weekPlan = await getWeekPlanForViewer(userId, selection.weekStart, {
+    view,
+  });
   const shareSnap = await getWeekShareSnapshot(userId, weekPlan.id);
   const role = shareRoleForUser(weekPlan, userId);
+
+  // Banner: shared view as partner, or owner looking at their plan with a partner.
+  // Avoid implying Plan saya (partner's owned week) is "bersama".
   const showShareBanner =
-    Boolean(shareSnap?.partner) && (role === "owner" || role === "partner");
+    (view === "shared" && role === "partner") ||
+    (role === "owner" && Boolean(shareSnap?.partner));
 
   const shareUi =
     shareSnap && (shareSnap.role === "owner" || shareSnap.role === "partner")
@@ -89,10 +118,16 @@ export default async function PlannerPage({ searchParams }: Readonly<Props>) {
         }
       : null;
 
+  // Owner controls on owned plan; partner leave only on shared view (not mine).
+  const showShareButton =
+    shareUi &&
+    (shareUi.role === "owner" ||
+      (shareUi.role === "partner" && view === "shared"));
+
   if (tab === "aktivitas") {
     const [activities, activityCounts] = await Promise.all([
-      listActivitiesForWeek(userId, selection.weekStart),
-      countActivitiesByWeekStarts(userId, selection.weekStarts),
+      listActivitiesForWeek(userId, selection.weekStart, { view }),
+      countActivitiesByWeekStarts(userId, selection.weekStarts, { view }),
     ]);
     const weeks = buildMonthWeekChips(selection.weekStarts, activityCounts);
     const selectedChip = weeks.find((w) => w.index === selection.weekIndex);
@@ -124,11 +159,22 @@ export default async function PlannerPage({ searchParams }: Readonly<Props>) {
           </div>
         ) : null}
 
+        {canToggleShareView ? (
+          <PlannerViewToggle
+            view={view}
+            tab={tab}
+            year={selection.year}
+            month={selection.month}
+            weekIndex={selection.weekIndex}
+          />
+        ) : null}
+
         <PlannerTabs
           tab={tab}
           year={selection.year}
           month={selection.month}
           weekIndex={selection.weekIndex}
+          view={view}
         />
 
         <MonthWeekNav
@@ -137,6 +183,7 @@ export default async function PlannerPage({ searchParams }: Readonly<Props>) {
           weekIndex={selection.weekIndex}
           weeks={weeks}
           tab={tab}
+          view={view}
           metric="activities"
         />
 
@@ -144,6 +191,7 @@ export default async function PlannerPage({ searchParams }: Readonly<Props>) {
           weekStartParam={weekStartParam}
           returnMonth={selection.monthParam}
           returnWeek={selection.weekIndex}
+          view={view}
           items={activities}
         />
       </main>
@@ -153,6 +201,7 @@ export default async function PlannerPage({ searchParams }: Readonly<Props>) {
   const counts = await countActiveItemsByWeekStarts(
     userId,
     selection.weekStarts,
+    { view },
   );
 
   const weeks = buildMonthWeekChips(selection.weekStarts, counts);
@@ -187,7 +236,9 @@ export default async function PlannerPage({ searchParams }: Readonly<Props>) {
               dayLabel: DAY_SHORT[item.dayOfWeek],
             }))}
           />
-          {shareUi ? <ShareWeekButton share={shareUi} /> : null}
+          {showShareButton && shareUi ? (
+            <ShareWeekButton share={shareUi} />
+          ) : null}
         </div>
       </div>
 
@@ -200,11 +251,22 @@ export default async function PlannerPage({ searchParams }: Readonly<Props>) {
         </div>
       ) : null}
 
+      {canToggleShareView ? (
+        <PlannerViewToggle
+          view={view}
+          tab={tab}
+          year={selection.year}
+          month={selection.month}
+          weekIndex={selection.weekIndex}
+        />
+      ) : null}
+
       <PlannerTabs
         tab={tab}
         year={selection.year}
         month={selection.month}
         weekIndex={selection.weekIndex}
+        view={view}
       />
 
       <MonthWeekNav
@@ -213,6 +275,7 @@ export default async function PlannerPage({ searchParams }: Readonly<Props>) {
         weekIndex={selection.weekIndex}
         weeks={weeks}
         tab={tab}
+        view={view}
         metric="content"
       />
 
@@ -220,6 +283,7 @@ export default async function PlannerPage({ searchParams }: Readonly<Props>) {
         weekStartParam={weekStartParam}
         returnMonth={selection.monthParam}
         returnWeek={selection.weekIndex}
+        view={view}
         items={weekPlan.items.map((item) => ({
           id: item.id,
           dayOfWeek: item.dayOfWeek,

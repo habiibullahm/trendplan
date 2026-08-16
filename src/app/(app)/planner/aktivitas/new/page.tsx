@@ -6,6 +6,7 @@ import {
   formatWeekRange,
   formatWeekStartParam,
   getWeekStart,
+  parsePlannerView,
   parseWeekStartParam,
   plannerHref,
 } from "@/lib/week";
@@ -16,6 +17,7 @@ type Props = {
     weekStart?: string;
     month?: string;
     week?: string;
+    view?: string;
   }>;
 };
 
@@ -35,16 +37,21 @@ export default async function ActivityNewPage({
     weekStart: weekStartRaw,
     month,
     week,
+    view: viewRaw,
   } = await searchParams;
+  const view = parsePlannerView(viewRaw);
   const weekStart =
     parseWeekStartParam(weekStartRaw ?? null) ?? getWeekStart();
-  const weekPlan = await getWeekPlanForViewer(session.user.id, weekStart);
+  const weekPlan = await getWeekPlanForViewer(session.user.id, weekStart, {
+    view,
+  });
   const weekStartParam = formatWeekStartParam(weekPlan.weekStart);
   const cancelHref = plannerHref({
     weekStart: weekPlan.weekStart,
     monthParam: month,
     weekParam: week,
     tab: "aktivitas",
+    view,
   });
   const cancelUrl = new URL(cancelHref, "https://local");
   const returnMonth = cancelUrl.searchParams.get("month") ?? undefined;
@@ -71,6 +78,7 @@ export default async function ActivityNewPage({
               ? returnWeek
               : undefined
           }
+          view={view}
           cancelHref={cancelHref}
         />
       </div>
