@@ -11,6 +11,7 @@ import {
   getOrCreateWeekPlan,
   getRecommendations,
 } from "@/features/planner/lib/planner";
+import { listInProgressContentItems } from "@/features/planner/lib/in-progress-items";
 import { formatWeekRange } from "@/lib/week";
 import { STATUS_LABEL } from "@/lib/labels";
 import { resolveNiche } from "@/lib/niches";
@@ -31,10 +32,7 @@ export default async function DashboardPage() {
   const goal = user?.weeklyGoal ?? 3;
   const progress = Math.min(100, Math.round((scheduled / goal) * 100));
   const topRecs = await getRecommendations(niche, 2);
-  const inProgressAll = weekPlan.items.filter(
-    (item) => item.status !== "POSTED",
-  );
-  const inProgressItems = inProgressAll.slice(0, 2);
+  const inProgressItems = listInProgressContentItems(weekPlan.items);
 
   return (
     <main className="flex w-full flex-1 flex-col">
@@ -58,13 +56,13 @@ export default async function DashboardPage() {
         <section className="mt-8">
           <div className="flex items-center justify-between gap-3">
             <h2 className="min-w-0 text-lg font-semibold text-ink">
-              Konten dalam proses ({inProgressAll.length})
+              Konten dalam proses ({inProgressItems.length})
             </h2>
             <Link
               href="/planner"
               className="min-touch inline-flex shrink-0 items-center text-sm font-semibold text-coral transition-colors hover:underline"
             >
-              Semua
+              Buka Plan
             </Link>
           </div>
           <Stagger
