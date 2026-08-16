@@ -88,29 +88,28 @@ export function ShareWeekButton({ share }: { share: ShareWeekUiSnapshot }) {
   useEffect(() => {
     const url = createState.inviteUrl ?? emailState.inviteUrl;
     if (!url) return;
+    let cancelled = false;
     void (async () => {
       const ok = await copyText(url);
+      if (cancelled) return;
       if (ok) copyToastSuccess("Tautan undangan disalin");
       else copyToastError("Gagal menyalin tautan");
+      // Refresh after copy so remount does not drop the invite URL mid-write.
+      router.refresh();
     })();
-  }, [createState.inviteUrl, emailState.inviteUrl]);
+    return () => {
+      cancelled = true;
+    };
+  }, [createState.inviteUrl, emailState.inviteUrl, router]);
 
   useEffect(() => {
-    if (
-      revokeState.success ||
-      removeState.success ||
-      leaveState.success ||
-      createState.success ||
-      emailState.success
-    ) {
+    if (revokeState.success || removeState.success || leaveState.success) {
       router.refresh();
     }
   }, [
     revokeState.success,
     removeState.success,
     leaveState.success,
-    createState.success,
-    emailState.success,
     router,
   ]);
 

@@ -5,6 +5,7 @@ import {
   e2eCredentials,
 } from "../helpers/auth";
 import { e2ePartnerCredentials } from "../helpers/partner-user";
+import { clearWeekInviteRateLimits } from "../helpers/rate-limit";
 
 const creds = e2eCredentials();
 const partnerCreds = e2ePartnerCredentials();
@@ -58,20 +59,52 @@ async function resetOwnerShareSeat(page: Page) {
   }
 }
 
+/**
+ * Create an invite and return its URL.
+ * Hooks clipboard.writeText so we still get the token if Sonner toasts race with refresh.
+ */
 async function copyFreshInviteUrl(page: Page): Promise<string> {
+  await page.evaluate(() => {
+    const w = window as unknown as { __e2eInviteUrl?: string };
+    w.__e2eInviteUrl = "";
+    const clipboard = navigator.clipboard;
+    if (!clipboard?.writeText) return;
+    const original = clipboard.writeText.bind(clipboard);
+    clipboard.writeText = async (text: string) => {
+      w.__e2eInviteUrl = text;
+      return original(text);
+    };
+  });
+
   await page.getByRole("button", { name: "Salin tautan undangan" }).click();
-  await expect(
-    page
-      .getByText("Tautan undangan disalin")
-      .or(page.getByText("Tautan undangan siap"))
-      .first(),
-  ).toBeVisible({ timeout: 15_000 });
+
+  const rateLimited = page.getByText(/Terlalu banyak percobaan/);
+  const pending = page.getByText("Menunggu partner…");
+  const copied = page.getByText("Tautan undangan disalin");
+  const ready = page.getByText("Tautan undangan siap");
+  const failedCopy = page.getByText("Gagal menyalin tautan");
+
+  await expect(pending.or(copied).or(ready).or(rateLimited).or(failedCopy).first()).toBeVisible({
+    timeout: 20_000,
+  });
+
+  if (await rateLimited.isVisible().catch(() => false)) {
+    throw new Error(
+      "Week-invite rate limit hit — clear RateLimitBucket or wait before re-running e2e",
+    );
+  }
 
   let inviteUrl = "";
   await expect
     .poll(
       async () => {
-        inviteUrl = await page.evaluate(() => navigator.clipboard.readText());
+        inviteUrl = await page.evaluate(() => {
+          const w = window as unknown as { __e2eInviteUrl?: string };
+          return w.__e2eInviteUrl || "";
+        });
+        if (!inviteUrl) {
+          inviteUrl = await page.evaluate(() => navigator.clipboard.readText());
+        }
         return inviteUrl;
       },
       { timeout: 10_000 },
@@ -91,6 +124,10 @@ test.describe("week share journey", () => {
 
   test.use({
     storageState: creds ? AUTH_STORAGE_PATH : { cookies: [], origins: [] },
+  });
+
+  test.beforeEach(async () => {
+    await clearWeekInviteRateLimits();
   });
 
   test("owner copies invite, partner accepts, owner revokes", async ({
@@ -125,7 +162,9 @@ test.describe("week share journey", () => {
     });
     const partnerPage = await partnerContext.newPage();
     try {
-      await partnerPage.goto(inviteUrl);
+      // Prefer path+query so we hit the Playwright baseURL (clipboard may use AUTH_URL host).
+      const invitePath = new URL(inviteUrl).pathname + new URL(inviteUrl).search;
+      await partnerPage.goto(invitePath);
       await expect(
         partnerPage.getByRole("heading", { name: "Undangan ke plan" }),
       ).toBeVisible({ timeout: 15_000 });
@@ -169,7 +208,8 @@ test.describe("week share journey", () => {
     await resetOwnerShareSeat(page);
     const inviteUrl = await copyFreshInviteUrl(page);
 
-    await page.goto(inviteUrl);
+    const invitePath = new URL(inviteUrl).pathname + new URL(inviteUrl).search;
+    await page.goto(invitePath);
     await expect(
       page.getByRole("heading", { name: "Undangan ke plan" }),
     ).toBeVisible();
