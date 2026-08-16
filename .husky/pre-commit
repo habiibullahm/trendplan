@@ -1,4 +1,6 @@
 #!/usr/bin/env sh
+set -e
+
 # Block forced adds of env/secret filenames (staged only — fast).
 staged="$(git diff --cached --name-only --diff-filter=ACM)"
 # Allow committed templates: .env.example, .env.e2e.example, etc.
@@ -10,4 +12,14 @@ if [ -n "$blocked" ]; then
   exit 1
 fi
 
+echo "pre-commit: lint-staged…"
 npx lint-staged
+
+echo "pre-commit: typecheck…"
+npm run typecheck
+
+echo "pre-commit: unit tests…"
+npm test
+
+echo "pre-commit: e2e (Playwright)…"
+npm run test:e2e
