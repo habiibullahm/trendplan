@@ -35,7 +35,7 @@ test.describe("public shells", () => {
     await expect(page.getByRole("link", { name: "TrendPlan" })).toBeVisible();
     await expect(
       page.getByText(
-        /Kirim tautan reset|Reset password via email belum aktif/,
+        /Kirim tautan reset password ke email kamu|Reset password via email belum aktif/,
       ),
     ).toBeVisible();
   });

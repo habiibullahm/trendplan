@@ -21,7 +21,9 @@ type Props = {
   searchParams: Promise<{ tab?: string }>;
 };
 
-export default async function DemoPlannerPage({ searchParams }: Props) {
+export default async function DemoPlannerPage({
+  searchParams,
+}: Readonly<Props>) {
   const params = await searchParams;
   const tab = parsePlannerTab(params.tab);
   const selection = resolvePlannerSelection({});

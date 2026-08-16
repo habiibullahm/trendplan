@@ -10,7 +10,7 @@ type Props = {
   }>;
 };
 
-export default async function LoginPage({ searchParams }: Props) {
+export default async function LoginPage({ searchParams }: Readonly<Props>) {
   const { verified, registered, callbackUrl } = await searchParams;
   const safeCallback = safeAuthCallbackUrl(callbackUrl) ?? undefined;
 

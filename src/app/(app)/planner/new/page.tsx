@@ -24,7 +24,9 @@ function parseDay(raw?: string): number {
   return Number.isInteger(n) && n >= 0 && n <= 6 ? n : 0;
 }
 
-export default async function PlannerNewPage({ searchParams }: Props) {
+export default async function PlannerNewPage({
+  searchParams,
+}: Readonly<Props>) {
   const session = await auth();
   if (!session?.user?.id) redirect("/login");
 
@@ -43,7 +45,7 @@ export default async function PlannerNewPage({ searchParams }: Props) {
     monthParam: month,
     weekParam: week,
   });
-  const cancelUrl = new URL(cancelHref, "http://local");
+  const cancelUrl = new URL(cancelHref, "https://local");
   const returnMonth = cancelUrl.searchParams.get("month") ?? undefined;
   const returnWeekRaw = cancelUrl.searchParams.get("week");
   const returnWeek = returnWeekRaw ? Number(returnWeekRaw) : undefined;

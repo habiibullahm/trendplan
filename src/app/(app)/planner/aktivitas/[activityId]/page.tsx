@@ -14,7 +14,7 @@ type Props = {
 export default async function ActivityEditPage({
   params,
   searchParams,
-}: Props) {
+}: Readonly<Props>) {
   const session = await auth();
   if (!session?.user?.id) redirect("/login");
 
@@ -38,7 +38,7 @@ export default async function ActivityEditPage({
     weekParam: week,
     tab: "aktivitas",
   });
-  const backUrl = new URL(backHref, "http://local");
+  const backUrl = new URL(backHref, "https://local");
   const returnMonth = backUrl.searchParams.get("month") ?? undefined;
   const returnWeekRaw = backUrl.searchParams.get("week");
   const returnWeek = returnWeekRaw ? Number(returnWeekRaw) : undefined;

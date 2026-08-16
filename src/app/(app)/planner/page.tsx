@@ -42,7 +42,7 @@ type Props = {
   }>;
 };
 
-export default async function PlannerPage({ searchParams }: Props) {
+export default async function PlannerPage({ searchParams }: Readonly<Props>) {
   const session = await auth();
   if (!session?.user?.id) redirect("/login");
   const userId = session.user.id;
