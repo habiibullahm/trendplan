@@ -15,10 +15,12 @@ export function VerifyEmailPanel({
   token,
   alreadyVerified,
   canResend,
+  callbackUrl,
 }: {
   token?: string;
   alreadyVerified: boolean;
   canResend: boolean;
+  callbackUrl?: string | null;
 }) {
   const formRef = useRef<HTMLFormElement>(null);
   const submittedRef = useRef(false);
@@ -61,6 +63,9 @@ export function VerifyEmailPanel({
       {token ? (
         <form ref={formRef} action={verifyAction} className="hidden">
           <input type="hidden" name="token" value={token} />
+          {callbackUrl ? (
+            <input type="hidden" name="callbackUrl" value={callbackUrl} />
+          ) : null}
           <button type="submit">Verifikasi</button>
         </form>
       ) : null}
