@@ -11,12 +11,19 @@ import { MonthWeekNav } from "@/features/planner/components/month-week-nav";
 import { PlannerBoard } from "@/features/planner/components/planner-board";
 import { PlannerTabs } from "@/features/planner/components/planner-tabs";
 import { PlannerToastFromQuery } from "@/features/planner/components/planner-toast";
+import {
+  ShareWeekButton,
+  SharedWeekBanner,
+} from "@/features/planner/components/share-week-button";
 import { STATUS_LABEL } from "@/lib/labels";
 import { buildMonthWeekChips } from "@/features/planner/lib/month-week";
+import { countActiveItemsByWeekStarts } from "@/features/planner/lib/planner";
 import {
-  countActiveItemsByWeekStarts,
-  getOrCreateWeekPlan,
-} from "@/features/planner/lib/planner";
+  getWeekPlanForViewer,
+  getWeekShareSnapshot,
+  partnerDisplayName,
+  shareRoleForUser,
+} from "@/features/planner/lib/week-share";
 import {
   DAY_SHORT,
   formatWeekRange,
@@ -56,9 +63,33 @@ export default async function PlannerPage({ searchParams }: Props) {
   const weekLabel = formatWeekRange(selection.weekStart);
   const goal = user?.weeklyGoal ?? 3;
 
+  const weekPlan = await getWeekPlanForViewer(userId, selection.weekStart);
+  const shareSnap = await getWeekShareSnapshot(userId, weekPlan.id);
+  const role = shareRoleForUser(weekPlan, userId);
+  const showShareBanner =
+    Boolean(shareSnap?.partner) && (role === "owner" || role === "partner");
+
+  const shareUi =
+    shareSnap && (shareSnap.role === "owner" || shareSnap.role === "partner")
+      ? {
+          role: shareSnap.role,
+          weekPlanId: shareSnap.weekPlanId,
+          weekLabel,
+          partner: shareSnap.partner,
+          pendingInvite: shareSnap.pendingInvite
+            ? {
+                id: shareSnap.pendingInvite.id,
+                invitedEmail: shareSnap.pendingInvite.invitedEmail,
+                expiresAt: shareSnap.pendingInvite.expiresAt.toISOString(),
+              }
+            : null,
+          partnerLabel: shareSnap.partner
+            ? partnerDisplayName(shareSnap.partner)
+            : null,
+        }
+      : null;
+
   if (tab === "aktivitas") {
-    // Ensure week plan exists so creates always have a parent.
-    await getOrCreateWeekPlan(userId, selection.weekStart);
     const [activities, activityCounts] = await Promise.all([
       listActivitiesForWeek(userId, selection.weekStart),
       countActivitiesByWeekStarts(userId, selection.weekStarts),
@@ -83,6 +114,15 @@ export default async function PlannerPage({ searchParams }: Props) {
             {activities.length} aktivitas
           </p>
         </div>
+
+        {showShareBanner && shareUi ? (
+          <div className="mt-3">
+            <SharedWeekBanner
+              role={shareUi.role}
+              ownerLabel={partnerDisplayName(weekPlan.user)}
+            />
+          </div>
+        ) : null}
 
         <PlannerTabs
           tab={tab}
@@ -110,10 +150,10 @@ export default async function PlannerPage({ searchParams }: Props) {
     );
   }
 
-  const [weekPlan, counts] = await Promise.all([
-    getOrCreateWeekPlan(userId, selection.weekStart),
-    countActiveItemsByWeekStarts(userId, selection.weekStarts),
-  ]);
+  const counts = await countActiveItemsByWeekStarts(
+    userId,
+    selection.weekStarts,
+  );
 
   const weeks = buildMonthWeekChips(selection.weekStarts, counts);
   const selectedChip = weeks.find((w) => w.index === selection.weekIndex);
@@ -147,8 +187,18 @@ export default async function PlannerPage({ searchParams }: Props) {
               dayLabel: DAY_SHORT[item.dayOfWeek],
             }))}
           />
+          {shareUi ? <ShareWeekButton share={shareUi} /> : null}
         </div>
       </div>
+
+      {showShareBanner && shareUi ? (
+        <div className="mt-3">
+          <SharedWeekBanner
+            role={shareUi.role}
+            ownerLabel={partnerDisplayName(weekPlan.user)}
+          />
+        </div>
+      ) : null}
 
       <PlannerTabs
         tab={tab}

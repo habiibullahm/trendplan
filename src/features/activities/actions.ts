@@ -5,7 +5,8 @@ import { redirect } from "next/navigation";
 import { z } from "zod";
 import { parseActivityTitles } from "@/features/activities/lib/parse-titles";
 import { prisma } from "@/lib/prisma";
-import { getOrCreateWeekPlan, requireUserId } from "@/features/planner/lib/planner";
+import { requireUserId } from "@/features/planner/lib/planner";
+import { getWeekPlanForViewer, weekPlanAccessWhere } from "@/features/planner/lib/week-share";
 import { getWeekStart, parseWeekStartParam, plannerHref } from "@/lib/week";
 
 const daySchema = z.coerce.number().int().min(0).max(6);
@@ -63,7 +64,7 @@ export async function createActivityAction(
   const titles = parsed.titles;
 
   const weekStart = resolveWeekStartFromForm(formData);
-  const weekPlan = await getOrCreateWeekPlan(userId, weekStart);
+  const weekPlan = await getWeekPlanForViewer(userId, weekStart);
 
   await prisma.activity.createMany({
     data: titles.map((title) => ({
@@ -101,7 +102,7 @@ export async function updateActivityAction(
   }
 
   const activity = await prisma.activity.findFirst({
-    where: { id: activityId, weekPlan: { userId } },
+    where: { id: activityId, weekPlan: weekPlanAccessWhere(userId) },
     include: { weekPlan: { select: { weekStart: true } } },
   });
   if (!activity) return { error: "Aktivitas tidak ditemukan." };
@@ -129,7 +130,7 @@ export async function deleteActivityAction(formData: FormData) {
   if (!activityId) return;
 
   const activity = await prisma.activity.findFirst({
-    where: { id: activityId, weekPlan: { userId } },
+    where: { id: activityId, weekPlan: weekPlanAccessWhere(userId) },
     include: { weekPlan: { select: { weekStart: true } } },
   });
   if (!activity) {

@@ -21,11 +21,16 @@ Perencanaan konten TikTok mingguan berbasis tren — niche **Couple Date Ideas**
 - Tren & rekomendasi (seed mock Couple Date Ideas) dengan caption & hashtag saran
 - Planner mingguan (1 slot per hari): navigasi bulan + Minggu 1–N, buat ide sendiri, edit caption / status / hashtag
 - Salin caption siap TikTok (detail) dan Salin minggu (daftar hari)
+- **Bagikan minggu ke partner** — undang 1 partner via tautan (opsional email) ke week plan yang sama
 - Hapus dengan toast Urungkan singkat, lalu hapus permanen
 - Dashboard progress + riwayat
 - Akun: identitas, foto profil (unggah), target mingguan (ubah), **pengingat plan** (Web Push), pintasan Riwayat/Rekomendasi, keluar
 - Demo baca saja di `/demo` (embed portfolio)
 - Toast sukses/error (Bahasa Indonesia)
+
+## User stories
+
+- [Partner week share](docs/user-stories/partner-week-share.md)
 
 ## Roadmap
 

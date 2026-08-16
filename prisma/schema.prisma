@@ -40,6 +40,7 @@ model User {
   createdAt             DateTime    @default(now())
   updatedAt             DateTime    @updatedAt
   weekPlans             WeekPlan[]
+  weekPlanMemberships   WeekPlanMember[]
   authTokens            AuthToken[]
   pushSubscriptions     PushSubscription[]
   reminderDispatches    ReminderDispatch[]
@@ -86,17 +87,47 @@ model Trend {
 }
 
 model WeekPlan {
-  id         String        @id @default(cuid())
+  id         String           @id @default(cuid())
   userId     String
   weekStart  DateTime
-  createdAt  DateTime      @default(now())
-  updatedAt  DateTime      @updatedAt
-  user       User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt  DateTime         @default(now())
+  updatedAt  DateTime         @updatedAt
+  user       User             @relation(fields: [userId], references: [id], onDelete: Cascade)
   items      ContentItem[]
   activities Activity[]
+  members    WeekPlanMember[]
+  invites    WeekPlanInvite[]
 
   @@unique([userId, weekStart])
   @@index([userId])
+}
+
+/** Partner seat on a week plan (owner stays WeekPlan.userId). At most one partner. */
+model WeekPlanMember {
+  id         String   @id @default(cuid())
+  weekPlanId String   @unique
+  userId     String
+  createdAt  DateTime @default(now())
+  weekPlan   WeekPlan @relation(fields: [weekPlanId], references: [id], onDelete: Cascade)
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+/** Invite link/email token for partner week share (7d TTL). */
+model WeekPlanInvite {
+  id              String    @id @default(cuid())
+  weekPlanId      String
+  createdByUserId String
+  tokenHash       String    @unique
+  invitedEmail    String?
+  expiresAt       DateTime
+  acceptedAt      DateTime?
+  revokedAt       DateTime?
+  createdAt       DateTime  @default(now())
+  weekPlan        WeekPlan  @relation(fields: [weekPlanId], references: [id], onDelete: Cascade)
+
+  @@index([weekPlanId])
 }
 
 /** Daily life / date activities — many per day; not content. */

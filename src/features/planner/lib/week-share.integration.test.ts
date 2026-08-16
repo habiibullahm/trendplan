@@ -1,0 +1,263 @@
+/**
+ * DB integration tests for partner accept + ACL.
+ * Skips when DATABASE_URL is missing or the partner-share migration is not applied.
+ *
+ * Run: npm test -- src/features/planner/lib/week-share.integration.test.ts
+ */
+import "dotenv/config";
+import assert from "node:assert/strict";
+import { after, before, describe, it } from "node:test";
+import { hash } from "bcryptjs";
+import { getWeekStart } from "@/lib/week";
+import {
+  createWeekInviteRawToken,
+  hashWeekInviteToken,
+} from "@/features/planner/lib/week-share-tokens";
+
+describe("week-share accept + ACL (integration)", async () => {
+  if (!process.env.DATABASE_URL) {
+    it("skips without DATABASE_URL", () => {
+      console.info(
+        "[week-share.integration] skipped — set DATABASE_URL and run migrations",
+      );
+    });
+    return;
+  }
+
+  const { Prisma } = await import("@/generated/prisma/client");
+  const { prisma } = await import("@/lib/prisma");
+  const {
+    acceptWeekInvite,
+    canEditWeekPlan,
+    createOrRotateWeekInvite,
+    rejectWeekInvite,
+    removePartner,
+    revokePendingInvites,
+    weekPlanAccessWhere,
+  } = await import("@/features/planner/lib/week-share");
+
+  async function dbReady(): Promise<boolean> {
+    try {
+      await prisma.$queryRaw`SELECT 1`;
+      await prisma.$queryRaw`SELECT 1 FROM "WeekPlanMember" LIMIT 0`;
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
+  const ready = await dbReady();
+  if (!ready) {
+    it("skips when DB / WeekPlanMember unavailable", () => {
+      console.info(
+        "[week-share.integration] skipped — DB unreachable or migration missing",
+      );
+    });
+    await prisma.$disconnect().catch(() => undefined);
+    return;
+  }
+
+  const stamp = Date.now();
+  let ownerId = "";
+  let partnerId = "";
+  let strangerId = "";
+  let weekPlanId = "";
+  const weekStart = getWeekStart();
+  const userIds: string[] = [];
+
+  async function createUser(suffix: string) {
+    return prisma.user.create({
+      data: {
+        email: `week-share-${suffix}-${stamp}@trendplan.test`,
+        name: suffix,
+        passwordHash: await hash("password12345", 4),
+        niche: "Couple Date Ideas",
+        weeklyGoal: 3,
+        onboardingComplete: true,
+        emailVerified: new Date(),
+        passwordNeedsUpgrade: false,
+      },
+    });
+  }
+
+  before(async () => {
+    const owner = await createUser("owner");
+    const partner = await createUser("partner");
+    const stranger = await createUser("stranger");
+    ownerId = owner.id;
+    partnerId = partner.id;
+    strangerId = stranger.id;
+    userIds.push(ownerId, partnerId, strangerId);
+
+    const plan = await prisma.weekPlan.create({
+      data: { userId: ownerId, weekStart },
+    });
+    weekPlanId = plan.id;
+  });
+
+  after(async () => {
+    if (userIds.length > 0) {
+      await prisma.user.deleteMany({ where: { id: { in: userIds } } });
+    }
+    await prisma.$disconnect().catch(() => undefined);
+  });
+
+  it("rejects self-accept", async () => {
+    const { rawToken } = await createOrRotateWeekInvite({
+      weekPlanId,
+      createdByUserId: ownerId,
+    });
+    const result = await acceptWeekInvite(rawToken, ownerId);
+    assert.equal(result.ok, false);
+    if (!result.ok) assert.equal(result.code, "self");
+  });
+
+  it("accepts partner and grants edit ACL; stranger denied", async () => {
+    await revokePendingInvites(weekPlanId);
+    await prisma.weekPlanMember.deleteMany({ where: { weekPlanId } });
+
+    const { rawToken } = await createOrRotateWeekInvite({
+      weekPlanId,
+      createdByUserId: ownerId,
+    });
+
+    const result = await acceptWeekInvite(rawToken, partnerId);
+    assert.equal(result.ok, true);
+    if (result.ok) {
+      assert.equal(result.weekPlanId, weekPlanId);
+    }
+
+    assert.equal(await canEditWeekPlan(ownerId, weekPlanId), true);
+    assert.equal(await canEditWeekPlan(partnerId, weekPlanId), true);
+    assert.equal(await canEditWeekPlan(strangerId, weekPlanId), false);
+
+    const again = await acceptWeekInvite(rawToken, strangerId);
+    assert.equal(again.ok, false);
+    if (!again.ok) assert.equal(again.code, "invalid");
+  });
+
+  it("enforces one partner via unique weekPlanId (DB)", async () => {
+    await prisma.weekPlanMember.deleteMany({ where: { weekPlanId } });
+    await prisma.weekPlanMember.create({
+      data: { weekPlanId, userId: partnerId },
+    });
+
+    await assert.rejects(
+      () =>
+        prisma.weekPlanMember.create({
+          data: { weekPlanId, userId: strangerId },
+        }),
+      (err: unknown) =>
+        err instanceof Prisma.PrismaClientKnownRequestError &&
+        err.code === "P2002",
+    );
+  });
+
+  it("accept returns partner_exists when seat is taken", async () => {
+    await prisma.weekPlanMember.deleteMany({ where: { weekPlanId } });
+    await prisma.weekPlanMember.create({
+      data: { weekPlanId, userId: partnerId },
+    });
+
+    const rawToken = createWeekInviteRawToken();
+    await prisma.weekPlanInvite.create({
+      data: {
+        weekPlanId,
+        createdByUserId: ownerId,
+        tokenHash: hashWeekInviteToken(rawToken),
+        expiresAt: new Date(Date.now() + 60 * 60 * 1000),
+      },
+    });
+
+    const result = await acceptWeekInvite(rawToken, strangerId);
+    assert.equal(result.ok, false);
+    if (!result.ok) assert.equal(result.code, "partner_exists");
+  });
+
+  it("reject then accept → revoked", async () => {
+    await removePartner(weekPlanId, ownerId);
+    await revokePendingInvites(weekPlanId);
+
+    const { rawToken } = await createOrRotateWeekInvite({
+      weekPlanId,
+      createdByUserId: ownerId,
+    });
+    assert.equal(await rejectWeekInvite(rawToken), "ok");
+
+    const result = await acceptWeekInvite(rawToken, partnerId);
+    assert.equal(result.ok, false);
+    if (!result.ok) assert.equal(result.code, "revoked");
+  });
+
+  it("expired invite is rejected", async () => {
+    await revokePendingInvites(weekPlanId);
+    const rawToken = createWeekInviteRawToken();
+    await prisma.weekPlanInvite.create({
+      data: {
+        weekPlanId,
+        createdByUserId: ownerId,
+        tokenHash: hashWeekInviteToken(rawToken),
+        expiresAt: new Date(Date.now() - 1000),
+      },
+    });
+
+    const result = await acceptWeekInvite(rawToken, partnerId);
+    assert.equal(result.ok, false);
+    if (!result.ok) assert.equal(result.code, "expired");
+  });
+
+  it("already_member when same partner accepts a fresh invite", async () => {
+    await removePartner(weekPlanId, ownerId);
+    await revokePendingInvites(weekPlanId);
+
+    const first = await createOrRotateWeekInvite({
+      weekPlanId,
+      createdByUserId: ownerId,
+    });
+    const accepted = await acceptWeekInvite(first.rawToken, partnerId);
+    assert.equal(accepted.ok, true);
+
+    const rawToken = createWeekInviteRawToken();
+    await prisma.weekPlanInvite.create({
+      data: {
+        weekPlanId,
+        createdByUserId: ownerId,
+        tokenHash: hashWeekInviteToken(rawToken),
+        expiresAt: new Date(Date.now() + 60 * 60 * 1000),
+      },
+    });
+
+    const result = await acceptWeekInvite(rawToken, partnerId);
+    assert.equal(result.ok, false);
+    if (!result.ok) assert.equal(result.code, "already_member");
+  });
+
+  it("contentItem ACL query matches canEditWeekPlan", async () => {
+    await removePartner(weekPlanId, ownerId);
+    const { rawToken } = await createOrRotateWeekInvite({
+      weekPlanId,
+      createdByUserId: ownerId,
+    });
+    await acceptWeekInvite(rawToken, partnerId);
+
+    const item = await prisma.contentItem.create({
+      data: {
+        weekPlanId,
+        dayOfWeek: 0,
+        title: "Shared ide",
+      },
+    });
+
+    const asPartner = await prisma.contentItem.findFirst({
+      where: { id: item.id, weekPlan: weekPlanAccessWhere(partnerId) },
+    });
+    const asStranger = await prisma.contentItem.findFirst({
+      where: { id: item.id, weekPlan: weekPlanAccessWhere(strangerId) },
+    });
+
+    assert.ok(asPartner);
+    assert.equal(asStranger, null);
+
+    await prisma.contentItem.delete({ where: { id: item.id } });
+  });
+});

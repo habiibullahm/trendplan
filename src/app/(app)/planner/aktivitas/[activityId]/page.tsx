@@ -3,6 +3,7 @@ import Link from "next/link";
 import { auth } from "@/auth";
 import { EditActivityForm } from "@/features/activities/components/edit-activity-form";
 import { prisma } from "@/lib/prisma";
+import { weekPlanAccessWhere } from "@/features/planner/lib/week-share";
 import { formatWeekRange, plannerHref } from "@/lib/week";
 
 type Props = {
@@ -23,7 +24,7 @@ export default async function ActivityEditPage({
   const activity = await prisma.activity.findFirst({
     where: {
       id: activityId,
-      weekPlan: { userId: session.user.id },
+      weekPlan: weekPlanAccessWhere(session.user.id),
     },
     include: {
       weekPlan: { select: { weekStart: true } },

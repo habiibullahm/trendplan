@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
 import { auth } from "@/auth";
 import { CreatePlanForm } from "@/features/planner/components/create-plan-form";
-import { getOrCreateWeekPlan } from "@/features/planner/lib/planner";
+import { getWeekPlanForViewer } from "@/features/planner/lib/week-share";
 import {
   formatWeekRange,
   formatWeekStartParam,
@@ -36,7 +36,7 @@ export default async function PlannerNewPage({ searchParams }: Props) {
   } = await searchParams;
   const weekStart =
     parseWeekStartParam(weekStartRaw ?? null) ?? getWeekStart();
-  const weekPlan = await getOrCreateWeekPlan(session.user.id, weekStart);
+  const weekPlan = await getWeekPlanForViewer(session.user.id, weekStart);
   const weekStartParam = formatWeekStartParam(weekPlan.weekStart);
   const cancelHref = plannerHref({
     weekStart: weekPlan.weekStart,

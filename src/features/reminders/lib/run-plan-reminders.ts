@@ -3,6 +3,7 @@ import {
   buildPlanReminderCopy,
   getTomorrowContext,
 } from "@/features/reminders/lib/eligibility";
+import { listWeekPlanItemsForReminder } from "@/features/planner/lib/week-share";
 import { sendPushToMany } from "@/lib/web-push";
 
 /** Run daily H-1 plan reminders for all subscribed users. */
@@ -37,19 +38,8 @@ export async function runPlanReminders(now = new Date()) {
       continue;
     }
 
-    const weekPlan = await prisma.weekPlan.findUnique({
-      where: {
-        userId_weekStart: { userId: user.id, weekStart },
-      },
-      select: {
-        items: {
-          where: { deletedAt: null },
-          select: { title: true, dayOfWeek: true, status: true },
-        },
-      },
-    });
-
-    const items = weekPlan?.items ?? [];
+    // Owned or partner-shared week for this calendar week (no empty upsert).
+    const items = await listWeekPlanItemsForReminder(user.id, weekStart);
     const tomorrowItems = items.filter(
       (i) => i.dayOfWeek === dayOfWeek && i.status !== "POSTED",
     );
