@@ -154,6 +154,26 @@ test.describe("week share journey", () => {
     await expect(page.getByText(/Minggu \d+ ·/)).toBeVisible();
 
     await resetOwnerShareSeat(page);
+    await page.goto("/planner");
+    await expect(page.getByText(/Minggu \d+ ·/)).toBeVisible();
+
+    // Distinctive owned ide so partner can tell Plan bersama from Plan saya.
+    const sharedMarker = `E2E share ${Date.now()}`;
+    const createLink = page.getByRole("link", { name: /\+ Buat ide/ }).first();
+    if ((await createLink.count()) === 0) {
+      test.skip(true, "No empty day slot to plant shared marker ide");
+      return;
+    }
+    await createLink.click();
+    await expect(page.getByRole("heading", { name: "Buat ide" })).toBeVisible();
+    await page.getByLabel("Judul").fill(sharedMarker);
+    await page.getByRole("button", { name: "Simpan ide" }).click();
+    await expect(page).toHaveURL(/\/planner(?:\?|$)/, { timeout: 15_000 });
+    await expect(
+      page.locator("main").getByText(sharedMarker, { exact: true }).first(),
+    ).toBeVisible();
+
+    await openShareModal(page);
     const inviteUrl = await copyFreshInviteUrl(page);
 
     const partnerContext = await browser.newContext({
@@ -176,9 +196,40 @@ test.describe("week share journey", () => {
       await expect(partnerPage).toHaveURL(/\/planner(?:\?|$)/, {
         timeout: 20_000,
       });
+      await expect(partnerPage).toHaveURL(/[?&]view=shared(?:&|$)/, {
+        timeout: 20_000,
+      });
       await expect(
         partnerPage.getByText(/Plan bersama dengan .+ · kamu dapat mengedit/),
       ).toBeVisible({ timeout: 15_000 });
+      await expect(
+        partnerPage.getByRole("navigation", { name: "Tampilan plan" }),
+      ).toBeVisible();
+      await expect(
+        partnerPage.getByRole("link", { name: "Plan bersama" }),
+      ).toHaveAttribute("aria-current", "page");
+      await expect(
+        partnerPage
+          .locator("main")
+          .getByText(sharedMarker, { exact: true })
+          .first(),
+      ).toBeVisible({ timeout: 15_000 });
+
+      await partnerPage.getByRole("link", { name: "Plan saya" }).click();
+      await expect(partnerPage).toHaveURL(/\/planner(?:\?|$)/, {
+        timeout: 15_000,
+      });
+      await expect(partnerPage).not.toHaveURL(/[?&]view=shared(?:&|$)/);
+      await expect(
+        partnerPage.getByRole("link", { name: "Plan saya" }),
+      ).toHaveAttribute("aria-current", "page");
+      await expect(
+        partnerPage.getByText(/Plan bersama dengan .+ · kamu dapat mengedit/),
+      ).toHaveCount(0);
+      await expect(
+        partnerPage.locator("main").getByText(sharedMarker, { exact: true }),
+      ).toHaveCount(0);
+      await expect(partnerPage.getByText(/Minggu \d+ ·/)).toBeVisible();
     } finally {
       await partnerContext.close().catch(() => undefined);
     }

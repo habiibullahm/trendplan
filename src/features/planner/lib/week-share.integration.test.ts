@@ -30,9 +30,11 @@ describe("week-share accept + ACL (integration)", async () => {
     acceptWeekInvite,
     canEditWeekPlan,
     createOrRotateWeekInvite,
+    getWeekPlanForViewer,
     rejectWeekInvite,
     removePartner,
     revokePendingInvites,
+    userHasPartnerSeatForWeek,
     weekPlanAccessWhere,
   } = await import("@/features/planner/lib/week-share");
 
@@ -293,5 +295,45 @@ describe("week-share accept + ACL (integration)", async () => {
     assert.equal(asStranger, null);
 
     await prisma.contentItem.delete({ where: { id: item.id } });
+  });
+
+  it("getWeekPlanForViewer mine vs shared for partner", async () => {
+    await removePartner(weekPlanId, ownerId);
+    await revokePendingInvites(weekPlanId);
+    const created = await mustCreateInvite({
+      weekPlanId,
+      createdByUserId: ownerId,
+    });
+    const accepted = await acceptWeekInvite(created.rawToken, partnerId);
+    assert.equal(accepted.ok, true);
+
+    const partnerOwned = await prisma.weekPlan.upsert({
+      where: {
+        userId_weekStart: { userId: partnerId, weekStart },
+      },
+      create: { userId: partnerId, weekStart },
+      update: {},
+    });
+
+    const mine = await getWeekPlanForViewer(partnerId, weekStart, {
+      view: "mine",
+    });
+    const shared = await getWeekPlanForViewer(partnerId, weekStart, {
+      view: "shared",
+    });
+
+    assert.equal(mine.id, partnerOwned.id);
+    assert.equal(shared.id, weekPlanId);
+    assert.notEqual(mine.id, shared.id);
+    assert.equal(await userHasPartnerSeatForWeek(partnerId, weekStart), true);
+    assert.equal(await userHasPartnerSeatForWeek(ownerId, weekStart), false);
+
+    // After leave, shared falls back to owned.
+    await removePartner(weekPlanId, ownerId);
+    const afterLeave = await getWeekPlanForViewer(partnerId, weekStart, {
+      view: "shared",
+    });
+    assert.equal(afterLeave.id, partnerOwned.id);
+    assert.equal(await userHasPartnerSeatForWeek(partnerId, weekStart), false);
   });
 });
