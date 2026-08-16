@@ -12,14 +12,14 @@ import {
   DEMO_WEEKLY_GOAL,
   demoWeekLabel,
 } from "@/features/planner/lib/demo-planner";
+import { listInProgressContentItems } from "@/features/planner/lib/in-progress-items";
 
 export default function DemoDashboardPage() {
   const scheduled = DEMO_ITEMS.length;
   const goal = DEMO_WEEKLY_GOAL;
   const progress = Math.min(100, Math.round((scheduled / goal) * 100));
   const topRecs = DEMO_TRENDS.slice(0, 2);
-  const inProgressAll = DEMO_ITEMS.filter((item) => item.status !== "POSTED");
-  const inProgressItems = inProgressAll.slice(0, 2);
+  const inProgressItems = listInProgressContentItems(DEMO_ITEMS);
 
   return (
     <main className="flex w-full flex-1 flex-col">
@@ -43,13 +43,13 @@ export default function DemoDashboardPage() {
         <section className="mt-8">
           <div className="flex items-center justify-between gap-3">
             <h2 className="min-w-0 text-lg font-semibold text-ink">
-              Konten dalam proses ({inProgressAll.length})
+              Konten dalam proses ({inProgressItems.length})
             </h2>
             <Link
               href="/demo/planner"
               className="min-touch inline-flex shrink-0 items-center text-sm font-semibold text-coral transition-colors hover:underline"
             >
-              Semua
+              Buka Plan
             </Link>
           </div>
           <Stagger
