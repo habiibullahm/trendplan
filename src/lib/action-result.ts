@@ -31,8 +31,15 @@ export const ActionErrors = {
     "Email transaksi belum aktif. Aktifkan setelah domain Resend diverifikasi. Setelah masuk, ubah password dari menu Akun.",
 } as const;
 
+export type ActionErrorCode = keyof typeof ActionErrors;
+
 export function actionError(message: string): ActionResult {
   return { error: message };
+}
+
+/** Map a stable ActionErrors key (e.g. `"generic"`) to an ActionResult. */
+export function actionErrorCode(code: ActionErrorCode): ActionResult {
+  return actionError(ActionErrors[code]);
 }
 
 export function actionSuccess(message: string): ActionResult {

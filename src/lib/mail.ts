@@ -1,6 +1,18 @@
 import "server-only";
 
 import { isTransactionalEmailEnabled } from "@/lib/auth/env";
+import {
+  classifyResendFailure,
+  isMailSendError,
+  MailSendError,
+} from "@/lib/mail-errors";
+
+export {
+  classifyResendFailure,
+  isMailSendError,
+  MailSendError,
+  type MailErrorCode,
+} from "@/lib/mail-errors";
 
 export type MailMessage = {
   to: string;
@@ -21,7 +33,7 @@ export async function sendMail(message: MailMessage): Promise<void> {
       console.error(
         "[mail] Transactional email disabled — set TRANSACTIONAL_EMAIL_ENABLED=true after verifying a Resend domain.",
       );
-      throw new Error("Email belum diaktifkan.");
+      throw new MailSendError("disabled");
     }
     console.info(
       [
@@ -47,7 +59,7 @@ export async function sendMail(message: MailMessage): Promise<void> {
       console.error(
         "[mail] RESEND_API_KEY missing in production — refusing to send or log tokens.",
       );
-      throw new Error("Email belum dikonfigurasi.");
+      throw new MailSendError("not_configured");
     }
     console.info(
       [
@@ -64,24 +76,30 @@ export async function sendMail(message: MailMessage): Promise<void> {
     return;
   }
 
-  const res = await fetch("https://api.resend.com/emails", {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${apiKey}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      from,
-      to: [message.to],
-      subject: message.subject,
-      text: message.text,
-      html: message.html,
-    }),
-  });
+  try {
+    const res = await fetch("https://api.resend.com/emails", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${apiKey}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        from,
+        to: [message.to],
+        subject: message.subject,
+        text: message.text,
+        html: message.html,
+      }),
+    });
 
-  if (!res.ok) {
-    const body = await res.text().catch(() => "");
-    console.error("[mail] Resend failed", res.status, body);
-    throw new Error("Gagal mengirim email.");
+    if (!res.ok) {
+      const body = await res.text().catch(() => "");
+      console.error("[mail] Resend failed", res.status, body);
+      throw new MailSendError(classifyResendFailure(res.status, body));
+    }
+  } catch (error) {
+    if (isMailSendError(error)) throw error;
+    console.error("[mail] unexpected send failure", error);
+    throw new MailSendError("generic");
   }
 }

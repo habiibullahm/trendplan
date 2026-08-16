@@ -36,6 +36,23 @@ describe("week-share accept + ACL (integration)", async () => {
     weekPlanAccessWhere,
   } = await import("@/features/planner/lib/week-share");
 
+  async function mustCreateInvite(params: {
+    weekPlanId: string;
+    createdByUserId: string;
+    invitedEmail?: string | null;
+  }) {
+    const created = await createOrRotateWeekInvite(params);
+    assert.equal(
+      created.ok,
+      true,
+      `expected invite create ok, got ${JSON.stringify(created)}`,
+    );
+    if (!created.ok) {
+      throw new Error("unreachable");
+    }
+    return created;
+  }
+
   async function dbReady(): Promise<boolean> {
     try {
       await prisma.$queryRaw`SELECT 1`;
@@ -103,25 +120,42 @@ describe("week-share accept + ACL (integration)", async () => {
   });
 
   it("rejects self-accept", async () => {
-    const { rawToken } = await createOrRotateWeekInvite({
+    const created = await mustCreateInvite({
       weekPlanId,
       createdByUserId: ownerId,
     });
-    const result = await acceptWeekInvite(rawToken, ownerId);
+    const result = await acceptWeekInvite(created.rawToken, ownerId);
     assert.equal(result.ok, false);
     if (!result.ok) assert.equal(result.code, "self");
+  });
+
+  it("rejects self-invite by email on create", async () => {
+    await revokePendingInvites(weekPlanId);
+    await prisma.weekPlanMember.deleteMany({ where: { weekPlanId } });
+
+    const owner = await prisma.user.findUniqueOrThrow({
+      where: { id: ownerId },
+      select: { email: true },
+    });
+    const result = await createOrRotateWeekInvite({
+      weekPlanId,
+      createdByUserId: ownerId,
+      invitedEmail: owner.email.toUpperCase(),
+    });
+    assert.equal(result.ok, false);
+    if (!result.ok) assert.equal(result.code, "self_invite");
   });
 
   it("accepts partner and grants edit ACL; stranger denied", async () => {
     await revokePendingInvites(weekPlanId);
     await prisma.weekPlanMember.deleteMany({ where: { weekPlanId } });
 
-    const { rawToken } = await createOrRotateWeekInvite({
+    const created = await mustCreateInvite({
       weekPlanId,
       createdByUserId: ownerId,
     });
 
-    const result = await acceptWeekInvite(rawToken, partnerId);
+    const result = await acceptWeekInvite(created.rawToken, partnerId);
     assert.equal(result.ok, true);
     if (result.ok) {
       assert.equal(result.weekPlanId, weekPlanId);
@@ -131,7 +165,7 @@ describe("week-share accept + ACL (integration)", async () => {
     assert.equal(await canEditWeekPlan(partnerId, weekPlanId), true);
     assert.equal(await canEditWeekPlan(strangerId, weekPlanId), false);
 
-    const again = await acceptWeekInvite(rawToken, strangerId);
+    const again = await acceptWeekInvite(created.rawToken, strangerId);
     assert.equal(again.ok, false);
     if (!again.ok) assert.equal(again.code, "invalid");
   });
@@ -178,13 +212,13 @@ describe("week-share accept + ACL (integration)", async () => {
     await removePartner(weekPlanId, ownerId);
     await revokePendingInvites(weekPlanId);
 
-    const { rawToken } = await createOrRotateWeekInvite({
+    const created = await mustCreateInvite({
       weekPlanId,
       createdByUserId: ownerId,
     });
-    assert.equal(await rejectWeekInvite(rawToken), "ok");
+    assert.equal(await rejectWeekInvite(created.rawToken), "ok");
 
-    const result = await acceptWeekInvite(rawToken, partnerId);
+    const result = await acceptWeekInvite(created.rawToken, partnerId);
     assert.equal(result.ok, false);
     if (!result.ok) assert.equal(result.code, "revoked");
   });
@@ -210,7 +244,7 @@ describe("week-share accept + ACL (integration)", async () => {
     await removePartner(weekPlanId, ownerId);
     await revokePendingInvites(weekPlanId);
 
-    const first = await createOrRotateWeekInvite({
+    const first = await mustCreateInvite({
       weekPlanId,
       createdByUserId: ownerId,
     });
@@ -234,11 +268,11 @@ describe("week-share accept + ACL (integration)", async () => {
 
   it("contentItem ACL query matches canEditWeekPlan", async () => {
     await removePartner(weekPlanId, ownerId);
-    const { rawToken } = await createOrRotateWeekInvite({
+    const created = await mustCreateInvite({
       weekPlanId,
       createdByUserId: ownerId,
     });
-    await acceptWeekInvite(rawToken, partnerId);
+    await acceptWeekInvite(created.rawToken, partnerId);
 
     const item = await prisma.contentItem.create({
       data: {
