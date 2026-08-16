@@ -14,6 +14,8 @@ type OnboardingFormProps = {
   defaultNiche?: Niche | null;
   userName?: string | null;
   trendCount: number;
+  /** Post-onboarding return (e.g. invite accept). */
+  callbackUrl?: string | null;
 };
 
 function GoalPicker({
@@ -82,7 +84,13 @@ function NichePicker({
   );
 }
 
-function SubmitButton({ disabled }: { disabled: boolean }) {
+function SubmitButton({
+  disabled,
+  hasCallback,
+}: {
+  disabled: boolean;
+  hasCallback: boolean;
+}) {
   const { pending } = useFormStatus();
 
   return (
@@ -93,7 +101,7 @@ function SubmitButton({ disabled }: { disabled: boolean }) {
       loading={pending}
       loadingText="Menyimpan..."
     >
-      Simpan & lanjut ke dashboard
+      {hasCallback ? "Simpan & lanjut" : "Simpan & lanjut ke dashboard"}
     </Button>
   );
 }
@@ -104,6 +112,7 @@ export function OnboardingForm({
   defaultNiche = null,
   userName,
   trendCount,
+  callbackUrl,
 }: OnboardingFormProps) {
   const [goal, setGoal] = useState(defaultGoal);
   const [niche, setNiche] = useState<Niche | null>(defaultNiche);
@@ -112,6 +121,9 @@ export function OnboardingForm({
     <form action={action} className="mt-6 flex flex-col gap-5">
       <input type="hidden" name="weeklyGoal" value={goal} />
       <input type="hidden" name="niche" value={niche ?? ""} />
+      {callbackUrl ? (
+        <input type="hidden" name="callbackUrl" value={callbackUrl} />
+      ) : null}
 
       <section className="rounded-2xl border border-border bg-paper p-4">
         <p className="text-xs font-medium uppercase tracking-wide text-ink-muted">
@@ -158,7 +170,7 @@ export function OnboardingForm({
         </p>
       </section>
 
-      <SubmitButton disabled={!niche} />
+      <SubmitButton disabled={!niche} hasCallback={Boolean(callbackUrl)} />
     </form>
   );
 }

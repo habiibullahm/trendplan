@@ -1,7 +1,15 @@
 import Link from "next/link";
 import { RegisterForm } from "@/features/auth/components/auth-forms";
+import { safeAuthCallbackUrl } from "@/lib/auth/callback-url";
 
-export default function RegisterPage() {
+type Props = {
+  searchParams: Promise<{ callbackUrl?: string }>;
+};
+
+export default async function RegisterPage({ searchParams }: Props) {
+  const { callbackUrl } = await searchParams;
+  const safeCallback = safeAuthCallbackUrl(callbackUrl) ?? undefined;
+
   return (
     <main className="flex flex-1 flex-col items-center justify-center px-6 py-12">
       <div className="w-full max-w-md rounded-2xl border border-border bg-surface p-6 shadow-none">
@@ -16,7 +24,7 @@ export default function RegisterPage() {
             Daftar gratis — atur niche & target mingguan setelah masuk.
           </p>
         </div>
-        <RegisterForm />
+        <RegisterForm callbackUrl={safeCallback} />
       </div>
     </main>
   );

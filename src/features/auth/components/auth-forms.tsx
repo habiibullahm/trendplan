@@ -12,16 +12,20 @@ import { FormField } from "@/components/ui/form-field";
 import { Input } from "@/components/ui/input";
 import { useActionToasts } from "@/hooks/use-action-toasts";
 import { isTransactionalEmailEnabled } from "@/lib/auth/env";
+import { loginPath, registerPath } from "@/lib/auth/callback-url";
 
 const initialState: AuthFormState = {};
 
-export function LoginForm() {
+export function LoginForm({ callbackUrl }: { callbackUrl?: string }) {
   const [state, action, pending] = useActionState(loginAction, initialState);
   useActionToasts(state);
   const showForgotPassword = isTransactionalEmailEnabled();
 
   return (
     <form action={action} className="flex w-full flex-col gap-4">
+      {callbackUrl ? (
+        <input type="hidden" name="callbackUrl" value={callbackUrl} />
+      ) : null}
       <FormField label="Email" error={state.fieldErrors?.email}>
         <Input
           name="email"
@@ -63,7 +67,10 @@ export function LoginForm() {
 
       <p className="text-center text-sm text-ink-muted">
         Belum punya akun?{" "}
-        <Link href="/register" className="font-semibold text-coral">
+        <Link
+          href={registerPath(callbackUrl)}
+          className="font-semibold text-coral"
+        >
           Daftar
         </Link>
       </p>
@@ -71,12 +78,15 @@ export function LoginForm() {
   );
 }
 
-export function RegisterForm() {
+export function RegisterForm({ callbackUrl }: { callbackUrl?: string }) {
   const [state, action, pending] = useActionState(registerAction, initialState);
   useActionToasts(state);
 
   return (
     <form action={action} className="flex w-full flex-col gap-4">
+      {callbackUrl ? (
+        <input type="hidden" name="callbackUrl" value={callbackUrl} />
+      ) : null}
       <FormField label="Nama" error={state.fieldErrors?.name}>
         <Input
           name="name"
@@ -121,7 +131,10 @@ export function RegisterForm() {
 
       <p className="text-center text-sm text-ink-muted">
         Sudah punya akun?{" "}
-        <Link href="/login" className="font-semibold text-coral">
+        <Link
+          href={loginPath({ callbackUrl })}
+          className="font-semibold text-coral"
+        >
           Masuk
         </Link>
       </p>

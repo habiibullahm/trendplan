@@ -4,28 +4,44 @@ import { OnboardingForm } from "@/features/auth/components/onboarding-form";
 import { prisma } from "@/lib/prisma";
 import { gateAppUser } from "@/lib/auth/require-app-user";
 import {
+  safeAuthCallbackUrl,
+  withAuthCallbackQuery,
+} from "@/lib/auth/callback-url";
+import {
   getSafeSession,
   redirectToLoginClearingSession,
 } from "@/lib/auth/session";
 
-export default async function OnboardingPage() {
+type Props = {
+  searchParams: Promise<{ callbackUrl?: string }>;
+};
+
+export default async function OnboardingPage({ searchParams }: Props) {
   const session = await getSafeSession();
   if (!session?.user) redirectToLoginClearingSession();
 
+  const { callbackUrl: rawCallback } = await searchParams;
+  const callbackUrl = safeAuthCallbackUrl(rawCallback);
+
   const gate = await gateAppUser();
   if (!gate.ok) {
-    if (gate.kind === "unverified") redirect("/verify-email");
+    if (gate.kind === "unverified") {
+      redirect(withAuthCallbackQuery("/verify-email", callbackUrl));
+    }
     redirectToLoginClearingSession();
   }
 
-  if (session.user.onboardingComplete) redirect("/dashboard");
+  if (session.user.onboardingComplete) {
+    redirect(callbackUrl ?? "/dashboard");
+  }
 
   const trendCount = await prisma.trend.count();
 
   async function submitOnboarding(formData: FormData) {
     "use server";
     await completeOnboardingAction(formData);
-    redirect("/dashboard");
+    const next = safeAuthCallbackUrl(String(formData.get("callbackUrl") ?? ""));
+    redirect(next ?? "/dashboard");
   }
 
   return (
@@ -46,6 +62,7 @@ export default async function OnboardingPage() {
           defaultNiche={null}
           userName={session.user.name}
           trendCount={trendCount}
+          callbackUrl={callbackUrl}
         />
       </div>
     </main>

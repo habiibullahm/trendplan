@@ -1,12 +1,18 @@
 import Link from "next/link";
 import { LoginForm } from "@/features/auth/components/auth-forms";
+import { safeAuthCallbackUrl } from "@/lib/auth/callback-url";
 
 type Props = {
-  searchParams: Promise<{ verified?: string; registered?: string }>;
+  searchParams: Promise<{
+    verified?: string;
+    registered?: string;
+    callbackUrl?: string;
+  }>;
 };
 
 export default async function LoginPage({ searchParams }: Props) {
-  const { verified, registered } = await searchParams;
+  const { verified, registered, callbackUrl } = await searchParams;
+  const safeCallback = safeAuthCallbackUrl(callbackUrl) ?? undefined;
 
   return (
     <main className="flex flex-1 flex-col items-center justify-center px-6 py-12">
@@ -30,7 +36,7 @@ export default async function LoginPage({ searchParams }: Props) {
             Daftar berhasil. Silakan masuk.
           </p>
         ) : null}
-        <LoginForm />
+        <LoginForm callbackUrl={safeCallback} />
       </div>
     </main>
   );

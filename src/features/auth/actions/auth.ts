@@ -23,6 +23,11 @@ import {
 import { loginSchema, registerSchema } from "@/lib/auth/validation";
 import { DEFAULT_NICHE } from "@/lib/niches";
 import { prisma } from "@/lib/prisma";
+import {
+  loginPath,
+  safeAuthCallbackUrl,
+  withAuthCallbackQuery,
+} from "@/lib/auth/callback-url";
 
 export type AuthFormState = ActionResult;
 
@@ -79,8 +84,11 @@ export async function registerAction(
         }
       }
 
+      const callbackUrl = safeAuthCallbackUrl(
+        String(formData.get("callbackUrl") ?? ""),
+      );
       // Same path for new + existing email (anti-enumeration).
-      redirect("/login?registered=1");
+      redirect(loginPath({ registered: true, callbackUrl }));
     },
   );
 }
@@ -109,15 +117,21 @@ export async function loginAction(
       const needsVerify =
         verificationRequired && user && !user.emailVerified;
 
+      const safeCallback = safeAuthCallbackUrl(
+        String(formData.get("callbackUrl") ?? ""),
+      );
+
+      const redirectTo = needsVerify
+        ? withAuthCallbackQuery("/verify-email", safeCallback)
+        : user?.onboardingComplete
+          ? (safeCallback ?? "/dashboard")
+          : withAuthCallbackQuery("/onboarding", safeCallback);
+
       try {
         await signIn("credentials", {
           email,
           password: data.password,
-          redirectTo: needsVerify
-            ? "/verify-email"
-            : user?.onboardingComplete
-              ? "/dashboard"
-              : "/onboarding",
+          redirectTo,
         });
       } catch (error) {
         if (error instanceof AuthError) {

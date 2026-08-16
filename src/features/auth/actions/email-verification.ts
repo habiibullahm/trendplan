@@ -19,6 +19,11 @@ import { requireAppUserAction } from "@/lib/auth/require-app-user";
 import { sendVerificationEmailForUser } from "@/lib/auth/send-verification-email";
 import { verifyEmailTokenSchema } from "@/lib/auth/validation";
 import { prisma } from "@/lib/prisma";
+import {
+  loginPath,
+  safeAuthCallbackUrl,
+  withAuthCallbackQuery,
+} from "@/lib/auth/callback-url";
 
 const RESEND_USER_LIMIT = { limit: 3, windowMs: 60 * 60 * 1000 };
 const RESEND_IP_LIMIT = { limit: 5, windowMs: 60 * 60 * 1000 };
@@ -26,12 +31,17 @@ const VERIFY_IP_LIMIT = { limit: 20, windowMs: 60 * 60 * 1000 };
 
 export type EmailVerificationState = ActionResult;
 
-async function postVerifyRedirectPath(userId: string): Promise<string> {
+async function postVerifyRedirectPath(
+  userId: string,
+  callbackUrl?: string | null,
+): Promise<string> {
   const user = await prisma.user.findUnique({
     where: { id: userId },
     select: { onboardingComplete: true },
   });
-  return user?.onboardingComplete ? "/dashboard" : "/onboarding";
+  const safe = safeAuthCallbackUrl(callbackUrl);
+  if (user?.onboardingComplete) return safe ?? "/dashboard";
+  return withAuthCallbackQuery("/onboarding", safe);
 }
 
 export async function verifyEmailAction(
@@ -65,14 +75,15 @@ export async function verifyEmailAction(
       if (!consumed) return actionError(ActionErrors.verifyInvalid);
 
       const session = await auth();
+      const callbackUrl = String(formData.get("callbackUrl") ?? "");
       if (session?.user?.id === consumed) {
         const { unstable_update } = await import("@/auth");
         await unstable_update({});
-        redirect(await postVerifyRedirectPath(consumed));
+        redirect(await postVerifyRedirectPath(consumed, callbackUrl));
       }
 
-      // Logged-out verify link: send them to login next.
-      redirect("/login?verified=1");
+      // Logged-out verify link: send them to login next (preserve invite if any).
+      redirect(loginPath({ verified: true, callbackUrl }));
     },
   );
 }

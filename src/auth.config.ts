@@ -1,5 +1,21 @@
 import type { NextAuthConfig } from "next-auth";
 import { isEmailVerificationRequired } from "@/lib/auth/env";
+import {
+  safeAuthCallbackUrl,
+  withAuthCallbackQuery,
+} from "@/lib/auth/callback-url";
+
+function postAuthHome(
+  nextUrl: URL,
+  done: boolean,
+  callbackRaw: string | null,
+): URL {
+  const callback = safeAuthCallbackUrl(callbackRaw);
+  if (done) {
+    return new URL(callback ?? "/dashboard", nextUrl);
+  }
+  return new URL(withAuthCallbackQuery("/onboarding", callback), nextUrl);
+}
 
 export const authConfig = {
   pages: {
@@ -46,7 +62,8 @@ export const authConfig = {
         path.startsWith("/rekomendasi") ||
         path.startsWith("/planner") ||
         path.startsWith("/riwayat") ||
-        path.startsWith("/akun");
+        path.startsWith("/akun") ||
+        path.startsWith("/invite");
 
       // Reset links must work even if the user still has a session cookie.
       if (isResetPage) return true;
@@ -55,25 +72,29 @@ export const authConfig = {
         if (isLoggedIn) {
           const needsVerify =
             isEmailVerificationRequired() && !auth.user?.emailVerified;
+          const queryCallback = nextUrl.searchParams.get("callbackUrl");
 
           if (isVerifyPage) {
             // Stay on verify until done; leave once verified.
             if (!needsVerify) {
               const done = Boolean(auth.user?.onboardingComplete);
               return Response.redirect(
-                new URL(done ? "/dashboard" : "/onboarding", nextUrl),
+                postAuthHome(nextUrl, done, queryCallback),
               );
             }
             return true;
           }
 
           if (needsVerify) {
-            return Response.redirect(new URL("/verify-email", nextUrl));
+            return Response.redirect(
+              new URL(
+                withAuthCallbackQuery("/verify-email", queryCallback),
+                nextUrl,
+              ),
+            );
           }
           const done = Boolean(auth.user?.onboardingComplete);
-          return Response.redirect(
-            new URL(done ? "/dashboard" : "/onboarding", nextUrl),
-          );
+          return Response.redirect(postAuthHome(nextUrl, done, queryCallback));
         }
         return true;
       }
@@ -84,15 +105,27 @@ export const authConfig = {
         const needsVerify =
           isEmailVerificationRequired() && !auth.user?.emailVerified;
         if (needsVerify) {
-          return Response.redirect(new URL("/verify-email", nextUrl));
+          const returnTo = `${path}${nextUrl.search}`;
+          return Response.redirect(
+            new URL(
+              withAuthCallbackQuery("/verify-email", returnTo),
+              nextUrl,
+            ),
+          );
         }
 
         const done = Boolean(auth.user?.onboardingComplete);
         if (!done && !path.startsWith("/onboarding")) {
-          return Response.redirect(new URL("/onboarding", nextUrl));
+          const returnTo = `${path}${nextUrl.search}`;
+          return Response.redirect(
+            new URL(withAuthCallbackQuery("/onboarding", returnTo), nextUrl),
+          );
         }
         if (done && path.startsWith("/onboarding")) {
-          return Response.redirect(new URL("/dashboard", nextUrl));
+          const callback = safeAuthCallbackUrl(
+            nextUrl.searchParams.get("callbackUrl"),
+          );
+          return Response.redirect(new URL(callback ?? "/dashboard", nextUrl));
         }
       }
 
