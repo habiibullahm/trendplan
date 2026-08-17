@@ -27,6 +27,7 @@ import {
 } from "@/features/planner/lib/content-field-schemas";
 import {
   actionFail,
+  actionSuccess,
   type ActionResult,
 } from "@/lib/action-result";
 
@@ -110,7 +111,7 @@ export async function addTrendToPlannerAction(
   });
 
   revalidatePlanner();
-  return { success: "Ide ditambahkan ke planner" };
+  return actionSuccess("Ide ditambahkan ke planner");
 }
 
 export async function createContentItemAction(
@@ -306,10 +307,10 @@ export async function restoreContentItemAction(
         },
       });
 
-      return { success: "Ide dikembalikan" } as const;
+      return actionSuccess("Ide dikembalikan");
     });
 
-    if (result.success) revalidatePlanner();
+    if (result.status === "success") revalidatePlanner();
     return result;
   } catch {
     return actionFail("undo_failed", { error: "Gagal mengembalikan ide. Coba lagi." });
@@ -331,7 +332,7 @@ export async function purgeDeletedContentItemAction(
   });
 
   revalidatePlanner();
-  return {};
+  return { status: "success" };
 }
 
 /** Move item to another day; swap if that day is occupied. */
@@ -361,20 +362,20 @@ export async function moveContentItemAction(
       if (!item) return actionFail("content_not_found", { error: "Konten tidak ditemukan." });
 
       if (item.status === "POSTED") {
-        return {
+        return actionFail("content_posted_readonly", {
           error: "Konten Posted tidak bisa dipindahkan.",
-        } as const;
+        });
       }
 
       const fromDay = item.dayOfWeek;
       if (expectedFromDay !== undefined && expectedFromDay !== fromDay) {
-        return {
+        return actionFail("stale_planner", {
           error: "Planner sudah berubah. Muat ulang lalu coba lagi.",
-        } as const;
+        });
       }
 
       if (fromDay === toDay) {
-        return {} as const;
+        return { status: "success" } as const;
       }
 
       const occupant = await tx.contentItem.findFirst({
@@ -397,7 +398,7 @@ export async function moveContentItemAction(
           where: { id: item.id },
           data: { dayOfWeek: toDay },
         });
-        return { success: "Ide dipindahkan" } as const;
+        return actionSuccess("Ide dipindahkan");
       }
 
       // Unique (weekPlanId, dayOfWeek): park on temp day, then finish swap
@@ -415,10 +416,10 @@ export async function moveContentItemAction(
         data: { dayOfWeek: toDay },
       });
 
-      return { success: "Ide ditukar harinya" } as const;
+      return actionSuccess("Ide ditukar harinya");
     });
 
-    if (result.success) {
+    if (result.status === "success") {
       revalidatePlanner();
     }
     return result;

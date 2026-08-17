@@ -14,7 +14,7 @@ import { Select } from "@/components/ui/select";
 import { useActionToasts } from "@/hooks/use-action-toasts";
 import { DAY_LABELS, type PlannerView } from "@/lib/week";
 
-const initial: ActivityActionState = {};
+const initial: ActivityActionState = { status: "success" };
 
 export function EditActivityForm({
   activityId,

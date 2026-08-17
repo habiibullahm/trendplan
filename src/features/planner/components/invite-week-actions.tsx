@@ -5,7 +5,7 @@ import type { ShareWeekActionState } from "@/features/planner/actions/week-share
 import { Button } from "@/components/ui/button";
 import { useActionToasts } from "@/hooks/use-action-toasts";
 
-const initial: ShareWeekActionState = {};
+const initial: ShareWeekActionState = { status: "success" };
 
 type Action = (
   prev: ShareWeekActionState,

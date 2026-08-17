@@ -92,7 +92,7 @@ export async function createOrRotateWeekInviteAction(
   if (!created.ok) return CREATE_INVITE_ACTION_ERRORS[created.code];
 
   revalidateShare(weekPlanId);
-  return { ...actionSuccess("Tautan undangan siap"), inviteUrl: created.url };
+  return actionSuccess("Tautan undangan siap", { inviteUrl: created.url });
 }
 
 export async function sendWeekInviteEmailAction(
@@ -166,7 +166,7 @@ export async function sendWeekInviteEmailAction(
 
   await revokeOtherPendingInvites(weekPlanId, created.inviteId);
   revalidateShare(weekPlanId);
-  return { ...actionSuccess("Undangan dikirim"), inviteUrl: created.url };
+  return actionSuccess("Undangan dikirim", { inviteUrl: created.url });
 }
 
 export async function revokeWeekInviteAction(
@@ -293,5 +293,5 @@ export async function ensureInviteLinkAction(
   if (!created.ok) return CREATE_INVITE_ACTION_ERRORS[created.code];
 
   revalidateShare(weekPlanId);
-  return { inviteUrl: created.url, success: "Tautan undangan disalin" };
+  return actionSuccess("Tautan undangan disalin", { inviteUrl: created.url });
 }

@@ -61,14 +61,16 @@ function DeleteUndoToast({
     skipPurgeRef.current = true;
     setPending(true);
     const result = await restoreContentItemAction(undoId);
-    if (result.error) {
+    if (result.status === "error") {
       skipPurgeRef.current = false;
       setPending(false);
-      toast.error(result.error, { id: DELETE_TOAST_ID });
+      toast.error(result.message ?? "Gagal mengembalikan ide. Coba lagi.", {
+        id: DELETE_TOAST_ID,
+      });
       await purgeDeletedContentItemAction(undoId);
       return;
     }
-    toast.success(result.success ?? "Ide dikembalikan", {
+    toast.success(result.message ?? "Ide dikembalikan", {
       id: DELETE_TOAST_ID,
     });
     onRestored();

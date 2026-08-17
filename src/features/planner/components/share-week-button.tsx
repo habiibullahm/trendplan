@@ -41,7 +41,7 @@ export type ShareWeekUiSnapshot = {
   partnerLabel: string | null;
 };
 
-const initial: ShareWeekActionState = {};
+const initial: ShareWeekActionState = { status: "success" };
 
 function initials(name: string | null, email: string) {
   const base = (name?.trim() || email).trim();
@@ -86,7 +86,7 @@ export function ShareWeekButton({ share }: { share: ShareWeekUiSnapshot }) {
     leavePending;
 
   useEffect(() => {
-    const url = createState.inviteUrl ?? emailState.inviteUrl;
+    const url = createState.data?.inviteUrl ?? emailState.data?.inviteUrl;
     if (!url) return;
     let cancelled = false;
     void (async () => {
@@ -100,16 +100,20 @@ export function ShareWeekButton({ share }: { share: ShareWeekUiSnapshot }) {
     return () => {
       cancelled = true;
     };
-  }, [createState.inviteUrl, emailState.inviteUrl, router]);
+  }, [createState.data?.inviteUrl, emailState.data?.inviteUrl, router]);
 
   useEffect(() => {
-    if (revokeState.success || removeState.success || leaveState.success) {
+    if (
+      revokeState.status === "success" ||
+      removeState.status === "success" ||
+      leaveState.status === "success"
+    ) {
       router.refresh();
     }
   }, [
-    revokeState.success,
-    removeState.success,
-    leaveState.success,
+    revokeState.status,
+    removeState.status,
+    leaveState.status,
     router,
   ]);
 
@@ -263,7 +267,7 @@ export function ShareWeekButton({ share }: { share: ShareWeekUiSnapshot }) {
                 <input type="hidden" name="weekPlanId" value={share.weekPlanId} />
                 <FormField
                   label="Kirim email"
-                  error={emailState.fieldErrors?.email}
+                  error={emailState.data?.fieldErrors?.email}
                 >
                   <Input
                     name="email"

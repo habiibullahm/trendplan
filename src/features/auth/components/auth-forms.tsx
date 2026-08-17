@@ -14,7 +14,7 @@ import { useActionToasts } from "@/hooks/use-action-toasts";
 import { isTransactionalEmailEnabled } from "@/lib/auth/env";
 import { loginPath, registerPath } from "@/lib/auth/callback-url";
 
-const initialState: AuthFormState = {};
+const initialState: AuthFormState = { status: "success" };
 
 export function LoginForm({ callbackUrl }: { callbackUrl?: string }) {
   const [state, action, pending] = useActionState(loginAction, initialState);
@@ -26,7 +26,7 @@ export function LoginForm({ callbackUrl }: { callbackUrl?: string }) {
       {callbackUrl ? (
         <input type="hidden" name="callbackUrl" value={callbackUrl} />
       ) : null}
-      <FormField label="Email" error={state.fieldErrors?.email}>
+      <FormField label="Email" error={state.data?.fieldErrors?.email}>
         <Input
           name="email"
           type="email"
@@ -36,7 +36,7 @@ export function LoginForm({ callbackUrl }: { callbackUrl?: string }) {
         />
       </FormField>
 
-      <FormField label="Password" error={state.fieldErrors?.password}>
+      <FormField label="Password" error={state.data?.fieldErrors?.password}>
         <Input
           name="password"
           type="password"
@@ -87,7 +87,7 @@ export function RegisterForm({ callbackUrl }: { callbackUrl?: string }) {
       {callbackUrl ? (
         <input type="hidden" name="callbackUrl" value={callbackUrl} />
       ) : null}
-      <FormField label="Nama" error={state.fieldErrors?.name}>
+      <FormField label="Nama" error={state.data?.fieldErrors?.name}>
         <Input
           name="name"
           type="text"
@@ -97,7 +97,7 @@ export function RegisterForm({ callbackUrl }: { callbackUrl?: string }) {
         />
       </FormField>
 
-      <FormField label="Email" error={state.fieldErrors?.email}>
+      <FormField label="Email" error={state.data?.fieldErrors?.email}>
         <Input
           name="email"
           type="email"
@@ -107,7 +107,7 @@ export function RegisterForm({ callbackUrl }: { callbackUrl?: string }) {
         />
       </FormField>
 
-      <FormField label="Password" error={state.fieldErrors?.password}>
+      <FormField label="Password" error={state.data?.fieldErrors?.password}>
         <Input
           name="password"
           type="password"

@@ -12,7 +12,7 @@ import { Modal } from "@/components/ui/modal";
 import { useActionToasts } from "@/hooks/use-action-toasts";
 import { NICHES, resolveNiche, type Niche } from "@/lib/niches";
 
-const initial: NicheActionState = {};
+const initial: NicheActionState = { status: "success" };
 
 function SaveNicheButton() {
   const { pending } = useFormStatus();
@@ -68,7 +68,7 @@ export function AkunNicheEditor({ niche }: { niche: string }) {
   const [state, action, pending] = useActionState(
     async (prev: NicheActionState, formData: FormData) => {
       const next = await updateNicheAction(prev, formData);
-      if (next.success) setOpen(false);
+      if (next.status === "success") setOpen(false);
       return next;
     },
     initial,

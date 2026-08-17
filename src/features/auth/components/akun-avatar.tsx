@@ -26,7 +26,7 @@ import {
 } from "@/features/auth/lib/avatar-image";
 import { useActionToasts } from "@/hooks/use-action-toasts";
 
-const emptyState: ProfileImageActionState = {};
+const emptyState: ProfileImageActionState = { status: "success" };
 const DELETE_CONFIRM_TOAST_ID = "avatar-delete-confirm";
 
 function PencilIcon({ className }: { className?: string }) {
@@ -134,16 +134,18 @@ export function AkunAvatar({
   }, [localPreview]);
 
   useEffect(() => {
-    if (uploadState.success && inputRef.current) {
+    if (uploadState.status === "success" && uploadState.message && inputRef.current) {
       inputRef.current.value = "";
       setHasPendingFile(false);
       setMenuOpen(false);
     }
-  }, [uploadState.success]);
+  }, [uploadState.status, uploadState.message]);
 
   // Clear optimistic preview on failed upload.
   useEffect(() => {
-    if (!uploadState.error || !localPreview) return;
+    if (uploadState.status !== "error" || !uploadState.message || !localPreview) {
+      return;
+    }
     const url = localPreview;
     queueMicrotask(() => {
       URL.revokeObjectURL(url);
@@ -151,7 +153,7 @@ export function AkunAvatar({
       setHasPendingFile(false);
       if (inputRef.current) inputRef.current.value = "";
     });
-  }, [uploadState.error, localPreview]);
+  }, [uploadState.status, uploadState.message, localPreview]);
 
   // After success, drop blob once server imageUrl refreshes.
   const prevImageUrl = useRef(imageUrl);

@@ -14,7 +14,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { useActionToasts } from "@/hooks/use-action-toasts";
 import { DAY_LABELS, type PlannerView } from "@/lib/week";
 
-const initial: PlannerActionState = {};
+const initial: PlannerActionState = { status: "success" };
 
 export function CreatePlanForm({
   defaultDay,
