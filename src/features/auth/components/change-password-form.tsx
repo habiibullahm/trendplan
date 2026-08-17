@@ -11,8 +11,9 @@ import { FormField } from "@/components/ui/form-field";
 import { Input } from "@/components/ui/input";
 import { Modal } from "@/components/ui/modal";
 import { useActionToasts } from "@/hooks/use-action-toasts";
+import { idleActionResult } from "@/lib/action-result";
 
-const initial: PasswordActionState = { status: "success" };
+const initial: PasswordActionState = idleActionResult;
 
 export function ChangePasswordForm() {
   const [open, setOpen] = useState(false);

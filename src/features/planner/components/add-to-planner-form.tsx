@@ -9,8 +9,9 @@ import { Button } from "@/components/ui/button";
 import { Select } from "@/components/ui/select";
 import { useActionToasts } from "@/hooks/use-action-toasts";
 import { DAY_SHORT } from "@/lib/week";
+import { idleActionResult } from "@/lib/action-result";
 
-const initial: PlannerActionState = { status: "success" };
+const initial: PlannerActionState = idleActionResult;
 
 export function AddToPlannerForm({ trendId }: { trendId: string }) {
   const [state, action, pending] = useActionState(

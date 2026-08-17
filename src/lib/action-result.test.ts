@@ -7,6 +7,8 @@ import {
   actionFail,
   actionFieldErrors,
   actionSuccess,
+  idleActionResult,
+  isCompletedActionSuccess,
 } from "@/lib/action-result";
 
 describe("actionFail", () => {
@@ -21,7 +23,7 @@ describe("actionFail", () => {
   it("allows custom message and fieldErrors for domain error codes", () => {
     assert.deepEqual(
       actionFail("self_invite", {
-        error: "Kamu tidak bisa mengundang email sendiri.",
+        message: "Kamu tidak bisa mengundang email sendiri.",
         fieldErrors: {
           email: ["Kamu tidak bisa mengundang email sendiri."],
         },
@@ -39,14 +41,14 @@ describe("actionFail", () => {
     );
   });
 
-  it("throws when a domain error code has no extras.error", () => {
+  it("throws when a domain error code has no extras.message", () => {
     const failDomain = actionFail as (
       errorCode: string,
-      extras?: { error?: string },
+      extras?: { message?: string },
     ) => ReturnType<typeof actionFail>;
     assert.throws(
       () => failDomain("partner_exists"),
-      /domain error codes require extras\.error/,
+      /domain error codes require extras\.message/,
     );
   });
 });
@@ -96,5 +98,18 @@ describe("actionFieldErrors / fromZodError", () => {
         fieldErrors: { email: ["x"] },
       },
     });
+  });
+});
+
+describe("idleActionResult / isCompletedActionSuccess", () => {
+  it("idle is success without message and is not a completed success", () => {
+    assert.deepEqual(idleActionResult, { status: "success" });
+    assert.equal(isCompletedActionSuccess(idleActionResult), false);
+  });
+
+  it("only treats success with message as completed", () => {
+    assert.equal(isCompletedActionSuccess(actionSuccess("Ok")), true);
+    assert.equal(isCompletedActionSuccess({ status: "success" }), false);
+    assert.equal(isCompletedActionSuccess(actionFail("generic")), false);
   });
 });

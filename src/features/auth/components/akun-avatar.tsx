@@ -25,8 +25,12 @@ import {
   validateAvatarFileClient,
 } from "@/features/auth/lib/avatar-image";
 import { useActionToasts } from "@/hooks/use-action-toasts";
+import {
+  idleActionResult,
+  isCompletedActionSuccess,
+} from "@/lib/action-result";
 
-const emptyState: ProfileImageActionState = { status: "success" };
+const emptyState: ProfileImageActionState = idleActionResult;
 const DELETE_CONFIRM_TOAST_ID = "avatar-delete-confirm";
 
 function PencilIcon({ className }: { className?: string }) {
@@ -134,12 +138,12 @@ export function AkunAvatar({
   }, [localPreview]);
 
   useEffect(() => {
-    if (uploadState.status === "success" && uploadState.message && inputRef.current) {
+    if (isCompletedActionSuccess(uploadState) && inputRef.current) {
       inputRef.current.value = "";
       setHasPendingFile(false);
       setMenuOpen(false);
     }
-  }, [uploadState.status, uploadState.message]);
+  }, [uploadState]);
 
   // Clear optimistic preview on failed upload.
   useEffect(() => {

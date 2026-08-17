@@ -13,8 +13,9 @@ import { Input } from "@/components/ui/input";
 import { useActionToasts } from "@/hooks/use-action-toasts";
 import { isTransactionalEmailEnabled } from "@/lib/auth/env";
 import { loginPath, registerPath } from "@/lib/auth/callback-url";
+import { idleActionResult } from "@/lib/action-result";
 
-const initialState: AuthFormState = { status: "success" };
+const initialState: AuthFormState = idleActionResult;
 
 export function LoginForm({ callbackUrl }: { callbackUrl?: string }) {
   const [state, action, pending] = useActionState(loginAction, initialState);

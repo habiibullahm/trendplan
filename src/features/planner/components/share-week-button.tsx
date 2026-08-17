@@ -21,6 +21,10 @@ import { FormField } from "@/components/ui/form-field";
 import { Input } from "@/components/ui/input";
 import { Modal } from "@/components/ui/modal";
 import { useActionToasts } from "@/hooks/use-action-toasts";
+import {
+  idleActionResult,
+  isCompletedActionSuccess,
+} from "@/lib/action-result";
 import { isTransactionalEmailEnabled } from "@/lib/auth/env";
 
 export type ShareWeekUiSnapshot = {
@@ -41,7 +45,7 @@ export type ShareWeekUiSnapshot = {
   partnerLabel: string | null;
 };
 
-const initial: ShareWeekActionState = { status: "success" };
+const initial: ShareWeekActionState = idleActionResult;
 
 function initials(name: string | null, email: string) {
   const base = (name?.trim() || email).trim();
@@ -104,18 +108,13 @@ export function ShareWeekButton({ share }: { share: ShareWeekUiSnapshot }) {
 
   useEffect(() => {
     if (
-      revokeState.status === "success" ||
-      removeState.status === "success" ||
-      leaveState.status === "success"
+      isCompletedActionSuccess(revokeState) ||
+      isCompletedActionSuccess(removeState) ||
+      isCompletedActionSuccess(leaveState)
     ) {
       router.refresh();
     }
-  }, [
-    revokeState.status,
-    removeState.status,
-    leaveState.status,
-    router,
-  ]);
+  }, [revokeState, removeState, leaveState, router]);
 
   function onClose() {
     if (pending) return;
@@ -158,7 +157,11 @@ export function ShareWeekButton({ share }: { share: ShareWeekUiSnapshot }) {
                 Kamu bergabung sebagai partner. Owner mengontrol undangan.
               </p>
               <form action={leaveAction}>
-                <input type="hidden" name="weekPlanId" value={share.weekPlanId} />
+                <input
+                  type="hidden"
+                  name="weekPlanId"
+                  value={share.weekPlanId}
+                />
                 <Button
                   type="submit"
                   variant="secondary"
@@ -202,7 +205,11 @@ export function ShareWeekButton({ share }: { share: ShareWeekUiSnapshot }) {
                 </span>
               </div>
               <form action={removeAction}>
-                <input type="hidden" name="weekPlanId" value={share.weekPlanId} />
+                <input
+                  type="hidden"
+                  name="weekPlanId"
+                  value={share.weekPlanId}
+                />
                 <Button
                   type="submit"
                   variant="secondary"
@@ -224,13 +231,21 @@ export function ShareWeekButton({ share }: { share: ShareWeekUiSnapshot }) {
                 </p>
               ) : null}
               <form action={createAction}>
-                <input type="hidden" name="weekPlanId" value={share.weekPlanId} />
+                <input
+                  type="hidden"
+                  name="weekPlanId"
+                  value={share.weekPlanId}
+                />
                 <Button type="submit" width="full" disabled={pending}>
                   Salin tautan
                 </Button>
               </form>
               <form action={createAction}>
-                <input type="hidden" name="weekPlanId" value={share.weekPlanId} />
+                <input
+                  type="hidden"
+                  name="weekPlanId"
+                  value={share.weekPlanId}
+                />
                 <Button
                   type="submit"
                   variant="secondary"
@@ -241,7 +256,11 @@ export function ShareWeekButton({ share }: { share: ShareWeekUiSnapshot }) {
                 </Button>
               </form>
               <form action={revokeAction}>
-                <input type="hidden" name="weekPlanId" value={share.weekPlanId} />
+                <input
+                  type="hidden"
+                  name="weekPlanId"
+                  value={share.weekPlanId}
+                />
                 <Button
                   type="submit"
                   variant="secondary"
@@ -257,14 +276,22 @@ export function ShareWeekButton({ share }: { share: ShareWeekUiSnapshot }) {
           {share.role === "owner" && !share.partner && !share.pendingInvite ? (
             <>
               <form action={createAction}>
-                <input type="hidden" name="weekPlanId" value={share.weekPlanId} />
+                <input
+                  type="hidden"
+                  name="weekPlanId"
+                  value={share.weekPlanId}
+                />
                 <Button type="submit" width="full" disabled={pending}>
                   Salin tautan undangan
                 </Button>
               </form>
 
               <form action={emailAction} className="flex flex-col gap-2">
-                <input type="hidden" name="weekPlanId" value={share.weekPlanId} />
+                <input
+                  type="hidden"
+                  name="weekPlanId"
+                  value={share.weekPlanId}
+                />
                 <FormField
                   label="Kirim email"
                   error={emailState.data?.fieldErrors?.email}

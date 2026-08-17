@@ -32,8 +32,9 @@ import {
 import type { ContentStatus } from "@/generated/prisma/client";
 import { cn } from "@/lib/cn";
 import type { PlannerView } from "@/lib/week";
+import { idleActionResult } from "@/lib/action-result";
 
-const initial: PlannerActionState = { status: "success" };
+const initial: PlannerActionState = idleActionResult;
 
 type Props = {
   item: {

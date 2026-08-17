@@ -4,8 +4,9 @@ import { useActionState } from "react";
 import type { ShareWeekActionState } from "@/features/planner/actions/week-share";
 import { Button } from "@/components/ui/button";
 import { useActionToasts } from "@/hooks/use-action-toasts";
+import { idleActionResult } from "@/lib/action-result";
 
-const initial: ShareWeekActionState = { status: "success" };
+const initial: ShareWeekActionState = idleActionResult;
 
 type Action = (
   prev: ShareWeekActionState,

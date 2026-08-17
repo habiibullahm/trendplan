@@ -85,7 +85,7 @@ export async function changePasswordAction(
       const sameAsCurrent = await compare(data.newPassword, user.passwordHash);
       if (sameAsCurrent) {
         return actionFail("passwordUnchanged", {
-          error: ActionErrors.passwordUnchanged,
+          message: ActionErrors.passwordUnchanged,
           fieldErrors: {
             newPassword: [ActionErrors.passwordUnchanged],
           },
