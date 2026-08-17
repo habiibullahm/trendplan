@@ -12,7 +12,7 @@ import { FormField } from "@/components/ui/form-field";
 import { Select } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { useActionToasts } from "@/hooks/use-action-toasts";
-import { DAY_LABELS } from "@/lib/week";
+import { DAY_LABELS, type PlannerView } from "@/lib/week";
 
 const initial: ActivityActionState = {};
 
@@ -21,12 +21,14 @@ export function CreateActivityForm({
   weekStartParam,
   returnMonth,
   returnWeek,
+  view,
   cancelHref = "/planner?tab=aktivitas",
 }: {
   defaultDay: number;
   weekStartParam?: string;
   returnMonth?: string;
   returnWeek?: number;
+  view?: PlannerView;
   cancelHref?: string;
 }) {
   const [state, action, pending] = useActionState(
@@ -61,6 +63,9 @@ export function CreateActivityForm({
       ) : null}
       {returnWeek != null ? (
         <input type="hidden" name="returnWeek" value={String(returnWeek)} />
+      ) : null}
+      {view === "shared" ? (
+        <input type="hidden" name="view" value="shared" />
       ) : null}
 
       <FormField label="Hari" htmlFor="activity-day">

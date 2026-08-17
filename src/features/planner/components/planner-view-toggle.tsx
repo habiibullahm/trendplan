@@ -11,22 +11,19 @@ import {
 } from "@/lib/week";
 
 type Props = {
+  view: PlannerView;
   tab: PlannerTab;
   year: number;
   month: number;
   weekIndex: number;
-  view?: PlannerView;
-  /** Prefix for demo routes, e.g. `/demo`. */
-  basePath?: string;
 };
 
 function hrefFor(
+  view: PlannerView,
   tab: PlannerTab,
   year: number,
   month: number,
   weekIndex: number,
-  view: PlannerView = "mine",
-  basePath = "",
 ) {
   const q = new URLSearchParams({
     month: formatMonthParam(year, month),
@@ -34,7 +31,7 @@ function hrefFor(
   });
   if (tab === "aktivitas") q.set("tab", "aktivitas");
   if (view === "shared") q.set("view", "shared");
-  return `${basePath}/planner?${q.toString()}`;
+  return `/planner?${q.toString()}`;
 }
 
 function isModifiedClick(e: MouseEvent) {
@@ -47,48 +44,47 @@ function isModifiedClick(e: MouseEvent) {
   );
 }
 
-export function PlannerTabs({
+const ITEMS: { id: PlannerView; label: string }[] = [
+  { id: "mine", label: "Plan saya" },
+  { id: "shared", label: "Plan bersama" },
+];
+
+export function PlannerViewToggle({
+  view,
   tab,
   year,
   month,
   weekIndex,
-  view = "mine",
-  basePath = "",
 }: Props) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
-  const [pendingTab, setPendingTab] = useState<PlannerTab | null>(null);
-  const loadingTab = pending ? pendingTab : null;
+  const [pendingView, setPendingView] = useState<PlannerView | null>(null);
+  const loadingView = pending ? pendingView : null;
 
-  const items: { id: PlannerTab; label: string }[] = [
-    { id: "konten", label: "Konten" },
-    { id: "aktivitas", label: "Aktivitas" },
-  ];
-
-  function goTab(next: PlannerTab) {
-    if (pending || next === tab) return;
-    setPendingTab(next);
+  function goView(next: PlannerView) {
+    if (pending || next === view) return;
+    setPendingView(next);
     startTransition(() => {
-      router.push(hrefFor(next, year, month, weekIndex, view, basePath));
+      router.push(hrefFor(next, tab, year, month, weekIndex));
     });
   }
 
   return (
     <nav
-      aria-label="Tab planner"
+      aria-label="Tampilan plan"
       aria-busy={pending || undefined}
-      className="mt-4 flex gap-1 rounded-xl border border-border bg-surface p-1"
+      className="mt-2 inline-flex w-fit max-w-full gap-0.5 rounded-lg border border-border bg-surface p-0.5"
     >
-      {items.map((item) => {
-        const active = tab === item.id;
-        const loading = loadingTab === item.id;
+      {ITEMS.map((item) => {
+        const active = view === item.id;
+        const loading = loadingView === item.id;
         return (
           <Link
             key={item.id}
-            href={hrefFor(item.id, year, month, weekIndex, view, basePath)}
-            className={`min-touch inline-flex flex-1 items-center justify-center gap-1.5 rounded-lg px-3 py-2 text-center text-sm font-semibold transition-colors ${
+            href={hrefFor(item.id, tab, year, month, weekIndex)}
+            className={`inline-flex items-center justify-center gap-1 rounded-md px-2.5 py-1 text-xs font-semibold transition-colors ${
               active
-                ? "bg-coral/10 text-coral hover:bg-coral/15"
+                ? "bg-coral/10 text-coral"
                 : "text-ink-muted hover:bg-coral/5 hover:text-ink"
             } ${
               pending && !loading
@@ -102,10 +98,10 @@ export function PlannerTabs({
             onClick={(e) => {
               if (isModifiedClick(e)) return;
               e.preventDefault();
-              goTab(item.id);
+              goView(item.id);
             }}
           >
-            {loading ? <Spinner className="size-3.5 shrink-0" /> : null}
+            {loading ? <Spinner className="size-3 shrink-0" /> : null}
             {item.label}
           </Link>
         );

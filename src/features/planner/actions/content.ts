@@ -14,7 +14,12 @@ import {
   unparkDayOfWeek,
 } from "@/features/planner/lib/soft-delete";
 import { resolveStatusUpdate } from "@/lib/labels";
-import { getWeekStart, parseWeekStartParam, plannerHref } from "@/lib/week";
+import {
+  getWeekStart,
+  parsePlannerView,
+  parseWeekStartParam,
+  plannerHref,
+} from "@/lib/week";
 import {
   captionSchema,
   hashtagsSchema,
@@ -33,6 +38,10 @@ function resolveWeekStartFromForm(formData: FormData): Date {
 }
 
 /** Prefer viewed month/week from the form when the week belongs to that month. */
+function formView(formData: FormData) {
+  return parsePlannerView(String(formData.get("view") ?? ""));
+}
+
 function returnHref(
   formData: FormData,
   weekStart: Date,
@@ -42,6 +51,7 @@ function returnHref(
     weekStart,
     monthParam: String(formData.get("returnMonth") ?? "") || null,
     weekParam: String(formData.get("returnWeek") ?? "") || null,
+    view: formView(formData),
     toast: extra?.toast,
     undo: extra?.undo,
   });
@@ -78,6 +88,7 @@ export async function addTrendToPlannerAction(
   const weekPlan = await getWeekPlanForViewer(
     userId,
     resolveWeekStartFromForm(formData),
+    { view: formView(formData) },
   );
   const existing = weekPlan.items.find((i) => i.dayOfWeek === dayParsed.data);
   if (existing) {
@@ -123,7 +134,9 @@ export async function createContentItemAction(
   const hook = hookParsed.data || null;
   const weekStart = resolveWeekStartFromForm(formData);
 
-  const weekPlan = await getWeekPlanForViewer(userId, weekStart);
+  const weekPlan = await getWeekPlanForViewer(userId, weekStart, {
+    view: formView(formData),
+  });
   const existing = weekPlan.items.find((i) => i.dayOfWeek === dayParsed.data);
   if (existing) {
     return { error: "Hari itu sudah ada ide — pilih hari lain." };

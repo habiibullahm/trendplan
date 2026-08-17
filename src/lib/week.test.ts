@@ -7,6 +7,7 @@ import {
   monthForWeekStart,
   parseMonthParam,
   parseWeekStartParam,
+  parsePlannerView,
   plannerHref,
   resolvePlannerSelection,
   shiftMonth,
@@ -122,5 +123,34 @@ describe("legacy weekStart keying + return month", () => {
       }),
       "/planner?month=2026-08&week=1&tab=aktivitas",
     );
+    assert.equal(
+      plannerHref({
+        weekStart,
+        monthParam: "2026-08",
+        weekParam: "1",
+        view: "shared",
+      }),
+      "/planner?month=2026-08&week=1&view=shared",
+    );
+    assert.equal(
+      plannerHref({
+        weekStart,
+        monthParam: "2026-08",
+        weekParam: "1",
+        view: "mine",
+      }),
+      "/planner?month=2026-08&week=1",
+    );
+  });
+});
+
+describe("parsePlannerView", () => {
+  it("defaults to mine and only accepts shared", () => {
+    assert.equal(parsePlannerView(undefined), "mine");
+    assert.equal(parsePlannerView(null), "mine");
+    assert.equal(parsePlannerView(""), "mine");
+    assert.equal(parsePlannerView("mine"), "mine");
+    assert.equal(parsePlannerView("shared"), "shared");
+    assert.equal(parsePlannerView("other"), "mine");
   });
 });

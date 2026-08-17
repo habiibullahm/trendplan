@@ -31,6 +31,7 @@ import {
 } from "@/features/planner/lib/export-text";
 import type { ContentStatus } from "@/generated/prisma/client";
 import { cn } from "@/lib/cn";
+import type { PlannerView } from "@/lib/week";
 
 const initial: PlannerActionState = {};
 
@@ -45,15 +46,18 @@ type Props = {
   };
   returnMonth?: string;
   returnWeek?: number;
+  view?: PlannerView;
   backHref?: string;
 };
 
 function ReturnFields({
   returnMonth,
   returnWeek,
+  view,
 }: {
   returnMonth?: string;
   returnWeek?: number;
+  view?: PlannerView;
 }) {
   return (
     <>
@@ -62,6 +66,9 @@ function ReturnFields({
       ) : null}
       {returnWeek != null ? (
         <input type="hidden" name="returnWeek" value={String(returnWeek)} />
+      ) : null}
+      {view === "shared" ? (
+        <input type="hidden" name="view" value="shared" />
       ) : null}
     </>
   );
@@ -111,6 +118,7 @@ export function ContentEditForm({
   item,
   returnMonth,
   returnWeek,
+  view,
   backHref = "/planner",
 }: Props) {
   const [state, action, savePending] = useActionState(
@@ -263,7 +271,11 @@ export function ContentEditForm({
     <div className="flex flex-col gap-5">
       <form action={action} className="flex flex-col gap-4">
         <input type="hidden" name="itemId" value={item.id} />
-        <ReturnFields returnMonth={returnMonth} returnWeek={returnWeek} />
+        <ReturnFields
+          returnMonth={returnMonth}
+          returnWeek={returnWeek}
+          view={view}
+        />
 
         <div>
           <LabelText>Status</LabelText>
@@ -360,7 +372,11 @@ export function ContentEditForm({
         </Link>
         <form action={deleteAction}>
           <input type="hidden" name="itemId" value={item.id} />
-          <ReturnFields returnMonth={returnMonth} returnWeek={returnWeek} />
+          <ReturnFields
+            returnMonth={returnMonth}
+            returnWeek={returnWeek}
+            view={view}
+          />
           <Button
             type="submit"
             variant="danger"

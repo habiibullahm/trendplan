@@ -33,7 +33,7 @@ import { usePlannerLayout } from "@/components/motion";
 import { dragId, dropId, parseDropDay } from "@/features/planner/lib/planner-dnd";
 import { Badge } from "@/components/ui/badge";
 import { STATUS_CLASS, STATUS_LABEL } from "@/lib/labels";
-import { DAY_SHORT } from "@/lib/week";
+import { DAY_SHORT, type PlannerView } from "@/lib/week";
 import type { ContentStatus } from "@/generated/prisma/client";
 
 export type PlannerBoardItem = {
@@ -52,11 +52,13 @@ function newPlanHref(
   weekStartParam?: string,
   returnMonth?: string,
   returnWeek?: number,
+  view?: PlannerView,
 ) {
   const q = new URLSearchParams({ day: String(day) });
   if (weekStartParam) q.set("weekStart", weekStartParam);
   if (returnMonth) q.set("month", returnMonth);
   if (returnWeek != null) q.set("week", String(returnWeek));
+  if (view === "shared") q.set("view", "shared");
   return `/planner/new?${q.toString()}`;
 }
 
@@ -64,10 +66,12 @@ function itemHref(
   itemId: string,
   returnMonth?: string,
   returnWeek?: number,
+  view?: PlannerView,
 ) {
   const q = new URLSearchParams();
   if (returnMonth) q.set("month", returnMonth);
   if (returnWeek != null) q.set("week", String(returnWeek));
+  if (view === "shared") q.set("view", "shared");
   const qs = q.toString();
   return qs ? `/planner/${itemId}?${qs}` : `/planner/${itemId}`;
 }
@@ -87,6 +91,7 @@ function DaySlot({
   weekStartParam,
   returnMonth,
   returnWeek,
+  view,
 }: {
   day: number;
   label: string;
@@ -96,6 +101,7 @@ function DaySlot({
   weekStartParam?: string;
   returnMonth?: string;
   returnWeek?: number;
+  view?: PlannerView;
 }) {
   const { setNodeRef, isOver } = useDroppable({
     id: dropId(layout, day),
@@ -118,10 +124,17 @@ function DaySlot({
             pending={pending}
             returnMonth={returnMonth}
             returnWeek={returnWeek}
+            view={view}
           />
         ) : (
           <Link
-            href={newPlanHref(day, weekStartParam, returnMonth, returnWeek)}
+            href={newPlanHref(
+              day,
+              weekStartParam,
+              returnMonth,
+              returnWeek,
+              view,
+            )}
             className="min-touch flex items-center gap-3 rounded-2xl border border-dashed border-border px-4 py-3 transition-colors hover:border-coral/50 hover:bg-coral/5"
           >
             <p className="text-xs font-semibold text-ink-muted">{label}</p>
@@ -160,10 +173,17 @@ function DaySlot({
           pending={pending}
           returnMonth={returnMonth}
           returnWeek={returnWeek}
+          view={view}
         />
       ) : (
         <Link
-          href={newPlanHref(day, weekStartParam, returnMonth, returnWeek)}
+          href={newPlanHref(
+            day,
+            weekStartParam,
+            returnMonth,
+            returnWeek,
+            view,
+          )}
           className="mt-3 block text-sm text-ink-muted transition-colors hover:text-coral"
         >
           + Buat ide
@@ -180,6 +200,7 @@ function DraggableCard({
   pending,
   returnMonth,
   returnWeek,
+  view,
 }: {
   item: PlannerBoardItem;
   label: string;
@@ -187,6 +208,7 @@ function DraggableCard({
   pending: boolean;
   returnMonth?: string;
   returnWeek?: number;
+  view?: PlannerView;
 }) {
   const skipClickRef = useContext(SkipClickContext);
   const posted = item.status === "POSTED";
@@ -227,7 +249,7 @@ function DraggableCard({
         {...(posted ? {} : attributes)}
       >
         <Link
-          href={itemHref(item.id, returnMonth, returnWeek)}
+          href={itemHref(item.id, returnMonth, returnWeek, view)}
           className="flex items-center justify-between gap-3 px-4 py-3"
           onClick={onDetailClick}
           draggable={false}
@@ -255,7 +277,7 @@ function DraggableCard({
       {...(posted ? {} : attributes)}
     >
       <Link
-        href={itemHref(item.id, returnMonth, returnWeek)}
+        href={itemHref(item.id, returnMonth, returnWeek, view)}
         className="block min-w-0"
         onClick={onDetailClick}
         draggable={false}
@@ -296,6 +318,7 @@ function BoardLayout({
   weekStartParam,
   returnMonth,
   returnWeek,
+  view,
 }: {
   layout: LayoutKind;
   byDay: Map<number, PlannerBoardItem>;
@@ -303,6 +326,7 @@ function BoardLayout({
   weekStartParam?: string;
   returnMonth?: string;
   returnWeek?: number;
+  view?: PlannerView;
 }) {
   if (layout === "list") {
     return (
@@ -318,6 +342,7 @@ function BoardLayout({
             weekStartParam={weekStartParam}
             returnMonth={returnMonth}
             returnWeek={returnWeek}
+            view={view}
           />
         ))}
       </ul>
@@ -337,6 +362,7 @@ function BoardLayout({
           weekStartParam={weekStartParam}
           returnMonth={returnMonth}
           returnWeek={returnWeek}
+          view={view}
         />
       ))}
     </div>
@@ -350,12 +376,14 @@ function StaticBoard({
   weekStartParam,
   returnMonth,
   returnWeek,
+  view,
 }: {
   items: PlannerBoardItem[];
   readOnly?: boolean;
   weekStartParam?: string;
   returnMonth?: string;
   returnWeek?: number;
+  view?: PlannerView;
 }) {
   const byDay = buildByDay(items);
   return (
@@ -382,7 +410,7 @@ function StaticBoard({
                   </div>
                 ) : (
                   <Link
-                    href={itemHref(item.id, returnMonth, returnWeek)}
+                    href={itemHref(item.id, returnMonth, returnWeek, view)}
                     className="min-touch flex items-center justify-between gap-3 rounded-2xl border border-border bg-surface px-4 py-3"
                   >
                     <div className="min-w-0">
@@ -410,6 +438,7 @@ function StaticBoard({
                     weekStartParam,
                     returnMonth,
                     returnWeek,
+                    view,
                   )}
                   className="min-touch flex items-center gap-3 rounded-2xl border border-dashed border-border px-4 py-3 transition-colors hover:border-coral/50 hover:bg-coral/5"
                 >
@@ -455,7 +484,7 @@ function StaticBoard({
                   </div>
                 ) : (
                   <Link
-                    href={itemHref(item.id, returnMonth, returnWeek)}
+                    href={itemHref(item.id, returnMonth, returnWeek, view)}
                     className="mt-2 block min-w-0"
                   >
                     <p className="line-clamp-3 break-words text-sm font-semibold leading-snug text-ink">
@@ -472,6 +501,7 @@ function StaticBoard({
                     weekStartParam,
                     returnMonth,
                     returnWeek,
+                    view,
                   )}
                   className="mt-3 block text-sm text-ink-muted transition-colors hover:text-coral"
                 >
@@ -509,12 +539,14 @@ function InteractiveBoard({
   weekStartParam,
   returnMonth,
   returnWeek,
+  view,
 }: {
   items: PlannerBoardItem[];
   layout: LayoutKind;
   weekStartParam?: string;
   returnMonth?: string;
   returnWeek?: number;
+  view?: PlannerView;
 }) {
   const [localItems, setLocalItems] = useState(items);
   const [activeItemId, setActiveItemId] = useState<string | null>(null);
@@ -648,6 +680,7 @@ function InteractiveBoard({
           weekStartParam={weekStartParam}
           returnMonth={returnMonth}
           returnWeek={returnWeek}
+          view={view}
         />
         <DragOverlay dropAnimation={null}>
           {activeItem ? <OverlayCard item={activeItem} /> : null}
@@ -662,11 +695,13 @@ export function PlannerBoard({
   weekStartParam,
   returnMonth,
   returnWeek,
+  view,
 }: {
   items: PlannerBoardItem[];
   weekStartParam?: string;
   returnMonth?: string;
   returnWeek?: number;
+  view?: PlannerView;
 }) {
   const layout = usePlannerLayout();
   const boardKey = items
@@ -683,6 +718,7 @@ export function PlannerBoard({
           weekStartParam={weekStartParam}
           returnMonth={returnMonth}
           returnWeek={returnWeek}
+          view={view}
         />
       ) : (
         <StaticBoard
@@ -690,6 +726,7 @@ export function PlannerBoard({
           weekStartParam={weekStartParam}
           returnMonth={returnMonth}
           returnWeek={returnWeek}
+          view={view}
         />
       )}
       <PlannerHint />

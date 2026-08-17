@@ -217,11 +217,18 @@ export function monthForWeekStart(weekStart: Date): {
 
 export type PlannerTab = "konten" | "aktivitas";
 
+/** Partner dual-plan mode: own week vs shared membership week. Default mine. */
+export type PlannerView = "mine" | "shared";
+
 export function parsePlannerTab(raw?: string | null): PlannerTab {
   return raw === "aktivitas" ? "aktivitas" : "konten";
 }
 
-/** Build /planner?month=&week= with optional toast/undo/tab. Prefer viewed month when valid. */
+export function parsePlannerView(raw?: string | null): PlannerView {
+  return raw === "shared" ? "shared" : "mine";
+}
+
+/** Build /planner?month=&week= with optional toast/undo/tab/view. Prefer viewed month when valid. */
 export function plannerHref(opts: {
   weekStart: Date;
   monthParam?: string | null;
@@ -229,6 +236,7 @@ export function plannerHref(opts: {
   toast?: string;
   undo?: string;
   tab?: PlannerTab | string | null;
+  view?: PlannerView | string | null;
 }): string {
   const canonical = getWeekStart(opts.weekStart);
   let year: number;
@@ -258,6 +266,7 @@ export function plannerHref(opts: {
   });
   const tab = parsePlannerTab(opts.tab);
   if (tab === "aktivitas") q.set("tab", "aktivitas");
+  if (parsePlannerView(opts.view) === "shared") q.set("view", "shared");
   if (opts.toast) q.set("toast", opts.toast);
   if (opts.undo) q.set("undo", opts.undo);
   return `/planner?${q.toString()}`;
