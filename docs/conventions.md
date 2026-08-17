@@ -13,6 +13,7 @@ Short rules that keep new code consistent with the rest of TrendPlan. Folder lay
 - Mark files with `"use server"`.
 - Gate with `requireAppUserAction` (return `ActionResult` — don’t throw `Unauthorized`).
 - Return `ActionResult` (`status` / `message` / `data` via `actionSuccess` / `actionFail` / `actionErrorCode`) — don’t leak stacks.
+- `useActionState` idle seed: `idleActionResult`. Treat completed success as `isCompletedActionSuccess` (needs `message`), not bare `status === "success"`.
 - Validate with **zod** (`withValidation` or `safeParse`).
 - Authorize before mutate (ownership or `weekPlanAccessWhere`).
 - `revalidatePath` screens that show the change; `redirect` when that’s the existing pattern.

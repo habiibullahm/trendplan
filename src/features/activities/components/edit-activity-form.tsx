@@ -13,8 +13,9 @@ import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
 import { useActionToasts } from "@/hooks/use-action-toasts";
 import { DAY_LABELS, type PlannerView } from "@/lib/week";
+import { idleActionResult } from "@/lib/action-result";
 
-const initial: ActivityActionState = { status: "success" };
+const initial: ActivityActionState = idleActionResult;
 
 export function EditActivityForm({
   activityId,

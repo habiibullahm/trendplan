@@ -16,8 +16,12 @@ import { Modal } from "@/components/ui/modal";
 import { Select } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { useActionToasts } from "@/hooks/use-action-toasts";
+import {
+  idleActionResult,
+  isCompletedActionSuccess,
+} from "@/lib/action-result";
 
-const initial: FeedbackActionState = { status: "success" };
+const initial: FeedbackActionState = idleActionResult;
 
 export function FeedbackForm() {
   const [open, setOpen] = useState(false);
@@ -28,7 +32,7 @@ export function FeedbackForm() {
     async (prev: FeedbackActionState, formData: FormData) => {
       const next = await submitFeedbackAction(prev, formData);
       setShowFieldErrors(Boolean(next.data?.fieldErrors));
-      if (next.status === "success") {
+      if (isCompletedActionSuccess(next)) {
         formRef.current?.reset();
         setShowFieldErrors(false);
         setOpen(false);

@@ -10,8 +10,12 @@ import { Button } from "@/components/ui/button";
 import { FormField } from "@/components/ui/form-field";
 import { Input } from "@/components/ui/input";
 import { useActionToasts } from "@/hooks/use-action-toasts";
+import {
+  idleActionResult,
+  isCompletedActionSuccess,
+} from "@/lib/action-result";
 
-const initial: PasswordActionState = { status: "success" };
+const initial: PasswordActionState = idleActionResult;
 
 export function ForgotPasswordForm() {
   const [state, action, pending] = useActionState(
@@ -39,7 +43,7 @@ export function ForgotPasswordForm() {
       >
         Kirim tautan reset
       </Button>
-      {state.status === "success" && state.message ? (
+      {isCompletedActionSuccess(state) ? (
         <p className="rounded-xl border border-border bg-paper px-3 py-2 text-center text-sm text-ink">
           {state.message}
           {process.env.NODE_ENV === "development" ? (

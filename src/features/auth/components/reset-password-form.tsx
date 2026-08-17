@@ -9,8 +9,9 @@ import { Button } from "@/components/ui/button";
 import { FormField } from "@/components/ui/form-field";
 import { Input } from "@/components/ui/input";
 import { useActionToasts } from "@/hooks/use-action-toasts";
+import { idleActionResult } from "@/lib/action-result";
 
-const initial: PasswordActionState = { status: "success" };
+const initial: PasswordActionState = idleActionResult;
 
 export function ResetPasswordForm({ token }: { token: string }) {
   const [state, action, pending] = useActionState(
