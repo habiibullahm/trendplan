@@ -11,7 +11,7 @@ import { FormField } from "@/components/ui/form-field";
 import { Input } from "@/components/ui/input";
 import { useActionToasts } from "@/hooks/use-action-toasts";
 
-const initial: PasswordActionState = {};
+const initial: PasswordActionState = { status: "success" };
 
 export function ForgotPasswordForm() {
   const [state, action, pending] = useActionState(
@@ -22,7 +22,7 @@ export function ForgotPasswordForm() {
 
   return (
     <form action={action} className="flex w-full flex-col gap-4">
-      <FormField label="Email" error={state.fieldErrors?.email}>
+      <FormField label="Email" error={state.data?.fieldErrors?.email}>
         <Input
           name="email"
           type="email"
@@ -39,9 +39,9 @@ export function ForgotPasswordForm() {
       >
         Kirim tautan reset
       </Button>
-      {state.success ? (
+      {state.status === "success" && state.message ? (
         <p className="rounded-xl border border-border bg-paper px-3 py-2 text-center text-sm text-ink">
-          {state.success}
+          {state.message}
           {process.env.NODE_ENV === "development" ? (
             <span className="mt-1 block text-xs text-ink-muted">
               Lokal tanpa Resend: cek terminal server untuk tautan reset.
@@ -49,8 +49,8 @@ export function ForgotPasswordForm() {
           ) : null}
         </p>
       ) : null}
-      {state.error ? (
-        <p className="text-center text-sm text-coral">{state.error}</p>
+      {state.status === "error" && state.message ? (
+        <p className="text-center text-sm text-coral">{state.message}</p>
       ) : null}
       <p className="text-center text-sm text-ink-muted">
         <Link href="/login" className="font-semibold text-coral">

@@ -17,15 +17,17 @@ import {
 } from "@/lib/mail/errors";
 
 describe("actionErrorCode", () => {
-  it("maps ActionErrorCode including generic and sets errorCode", () => {
+  it("maps ActionErrorCode including generic and sets data.errorCode", () => {
     const code: ActionErrorCode = "generic";
     assert.deepEqual(actionErrorCode(code), {
-      errorCode: "generic",
-      error: ActionErrors.generic,
+      status: "error",
+      message: ActionErrors.generic,
+      data: { errorCode: "generic" },
     });
     assert.deepEqual(actionErrorCode("invalid"), {
-      errorCode: "invalid",
-      error: ActionErrors.invalid,
+      status: "error",
+      message: ActionErrors.invalid,
+      data: { errorCode: "invalid" },
     });
   });
 });

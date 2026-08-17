@@ -7,9 +7,11 @@ import type { CreateWeekInviteErrorCode } from "@/features/planner/lib/week-shar
 import type { AcceptInviteErrorCode } from "@/features/planner/lib/week-share";
 
 /** Week-share ActionResult maps (testable without server actions). */
-export type ShareWeekActionState = ActionResult & {
+export type ShareWeekActionState = ActionResult<{
+  errorCode?: string;
+  fieldErrors?: Record<string, string[]>;
   inviteUrl?: string;
-};
+}>;
 
 export const CREATE_INVITE_ACTION_ERRORS: Record<
   CreateWeekInviteErrorCode,

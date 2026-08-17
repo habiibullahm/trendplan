@@ -12,7 +12,7 @@ import { Modal } from "@/components/ui/modal";
 import { useActionToasts } from "@/hooks/use-action-toasts";
 
 const GOAL_OPTIONS = [1, 2, 3, 4, 5, 6, 7] as const;
-const initial: WeeklyGoalActionState = {};
+const initial: WeeklyGoalActionState = { status: "success" };
 
 function SaveGoalButton() {
   const { pending } = useFormStatus();
@@ -67,7 +67,7 @@ export function AkunGoalEditor({ weeklyGoal }: { weeklyGoal: number }) {
   const [state, action, pending] = useActionState(
     async (prev: WeeklyGoalActionState, formData: FormData) => {
       const next = await updateWeeklyGoalAction(prev, formData);
-      if (next.success) setOpen(false);
+      if (next.status === "success") setOpen(false);
       return next;
     },
     initial,

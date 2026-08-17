@@ -10,7 +10,7 @@ import { Select } from "@/components/ui/select";
 import { useActionToasts } from "@/hooks/use-action-toasts";
 import { DAY_SHORT } from "@/lib/week";
 
-const initial: PlannerActionState = {};
+const initial: PlannerActionState = { status: "success" };
 
 export function AddToPlannerForm({ trendId }: { trendId: string }) {
   const [state, action, pending] = useActionState(
