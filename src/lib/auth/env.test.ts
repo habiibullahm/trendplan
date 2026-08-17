@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import { afterEach, describe, it } from "node:test";
+import { setNodeEnv } from "@/test/set-node-env";
 import {
   appBaseUrl,
   isEmailVerificationRequired,
@@ -16,14 +17,6 @@ const original = {
   VERCEL_URL: process.env.VERCEL_URL,
   NODE_ENV: process.env.NODE_ENV,
 };
-
-function setNodeEnv(value: string | undefined) {
-  if (value === undefined) {
-    Reflect.deleteProperty(process.env, "NODE_ENV");
-  } else {
-    Reflect.set(process.env, "NODE_ENV", value);
-  }
-}
 
 afterEach(() => {
   for (const [key, value] of Object.entries(original)) {
