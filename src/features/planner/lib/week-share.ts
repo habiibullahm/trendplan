@@ -3,7 +3,7 @@ import "server-only";
 import { Prisma, type Prisma as PrismaTypes } from "@/generated/prisma/client";
 import { appBaseUrl } from "@/lib/auth/env";
 import { prisma } from "@/lib/prisma";
-import { formatWeekStartParam, getWeekStart } from "@/lib/week";
+import { formatWeekStartParam, getWeekStart, type PlannerView } from "@/lib/week";
 import {
   createWeekInviteRawToken,
   hashWeekInviteToken,
@@ -120,17 +120,24 @@ async function findMembershipWeekPlan(
 }
 
 /**
- * Prefer shared membership week for this weekStart; else owner getOrCreate.
+ * Load the week plan for display/writes.
+ * - view=mine (default): always the user's owned plan for that weekStart
+ * - view=shared: membership week when seated as partner; else owned fallback
  */
 export async function getWeekPlanForViewer(
   userId: string,
   date = new Date(),
+  opts?: { view?: PlannerView },
 ): Promise<WeekPlanForViewer> {
   await purgeStaleSoftDeletesForAccessible(userId);
 
   const weekStart = getWeekStart(date);
-  const shared = await findMembershipWeekPlan(userId, weekStart);
-  if (shared) return shared;
+  const view = opts?.view ?? "mine";
+
+  if (view === "shared") {
+    const shared = await findMembershipWeekPlan(userId, weekStart);
+    if (shared) return shared;
+  }
 
   const { getOrCreateWeekPlan } = await import(
     "@/features/planner/lib/planner"
@@ -142,6 +149,15 @@ export async function getWeekPlanForViewer(
     include: weekPlanItemsInclude,
   });
   return full;
+}
+
+/** True when the user is a partner member on some plan for this calendar week. */
+export async function userHasPartnerSeatForWeek(
+  userId: string,
+  weekStart: Date,
+): Promise<boolean> {
+  const shared = await findMembershipWeekPlan(userId, weekStart);
+  return Boolean(shared && shared.userId !== userId);
 }
 
 /**

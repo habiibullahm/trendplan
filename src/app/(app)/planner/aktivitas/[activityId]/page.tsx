@@ -4,11 +4,15 @@ import { auth } from "@/auth";
 import { EditActivityForm } from "@/features/activities/components/edit-activity-form";
 import { prisma } from "@/lib/prisma";
 import { weekPlanAccessWhere } from "@/features/planner/lib/week-share";
-import { formatWeekRange, plannerHref } from "@/lib/week";
+import {
+  formatWeekRange,
+  parsePlannerView,
+  plannerHref,
+} from "@/lib/week";
 
 type Props = {
   params: Promise<{ activityId: string }>;
-  searchParams: Promise<{ month?: string; week?: string }>;
+  searchParams: Promise<{ month?: string; week?: string; view?: string }>;
 };
 
 export default async function ActivityEditPage({
@@ -19,7 +23,7 @@ export default async function ActivityEditPage({
   if (!session?.user?.id) redirect("/login");
 
   const { activityId } = await params;
-  const { month, week } = await searchParams;
+  const { month, week, view: viewRaw } = await searchParams;
 
   const activity = await prisma.activity.findFirst({
     where: {
@@ -27,16 +31,22 @@ export default async function ActivityEditPage({
       weekPlan: weekPlanAccessWhere(session.user.id),
     },
     include: {
-      weekPlan: { select: { weekStart: true } },
+      weekPlan: { select: { weekStart: true, userId: true } },
     },
   });
   if (!activity) notFound();
+
+  const view =
+    activity.weekPlan.userId !== session.user.id
+      ? "shared"
+      : parsePlannerView(viewRaw);
 
   const backHref = plannerHref({
     weekStart: activity.weekPlan.weekStart,
     monthParam: month,
     weekParam: week,
     tab: "aktivitas",
+    view,
   });
   const backUrl = new URL(backHref, "https://local");
   const returnMonth = backUrl.searchParams.get("month") ?? undefined;
@@ -71,6 +81,7 @@ export default async function ActivityEditPage({
               ? returnWeek
               : undefined
           }
+          view={view}
           cancelHref={backHref}
         />
       </div>

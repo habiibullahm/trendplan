@@ -9,6 +9,7 @@ import {
   formatMonthParam,
   shiftMonth,
   type PlannerTab,
+  type PlannerView,
 } from "@/lib/week";
 import type { MonthWeekChip } from "@/features/planner/lib/month-week";
 
@@ -20,6 +21,7 @@ type Props = {
   weekIndex: number;
   weeks: MonthWeekChip[];
   tab?: PlannerTab;
+  view?: PlannerView;
   /** `content` = N ide; `activities` = N aktivitas */
   metric?: "content" | "activities";
 };
@@ -40,6 +42,7 @@ export function MonthWeekNav({
   weekIndex,
   weeks,
   tab = "konten",
+  view = "mine",
   metric = "content",
 }: Props) {
   const router = useRouter();
@@ -54,9 +57,14 @@ export function MonthWeekNav({
   const loadingWeek = pending ? pendingWeek : null;
   const loadingMonth = pending ? monthPending : null;
 
+  function appendView(q: URLSearchParams) {
+    if (tab === "aktivitas") q.set("tab", "aktivitas");
+    if (view === "shared") q.set("view", "shared");
+  }
+
   function monthHref(y: number, m: number) {
     const q = new URLSearchParams({ month: formatMonthParam(y, m) });
-    if (tab === "aktivitas") q.set("tab", "aktivitas");
+    appendView(q);
     return `/planner?${q.toString()}`;
   }
 
@@ -74,7 +82,7 @@ export function MonthWeekNav({
       month: formatMonthParam(year, month),
       week: String(week),
     });
-    if (tab === "aktivitas") q.set("tab", "aktivitas");
+    appendView(q);
     return `/planner?${q.toString()}`;
   }
 

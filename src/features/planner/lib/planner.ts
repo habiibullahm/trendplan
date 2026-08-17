@@ -1,6 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import { softDeleteStaleBefore } from "@/features/planner/lib/soft-delete";
-import { formatWeekStartParam, getWeekStart } from "@/lib/week";
+import { formatWeekStartParam, getWeekStart, type PlannerView } from "@/lib/week";
 
 /** ±14h around UTC midnight covers legacy Asia/Jakarta local-midnight rows. */
 const LEGACY_OFFSET_MS = 14 * 60 * 60 * 1000;
@@ -103,6 +103,7 @@ export async function getOrCreateWeekPlan(userId: string, date = new Date()) {
 export async function countActiveItemsByWeekStarts(
   userId: string,
   weekStarts: Date[],
+  opts?: { view?: PlannerView },
 ): Promise<Map<string, number>> {
   const map = new Map<string, number>();
   for (const ws of weekStarts) {
@@ -110,6 +111,7 @@ export async function countActiveItemsByWeekStarts(
   }
   if (weekStarts.length === 0) return map;
 
+  const view = opts?.view ?? "mine";
   const times = weekStarts.map((d) => d.getTime());
   const min = Math.min(...times) - LEGACY_OFFSET_MS;
   const max = Math.max(...times) + LEGACY_OFFSET_MS;
@@ -117,7 +119,9 @@ export async function countActiveItemsByWeekStarts(
   const plans = await prisma.weekPlan.findMany({
     where: {
       AND: [
-        { OR: [{ userId }, { members: { some: { userId } } }] },
+        view === "shared"
+          ? { OR: [{ userId }, { members: { some: { userId } } }] }
+          : { userId },
         {
           weekStart: {
             gte: new Date(min),
@@ -146,9 +150,13 @@ export async function countActiveItemsByWeekStarts(
     if (!map.has(key)) continue;
     const foreign = plan.userId !== userId;
     const prev = byKey.get(key);
-    if (foreign) {
-      byKey.set(key, { count: plan._count.items, foreign: true });
-    } else if (!prev?.foreign) {
+    if (view === "shared") {
+      if (foreign) {
+        byKey.set(key, { count: plan._count.items, foreign: true });
+      } else if (!prev?.foreign) {
+        byKey.set(key, { count: plan._count.items, foreign: false });
+      }
+    } else if (!foreign) {
       byKey.set(key, { count: plan._count.items, foreign: false });
     }
   }
