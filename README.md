@@ -10,10 +10,8 @@ Perencanaan konten TikTok mingguan berbasis tren — niche **Couple Date Ideas**
 - Auth.js (credentials + JWT)
 - Prisma 7 + PostgreSQL (`pg` adapter)
 - Sonner (toast feedback)
-- **shadcn/ui** (initialized; `Card` / `Separator` / `Skeleton` / `Button` / `Dialog` available). App code still imports TrendPlan `Button` and `Modal` wrappers (shadcn-backed, same props); `ChipButton` stays custom. Prefer shadcn primitives for new UI where they exist; brand tokens (`coral`, `paper`, `ink`) map to shadcn CSS variables.
-- Deploy: Vercel + Neon (Vercel Postgres / Marketplace)
-- Vercel Blob (foto profil Akun)
-- Web Push (`web-push` + VAPID) — pengingat plan H-1 + kabar update
+- **shadcn/ui** (initialized; brand tokens `coral` / `paper` / `ink`)
+- Deploy: Vercel + Neon · Vercel Blob · Web Push (VAPID)
 
 ## Fitur MVP
 
@@ -30,7 +28,7 @@ Perencanaan konten TikTok mingguan berbasis tren — niche **Couple Date Ideas**
 
 ## User stories
 
-See [docs/user-stories/](docs/user-stories/README.md) for the full set. Highlights:
+See [docs/user-stories/](docs/user-stories/README.md). Highlights:
 
 - [Auth & onboarding](docs/user-stories/auth-onboarding.md)
 - [Weekly planner](docs/user-stories/weekly-planner.md)
@@ -44,25 +42,20 @@ See [docs/user-stories/](docs/user-stories/README.md) for the full set. Highligh
 - [Conventions](docs/conventions.md)
 - [E2E guide](docs/e2e-guide.md)
 
-## Roadmap
+## AI assist
 
-- **AI bantu rencana konten** — tombol **Bantu AI** di detail ide mengisi caption & hashtag dari niche + tren/ide yang sudah ada di DB (Vercel AI SDK + **Groq**). Bukan riset FYP live / scraper TikTok; planner tetap manual-first. Aktifkan dengan `AI_ASSIST_ENABLED=true` dan `GROQ_API_KEY` (lihat `.env.example`). Tanpa key, saran template lokal tetap dipakai.
+Tombol **Bantu AI** di detail ide (Groq). Env: lihat [`.env.example`](.env.example) dan [AI caption assist](docs/user-stories/ai-caption-assist.md).
 
 ## Setup lokal
 
-### Prasyarat
-
-- Node.js 20+
-- PostgreSQL di `localhost:5432` (atau sesuaikan URL)
-
-### 1. Install
+**Prasyarat:** Node.js 20+, PostgreSQL di `localhost:5432` (atau sesuaikan URL). Opsional: `docker-compose.yml`.
 
 ```bash
 npm install
 cp .env.example .env
 ```
 
-### 2. Environment (`.env`)
+Minimal `.env` untuk boot lokal:
 
 ```env
 DATABASE_URL="postgresql://trendplan:trendplan@localhost:5432/trendplan"
@@ -70,79 +63,17 @@ AUTH_SECRET="generate-a-long-random-string"
 AUTH_TRUST_HOST="true"
 ```
 
-`AUTH_TRUST_HOST=true` dibutuhkan untuk Auth.js lokal tanpa `AUTH_URL`. Di production, set `AUTH_URL` ke URL kanonis; `trustHost` aktif otomatis di Vercel (`VERCEL=1`) atau saat `AUTH_TRUST_HOST=true`. Self-hosted: andalkan `AUTH_URL` dan jangan percaya `X-Forwarded-Host` kecuali reverse proxy menimpa header itu.
-
-Rate limit login/register disimpan di Postgres (`RateLimitBucket`) supaya berlaku lintas instance serverless (bukan hanya in-memory per proses).
-
-### Auth hardening (password + email)
-
-- **Ubah password** di Akun (selalu aktif; pakai password saat ini, tanpa email).
-- **Lupa password via email** → `/forgot-password` — **default OFF** sampai domain Resend diverifikasi. Aktifkan dengan `TRANSACTIONAL_EMAIL_ENABLED=true` dan `NEXT_PUBLIC_TRANSACTIONAL_EMAIL_ENABLED=true`, plus `RESEND_API_KEY` / `EMAIL_FROM`.
-- **Verifikasi email**: **default OFF** (`EMAIL_VERIFICATION_REQUIRED` opt-in). Soft-gate ke `/verify-email` hanya saat diwajibkan.
-
-Buat database/user `trendplan` di Postgres lokal jika belum ada.
-
-### 3. Migrate + seed
+Email, Web Push, Blob, AI, dll. → komentar di [`.env.example`](.env.example). Buat DB/user `trendplan` jika belum ada.
 
 ```bash
 npx prisma migrate deploy
 npm run db:seed
-```
-
-### 4. Dev server
-
-```bash
 npm run dev
 ```
 
 Buka [http://localhost:3000](http://localhost:3000).
 
-Opsional: Postgres terisolasi via Docker — lihat `docker-compose.yml` (pastikan port 5432 bebas).
-
-### Web Push (pengingat plan)
-
-Satu toggle di **Akun → Pengingat plan** mengaktifkan:
-
-- Reminder **H-1 jam 20:00 WIB** (besok ada ide belum Posted, atau target minggu belum penuh)
-- Kabar **update aplikasi** (broadcast ops)
-
-Generate kunci:
-
-```bash
-npx web-push generate-vapid-keys
-```
-
-Isi `.env` / `.env.local`: `NEXT_PUBLIC_VAPID_PUBLIC_KEY`, `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`, `VAPID_SUBJECT`, `CRON_SECRET`.
-
-Uji lokal (setelah Aktifkan di `/akun` dan ada ide di **hari besok**):
-
-```bash
-curl -H "Authorization: Bearer $CRON_SECRET" http://localhost:3000/api/cron/reminders
-```
-
-Broadcast update (ops):
-
-```bash
-curl -X POST http://localhost:3000/api/push/broadcast \
-  -H "Authorization: Bearer $CRON_SECRET" \
-  -H "Content-Type: application/json" \
-  -d '{"title":"Update TrendPlan","body":"Fitur baru di Akun — cek sekarang.","url":"/akun"}'
-```
-
-**Catatan iOS:** Web Push biasanya butuh Add to Home Screen; desktop Chrome/Firefox/Edge lebih mudah untuk uji lokal.
-
-### 5. E2E (Playwright)
-
-Thin browser smoke (Chromium): public shells, and optional authenticated planner journey. Best practices: [docs/e2e-guide.md](docs/e2e-guide.md).
-
-```bash
-npm run test:e2e
-# or interactive:
-npm run test:e2e:ui
-```
-
-- Without creds: public smoke runs; auth setup/journey are skipped.
-- With auth: copy `.env.e2e.example` → `.env.e2e`, set `E2E_EMAIL` / `E2E_PASSWORD` for an **onboarded** user. Setup writes `.auth/user.json` (gitignored) once per run.
+**E2E:** `npm run test:e2e` — lihat [docs/e2e-guide.md](docs/e2e-guide.md).
 
 ## Scripts
 
@@ -152,112 +83,61 @@ npm run test:e2e:ui
 | `npm run build` | `prisma generate` + production build |
 | `npm run db:migrate` | Migrate (dev) |
 | `npm run db:deploy` | Migrate (prod/CI) |
-| `npm run db:clear-lock` | Clear stuck Prisma migrate advisory lock (P1002) |
-| `npm run db:seed` | Seed 12 tren Couple Date Ideas |
+| `npm run db:seed` | Seed tren Couple Date Ideas |
 | `npm run db:studio` | Prisma Studio |
-| `npm run smoke` | Happy-path smoke test |
-| `npm run smoke:modal` | Modal/Dialog UI smoke (dismiss-while-loading, avatar picker focus, sheet layout) |
-| `npm run test:e2e` | Playwright e2e (public smoke; auth journeys if `.env.e2e`) |
-| `npm run test:e2e:ui` | Playwright UI mode |
-| `npm run db:copy-to-prod` | Copy data lokal → Neon (butuh `TARGET_DATABASE_URL`) |
-| `npm test` | Unit tests (`src/**/*.test.ts`) |
+| `npm run smoke` | Happy-path smoke |
+| `npm test` | Unit tests |
+| `npm run test:e2e` | Playwright e2e |
 | `npm run verify` | typecheck + unit + e2e + build (sama dengan CI) |
+| `npm run db:copy-to-prod` | Copy data lokal → Neon (`TARGET_DATABASE_URL`) |
 
-## Git hooks (Husky)
+Lainnya (`db:clear-lock`, `smoke:modal`, …) → `package.json`.
 
-Setelah `npm install`, Husky aktif otomatis (`prepare`).
+## CI & hooks
 
-| Surface | Isi | Tujuan |
-|---------|-----|--------|
-| **pre-commit** | Block staged `.env`/credential filenames + `lint-staged` (ESLint file staged saja) | Commit cepat (~detik) |
-| **pre-push** | *(dihapus)* | Gate penuh di CI, bukan lokal |
-| **CI** (GitHub Actions) | `npm run verify` pada `pull_request` + `push` ke `main` | Melindungi `main` |
+- **pre-commit** (Husky): block staged secrets + `lint-staged` (ESLint file staged). Tidak ada pre-push.
+- **CI:** [`.github/workflows/ci.yml`](.github/workflows/ci.yml) menjalankan `npm run verify` pada PR dan push ke `main`.
+- **Branch protection:** Settings → Branches → `main` → require status check **verify**.
+- Lokal opsional: `npm run verify`. Skip hooks: `HUSKY=0`.
 
-Tidak dijalankan di pre-commit: typecheck, unit, e2e, `eslint .`, `next build`. Jalankan lokal dengan `npm run verify` sebelum push jika mau.
+## Deploy (Vercel)
 
-### Branch protection (manual)
+1. Import repo ke Vercel.
+2. Pasang **Neon** dari [Vercel Marketplace](https://vercel.com/marketplace/neon).
+3. Set env Production (detail penuh di [`.env.example`](.env.example)):
 
-Setelah workflow `CI` / job `verify` pernah jalan di repo:
+| Variable | Contoh |
+|----------|--------|
+| `DATABASE_URL` | Neon pooled (`…-pooler…`) |
+| `DIRECT_URL` | Neon direct (tanpa `-pooler`) untuk migrate |
+| `AUTH_SECRET` | `openssl rand -base64 32` |
+| `AUTH_URL` | `https://trendplan.vercel.app` |
+| `BLOB_READ_WRITE_TOKEN` | Vercel Blob |
+| `NEXT_PUBLIC_VAPID_PUBLIC_KEY` / `VAPID_*` / `CRON_SECRET` | Web Push + cron |
+| Email / AI keys | Opsional — lihat `.env.example` |
 
-1. GitHub → **Settings** → **Branches** → rule untuk `main`.
-2. Enable **Require a pull request before merging** (disarankan).
-3. Enable **Require status checks to pass** → pilih check **verify**.
-4. Simpan rule.
+4. Deploy — build menjalankan migrate (`vercel.json`). Cron `0 13 * * *` UTC (= **20:00 WIB**) → `/api/cron/reminders`.
+5. Seed sekali: `DATABASE_URL="<neon-url>" npm run db:seed`
 
-Darurat (skip hooks lokal saja; CI tetap jalan di GitHub):
-
-```bash
-HUSKY=0 git commit -m "…"
-HUSKY=0 git push
-```
-
-Copy ke production:
+Copy lokal → Neon:
 
 ```bash
 TARGET_DATABASE_URL="postgresql://...@....neon.tech/neondb?sslmode=require" npm run db:copy-to-prod
 ```
 
-## Deploy (Vercel)
+**P1002** (advisory lock): pakai `DIRECT_URL` (bukan pooler), lalu `npm run db:clear-lock` dan `npm run db:deploy`. Vercel memakai `db:deploy:retry` untuk race deploy.
 
-1. Import repo ke Vercel.
-2. Pasang **Neon** dari [Vercel Marketplace](https://vercel.com/marketplace/neon) (inject `DATABASE_URL`).
-3. Set env Production:
-
-| Variable | Contoh |
-|----------|--------|
-| `DATABASE_URL` | Neon pooled URL (`…-pooler…`) for the app |
-| `DIRECT_URL` | Neon direct URL (no `-pooler`) for `prisma migrate` |
-| `AUTH_SECRET` | `openssl rand -base64 32` |
-| `AUTH_URL` | `https://trendplan.vercel.app` (URL kanonis; lebih aman daripada mengandalkan Host header) |
-| `AUTH_TRUST_HOST` | `true` (opsional di Vercel — `VERCEL=1` sudah mengaktifkan `trustHost`) |
-| `EMAIL_FROM` | `TrendPlan <noreply@yourdomain.com>` (domain harus verified di Resend) |
-| `RESEND_API_KEY` | Resend API key (hanya dipakai jika transactional email ON) |
-| `TRANSACTIONAL_EMAIL_ENABLED` | `true` setelah domain ready; **default off** |
-| `NEXT_PUBLIC_TRANSACTIONAL_EMAIL_ENABLED` | `true` agar UI tampilkan “Lupa password?” |
-| `EMAIL_VERIFICATION_REQUIRED` | Opt-in `true`; **default off** |
-| `BLOB_READ_WRITE_TOKEN` | (dari Vercel Blob store) |
-| `NEXT_PUBLIC_VAPID_PUBLIC_KEY` | Public VAPID (sama dengan `VAPID_PUBLIC_KEY`) |
-| `VAPID_PUBLIC_KEY` | Public VAPID |
-| `VAPID_PRIVATE_KEY` | Private VAPID (server only) |
-| `VAPID_SUBJECT` | `mailto:you@example.com` |
-| `CRON_SECRET` | Bearer untuk cron H-1 + `/api/push/broadcast` |
-
-4. Deploy — build menjalankan `prisma migrate deploy` (`vercel.json`). Cron harian `0 13 * * *` UTC (= **20:00 WIB**) memanggil `/api/cron/reminders`.
-5. Seed sekali ke Neon:
+## Branching
 
 ```bash
-DATABASE_URL="<neon-url>" npm run db:seed
-```
-
-Jika migrate gagal dengan **P1002** (advisory lock timeout): pastikan `DIRECT_URL` mengarah ke koneksi **direct** (bukan `-pooler`), lalu:
-
-```bash
-DIRECT_URL="<neon-direct-url>" npm run db:clear-lock
-DIRECT_URL="<neon-direct-url>" npm run db:deploy
-```
-
-Vercel build memakai `npm run db:deploy:retry` (retry otomatis saat P1002 dari deploy bersamaan).
-Redeploy **tidak** wajib setelah seed.
-
-## Branching strategy
-
-Kerjakan fitur di branch terpisah, lalu merge lewat PR ke `main` (jangan push langsung ke `main`).
-
-```bash
-git checkout main
-git pull origin main
+git checkout main && git pull origin main
 git checkout -b feature/nama-fitur
 # …edit, commit…
 git push -u origin HEAD
 gh pr create --base main
 ```
 
-Catatan penting:
-
-- **Base** branch dari `main` yang sudah up to date.
-- **Upstream** harus `origin/feature/…`, bukan `origin/main`. Hindari `git checkout -b feature/x origin/main` bila itu membuat branch track `main` — `git push` tanpa argumen bisa mendorong commit ke `main`.
-- Setelah `git push -u origin HEAD`, buka PR ke `main` dan merge lewat GitHub/Vercel.
-- Satu PR ≈ satu fitur/perbaikan yang bisa di-review sendiri.
+Satu PR ≈ satu fitur. Preview: Vercel; production setelah merge ke `main`.
 
 ## Struktur singkat
 
