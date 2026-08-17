@@ -13,14 +13,15 @@ import {
   parseWeekStartParam,
   plannerHref,
 } from "@/lib/week";
+import {
+  actionFail,
+  type ActionResult,
+} from "@/lib/action-result";
 
 const daySchema = z.coerce.number().int().min(0).max(6);
 const titleSchema = z.string().trim().min(1).max(120);
 
-export type ActivityActionState = {
-  error?: string;
-  success?: string;
-};
+export type ActivityActionState = ActionResult;
 
 function resolveWeekStartFromForm(formData: FormData): Date {
   return (
@@ -65,10 +66,10 @@ export async function createActivityAction(
   const parsed = parseActivityTitles(rawTitles);
 
   if (!dayParsed.success) {
-    return { error: "Pilih hari yang valid." };
+    return actionFail("invalid_day", { error: "Pilih hari yang valid." });
   }
   if (parsed.error || parsed.titles.length === 0) {
-    return { error: parsed.error ?? "Isi minimal satu aktivitas." };
+    return actionFail("activity_empty", { error: parsed.error ?? "Isi minimal satu aktivitas." });
   }
 
   const titles = parsed.titles;
@@ -104,20 +105,20 @@ export async function updateActivityAction(
   const dayParsed = daySchema.safeParse(formData.get("dayOfWeek"));
 
   if (!activityId) {
-    return { error: "Data tidak valid." };
+    return actionFail("invalid_payload", { error: "Data tidak valid." });
   }
   if (!titleParsed.success) {
-    return { error: "Judul wajib diisi." };
+    return actionFail("title_required", { error: "Judul wajib diisi." });
   }
   if (!dayParsed.success) {
-    return { error: "Pilih hari yang valid." };
+    return actionFail("invalid_day", { error: "Pilih hari yang valid." });
   }
 
   const activity = await prisma.activity.findFirst({
     where: { id: activityId, weekPlan: weekPlanAccessWhere(userId) },
     include: { weekPlan: { select: { weekStart: true } } },
   });
-  if (!activity) return { error: "Aktivitas tidak ditemukan." };
+  if (!activity) return actionFail("activity_not_found", { error: "Aktivitas tidak ditemukan." });
 
   await prisma.activity.update({
     where: { id: activityId },

@@ -1,9 +1,4 @@
-/**
- * Throwable failures with a stable `code` for UI mapping.
- * Prefer result unions (`{ ok: false; code }`) when the API can return;
- * use CodedError when a throw boundary is required (e.g. sendMail).
- */
-
+/** Throwable failure with a stable `code` (prefer `Result` when you can return). */
 export class CodedError<Code extends string = string> extends Error {
   readonly code: Code;
 

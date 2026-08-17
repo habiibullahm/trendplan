@@ -4,16 +4,21 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
 import {
-  actionError,
   actionErrorCode,
   actionSuccess,
-  type ActionResult,
 } from "@/lib/action-result";
 import { isTransactionalEmailEnabled } from "@/lib/auth/env";
 import { requireAppUserAction } from "@/lib/auth/require-app-user";
-import { isMailSendError, sendMail, type MailErrorCode } from "@/lib/mail";
+import { isMailSendError, sendMail } from "@/lib/mail";
 import { checkRateLimit } from "@/lib/rate-limit";
 import { formatWeekRange, plannerHref } from "@/lib/week";
+import {
+  ACCEPT_INVITE_ACTION_ERRORS,
+  CREATE_INVITE_ACTION_ERRORS,
+  INVALID_INVITE_EMAIL,
+  MAIL_SEND_ACTION_ERRORS,
+  type ShareWeekActionState,
+} from "@/features/planner/lib/week-share-action-errors";
 import {
   acceptWeekInvite,
   createOrRotateWeekInvite,
@@ -27,38 +32,13 @@ import {
   revokeOtherPendingInvites,
   revokePendingInvites,
   isSelfInviteEmail,
-  type CreateWeekInviteErrorCode,
 } from "@/features/planner/lib/week-share";
 import { escapeHtml } from "@/lib/escape-html";
 import { prisma } from "@/lib/prisma";
 
-export type ShareWeekActionState = ActionResult & {
-  inviteUrl?: string;
-};
+export type { ShareWeekActionState };
 
 const emailSchema = z.string().trim().email().max(254);
-
-const CREATE_INVITE_ERRORS: Record<CreateWeekInviteErrorCode, ShareWeekActionState> =
-  {
-    partner_exists: actionError("Minggu ini sudah punya partner."),
-    self_invite: {
-      error: "Kamu tidak bisa mengundang email sendiri.",
-      fieldErrors: { email: ["Kamu tidak bisa mengundang email sendiri."] },
-    },
-  };
-
-const MAIL_SEND_ERRORS: Record<MailErrorCode, ShareWeekActionState> = {
-  disabled: actionErrorCode("emailDisabled"),
-  not_configured: actionErrorCode("emailDisabled"),
-  rejected_address: {
-    error: "Alamat email ditolak pengirim. Gunakan email yang valid.",
-    fieldErrors: {
-      email: ["Alamat email ditolak. Gunakan email yang valid."],
-    },
-  },
-  send_failed: actionError("Gagal mengirim email. Coba lagi nanti."),
-  generic: actionErrorCode("generic"),
-};
 
 function revalidateShare(weekPlanId?: string) {
   revalidatePath("/planner");
@@ -96,7 +76,7 @@ export async function createOrRotateWeekInviteAction(
 
   // Fail before burning the create rate-limit window.
   if (await weekHasPartner(weekPlanId)) {
-    return CREATE_INVITE_ERRORS.partner_exists;
+    return CREATE_INVITE_ACTION_ERRORS.partner_exists;
   }
 
   const rl = await checkRateLimit(`week-invite:create:${gated.userId}`, {
@@ -109,7 +89,7 @@ export async function createOrRotateWeekInviteAction(
     weekPlanId,
     createdByUserId: gated.userId,
   });
-  if (!created.ok) return CREATE_INVITE_ERRORS[created.code];
+  if (!created.ok) return CREATE_INVITE_ACTION_ERRORS[created.code];
 
   revalidateShare(weekPlanId);
   return { ...actionSuccess("Tautan undangan siap"), inviteUrl: created.url };
@@ -125,10 +105,7 @@ export async function sendWeekInviteEmailAction(
   const emailParsed = emailSchema.safeParse(formData.get("email") ?? "");
   if (!weekPlanId) return actionErrorCode("invalid");
   if (!emailParsed.success) {
-    return {
-      error: "Email tidak valid.",
-      fieldErrors: { email: ["Email tidak valid."] },
-    };
+    return INVALID_INVITE_EMAIL;
   }
 
   const owned = await requireOwnedWeekPlan(gated.userId, weekPlanId);
@@ -145,10 +122,10 @@ export async function sendWeekInviteEmailAction(
 
   // Reject before burning the email invite rate-limit window.
   if (isSelfInviteEmail(owner?.email, emailParsed.data)) {
-    return CREATE_INVITE_ERRORS.self_invite;
+    return CREATE_INVITE_ACTION_ERRORS.self_invite;
   }
   if (await weekHasPartner(weekPlanId)) {
-    return CREATE_INVITE_ERRORS.partner_exists;
+    return CREATE_INVITE_ACTION_ERRORS.partner_exists;
   }
 
   const rl = await checkRateLimit(`week-invite:email:${gated.userId}`, {
@@ -164,7 +141,7 @@ export async function sendWeekInviteEmailAction(
     invitedEmail: emailParsed.data,
     revokePrevious: false,
   });
-  if (!created.ok) return CREATE_INVITE_ERRORS[created.code];
+  if (!created.ok) return CREATE_INVITE_ACTION_ERRORS[created.code];
 
   const weekLabel = formatWeekRange(owned.weekStart);
   const ownerLabel = owner ? partnerDisplayName(owner) : "Seseorang";
@@ -182,7 +159,7 @@ export async function sendWeekInviteEmailAction(
   } catch (mailError) {
     await revokeInviteById(created.inviteId);
     if (isMailSendError(mailError)) {
-      return MAIL_SEND_ERRORS[mailError.code];
+      return MAIL_SEND_ACTION_ERRORS[mailError.code];
     }
     return actionErrorCode("generic");
   }
@@ -252,19 +229,11 @@ export async function acceptWeekInviteAction(
   const gated = await requireAppUserAction();
   if (!gated.ok) return gated.result;
   const token = String(formData.get("token") ?? "").trim();
-  if (!token) return actionError("Tautan undangan tidak valid.");
+  if (!token) return ACCEPT_INVITE_ACTION_ERRORS.invalid;
 
   const result = await acceptWeekInvite(token, gated.userId);
   if (!result.ok) {
-    const messages: Record<typeof result.code, string> = {
-      invalid: "Tautan undangan tidak valid.",
-      expired: "Tautan undangan sudah kedaluwarsa.",
-      revoked: "Undangan sudah dicabut.",
-      self: "Kamu tidak bisa menerima undangan sendiri.",
-      partner_exists: "Minggu ini sudah punya partner lain.",
-      already_member: "Kamu sudah bergabung di plan ini.",
-    };
-    return actionError(messages[result.code]);
+    return ACCEPT_INVITE_ACTION_ERRORS[result.code];
   }
 
   revalidateShare(result.weekPlanId);
@@ -284,11 +253,11 @@ export async function rejectWeekInviteAction(
   const gated = await requireAppUserAction();
   if (!gated.ok) return gated.result;
   const token = String(formData.get("token") ?? "").trim();
-  if (!token) return actionError("Tautan undangan tidak valid.");
+  if (!token) return ACCEPT_INVITE_ACTION_ERRORS.invalid;
 
   const status = await rejectWeekInvite(token);
   if (status === "invalid") {
-    return actionError("Tautan undangan tidak valid.");
+    return ACCEPT_INVITE_ACTION_ERRORS.invalid;
   }
   revalidateShare();
   redirect("/planner");
@@ -308,7 +277,7 @@ export async function ensureInviteLinkAction(
   if (!owned) return actionErrorCode("unauthorized");
 
   if (await weekHasPartner(weekPlanId)) {
-    return CREATE_INVITE_ERRORS.partner_exists;
+    return CREATE_INVITE_ACTION_ERRORS.partner_exists;
   }
 
   const rl = await checkRateLimit(`week-invite:create:${gated.userId}`, {
@@ -321,7 +290,7 @@ export async function ensureInviteLinkAction(
     weekPlanId,
     createdByUserId: gated.userId,
   });
-  if (!created.ok) return CREATE_INVITE_ERRORS[created.code];
+  if (!created.ok) return CREATE_INVITE_ACTION_ERRORS[created.code];
 
   revalidateShare(weekPlanId);
   return { inviteUrl: created.url, success: "Tautan undangan disalin" };

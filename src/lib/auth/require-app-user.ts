@@ -2,8 +2,7 @@ import "server-only";
 
 import { auth } from "@/auth";
 import {
-  ActionErrors,
-  actionError,
+  actionFail,
   type ActionResult,
 } from "@/lib/action-result";
 import { isEmailVerificationRequired } from "./env";
@@ -15,17 +14,11 @@ export type AppUserGate =
   | { ok: false; kind: "unauthorized" | "unverified" | "stale" };
 
 export type GateAppUserOptions = {
-  /**
-   * When true (default), require emailVerified if EMAIL_VERIFICATION_REQUIRED.
-   * Set false for flows that must work before verify (rare).
-   */
+  /** Default true when EMAIL_VERIFICATION_REQUIRED. */
   requireVerified?: boolean;
 };
 
-/**
- * Server-side session gate: DB-backed passwordVersion + optional emailVerified.
- * Use in layouts and mutating actions — do not rely on the proxy alone.
- */
+/** Session gate (passwordVersion + optional emailVerified). */
 export async function gateAppUser(
   options: GateAppUserOptions = {},
 ): Promise<AppUserGate> {
@@ -57,7 +50,7 @@ export async function gateAppUser(
   return { ok: true, userId };
 }
 
-/** For useActionState handlers — maps gate failures to ActionResult. */
+/** Maps gate failures to ActionResult. */
 export async function requireAppUserAction(
   options?: GateAppUserOptions,
 ): Promise<{ ok: true; userId: string } | { ok: false; result: ActionResult }> {
@@ -65,10 +58,10 @@ export async function requireAppUserAction(
   if (gate.ok) return gate;
 
   if (gate.kind === "unverified") {
-    return { ok: false, result: actionError(ActionErrors.emailUnverified) };
+    return { ok: false, result: actionFail("emailUnverified") };
   }
   if (gate.kind === "stale") {
-    return { ok: false, result: actionError(ActionErrors.sessionStale) };
+    return { ok: false, result: actionFail("sessionStale") };
   }
-  return { ok: false, result: actionError(ActionErrors.unauthorized) };
+  return { ok: false, result: actionFail("unauthorized") };
 }

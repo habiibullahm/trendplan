@@ -4,8 +4,7 @@ import { headers } from "next/headers";
 import { unstable_rethrow } from "next/navigation";
 import type { z } from "zod";
 import {
-  ActionErrors,
-  actionError,
+  actionFail,
   fromZodError,
   type ActionResult,
 } from "@/lib/action-result";
@@ -56,18 +55,14 @@ export async function assertRateLimits(
 ): Promise<ActionResult | null> {
   for (const { key, options } of checks) {
     const result = await checkRateLimit(key, options);
-    if (!result.ok) return actionError(ActionErrors.rateLimited);
+    if (!result.ok) return actionFail("rateLimited");
   }
   return null;
 }
 
 type FormPicker = (formData: FormData) => unknown;
 
-/**
- * Action middleware: validate FormData, then run the handler.
- * Unexpected throws become a generic error (no stack leak to the client).
- * Next.js redirect / notFound control-flow errors are rethrown.
- */
+/** Validate FormData, run handler; unexpected errors → generic (rethrows redirect/notFound). */
 export async function withValidation<TSchema extends z.ZodType>(
   schema: TSchema,
   formData: FormData,
@@ -82,6 +77,6 @@ export async function withValidation<TSchema extends z.ZodType>(
   } catch (error) {
     unstable_rethrow(error);
     console.error("[action]", error);
-    return actionError(ActionErrors.generic);
+    return actionFail("generic");
   }
 }
