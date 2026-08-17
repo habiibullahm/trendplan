@@ -1,15 +1,7 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 import { isClearSessionRequestAllowed } from "@/app/api/auth/clear-session/route";
-
-/** `process.env.NODE_ENV` is typed read-only; mutate via Reflect for test stubs. */
-function setNodeEnv(value: string | undefined) {
-  if (value === undefined) {
-    Reflect.deleteProperty(process.env, "NODE_ENV");
-  } else {
-    Reflect.set(process.env, "NODE_ENV", value);
-  }
-}
+import { setNodeEnv } from "@/test/set-node-env";
 
 describe("isClearSessionRequestAllowed", () => {
   const prevAuth = process.env.AUTH_URL;
