@@ -5,8 +5,8 @@ import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import {
   ActionErrors,
-  actionError,
-  actionFieldErrors,
+  actionErrorCode,
+  actionFail,
   actionSuccess,
   type ActionResult,
 } from "@/lib/action-result";
@@ -77,19 +77,19 @@ export async function changePasswordAction(
         where: { id: userId },
         select: { passwordHash: true },
       });
-      if (!user) return actionError(ActionErrors.unauthorized);
+      if (!user) return actionErrorCode("unauthorized");
 
       const matches = await compare(data.currentPassword, user.passwordHash);
-      if (!matches) return actionError(ActionErrors.currentPasswordWrong);
+      if (!matches) return actionErrorCode("currentPasswordWrong");
 
       const sameAsCurrent = await compare(data.newPassword, user.passwordHash);
       if (sameAsCurrent) {
-        return {
+        return actionFail("passwordUnchanged", {
           error: ActionErrors.passwordUnchanged,
-          ...actionFieldErrors({
+          fieldErrors: {
             newPassword: [ActionErrors.passwordUnchanged],
-          }),
-        };
+          },
+        });
       }
 
       const passwordHash = await hash(data.newPassword, 10);
@@ -132,7 +132,7 @@ export async function requestPasswordResetAction(
     async (data) => {
       // Until a verified Resend domain is configured, do not pretend mail was sent.
       if (!isTransactionalEmailEnabled()) {
-        return actionError(ActionErrors.emailDisabled);
+        return actionErrorCode("emailDisabled");
       }
 
       const email = data.email.toLowerCase().trim();
@@ -209,7 +209,7 @@ export async function resetPasswordAction(
           return true;
         },
       );
-      if (!consumed) return actionError(ActionErrors.resetInvalid);
+      if (!consumed) return actionErrorCode("resetInvalid");
 
       redirect("/login");
     },

@@ -8,7 +8,11 @@ import {
   assertRateLimits,
   getClientIp,
 } from "@/lib/action-middleware";
-import { ActionErrors } from "@/lib/action-result";
+import {
+  actionFail,
+  actionSuccess,
+  type ActionResult,
+} from "@/lib/action-result";
 import { requireAppUserAction } from "@/lib/auth/require-app-user";
 import { prisma } from "@/lib/prisma";
 import {
@@ -16,10 +20,7 @@ import {
   AVATAR_UPLOAD_USER_LIMIT,
 } from "@/lib/rate-limit-policies";
 
-export type ProfileImageActionState = {
-  error?: string;
-  success?: string;
-};
+export type ProfileImageActionState = ActionResult;
 
 function isOurAvatarBlob(url: string, userId: string): boolean {
   try {
@@ -51,20 +52,24 @@ export async function uploadProfileImageAction(
 ): Promise<ProfileImageActionState> {
   void prev;
   const gated = await requireAppUserAction();
-  if (!gated.ok) {
-    return { error: gated.result.error ?? "Sesi berakhir. Masuk lagi." };
-  }
+  if (!gated.ok) return gated.result;
 
   if (!process.env.BLOB_READ_WRITE_TOKEN) {
-    return { error: "Upload belum dikonfigurasi (BLOB_READ_WRITE_TOKEN)." };
+    return actionFail("blob_not_configured", {
+      error: "Upload belum dikonfigurasi (BLOB_READ_WRITE_TOKEN).",
+    });
   }
 
   const file = formData.get("image");
   if (!(file instanceof File) || file.size === 0) {
-    return { error: "Pilih foto terlebih dahulu." };
+    return actionFail("no_file", {
+      error: "Pilih foto terlebih dahulu.",
+    });
   }
   if (file.size > AVATAR_MAX_BYTES) {
-    return { error: "Ukuran maksimal 2 MB." };
+    return actionFail("file_too_large", {
+      error: "Ukuran maksimal 2 MB.",
+    });
   }
 
   const ip = await getClientIp();
@@ -75,19 +80,21 @@ export async function uploadProfileImageAction(
     },
     { key: `avatar-upload:ip:${ip}`, options: AVATAR_UPLOAD_IP_LIMIT },
   );
-  if (limited) {
-    return { error: limited.error ?? ActionErrors.rateLimited };
-  }
+  if (limited) return limited;
 
   const raw = Buffer.from(await file.arrayBuffer());
   let prepared: Awaited<ReturnType<typeof prepareAvatarUpload>>;
   try {
     prepared = await prepareAvatarUpload(raw);
   } catch {
-    return { error: "Gagal memproses foto. Coba lagi." };
+    return actionFail("process_failed", {
+      error: "Gagal memproses foto. Coba lagi.",
+    });
   }
   if ("error" in prepared) {
-    return { error: "Format harus JPEG, PNG, atau WebP." };
+    return actionFail("invalid_format", {
+      error: "Format harus JPEG, PNG, atau WebP.",
+    });
   }
 
   const userId = gated.userId;
@@ -107,7 +114,9 @@ export async function uploadProfileImageAction(
     });
     blobUrl = blob.url;
   } catch {
-    return { error: "Gagal mengunggah foto. Coba lagi." };
+    return actionFail("upload_failed", {
+      error: "Gagal mengunggah foto. Coba lagi.",
+    });
   }
 
   try {
@@ -121,18 +130,22 @@ export async function uploadProfileImageAction(
     });
     if (updated.count === 0) {
       await deleteAvatarBestEffort(blobUrl, userId);
-      return { error: "Foto berubah di perangkat lain. Coba lagi." };
+      return actionFail("conflict", {
+        error: "Foto berubah di perangkat lain. Coba lagi.",
+      });
     }
   } catch {
     await deleteAvatarBestEffort(blobUrl, userId);
-    return { error: "Gagal menyimpan foto. Coba lagi." };
+    return actionFail("save_failed", {
+      error: "Gagal menyimpan foto. Coba lagi.",
+    });
   }
 
   await deleteAvatarBestEffort(existing?.imageUrl, userId);
 
   revalidatePath("/akun");
   revalidatePath("/dashboard");
-  return { success: "Foto profil diperbarui" };
+  return actionSuccess("Foto profil diperbarui");
 }
 
 export async function removeProfileImageAction(
@@ -142,9 +155,7 @@ export async function removeProfileImageAction(
   void prev;
   void formData;
   const gated = await requireAppUserAction();
-  if (!gated.ok) {
-    return { error: gated.result.error ?? "Sesi berakhir. Masuk lagi." };
-  }
+  if (!gated.ok) return gated.result;
 
   const userId = gated.userId;
   const existing = await prisma.user.findUnique({
@@ -153,7 +164,9 @@ export async function removeProfileImageAction(
   });
 
   if (!existing?.imageUrl) {
-    return { error: "Belum ada foto profil." };
+    return actionFail("no_avatar", {
+      error: "Belum ada foto profil.",
+    });
   }
 
   try {
@@ -162,15 +175,19 @@ export async function removeProfileImageAction(
       data: { imageUrl: null },
     });
     if (updated.count === 0) {
-      return { error: "Foto sudah dihapus atau diganti." };
+      return actionFail("remove_conflict", {
+        error: "Foto sudah dihapus atau diganti.",
+      });
     }
   } catch {
-    return { error: "Gagal menghapus foto. Coba lagi." };
+    return actionFail("remove_failed", {
+      error: "Gagal menghapus foto. Coba lagi.",
+    });
   }
 
   await deleteAvatarBestEffort(existing.imageUrl, userId);
 
   revalidatePath("/akun");
   revalidatePath("/dashboard");
-  return { success: "Foto profil dihapus" };
+  return actionSuccess("Foto profil dihapus");
 }

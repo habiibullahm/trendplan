@@ -81,6 +81,8 @@ lib/
   auth/          # session, gates, tokens, validation, env
   errors/        # CodedError
   mail/          # sendMail + MailSendError
+  result.ts      # domain Result<T, C> + resultOk/resultErr
+  action-result.ts  # ActionResult base response + actionFail / errorCode
   *.ts           # small single-purpose shared modules (week, prisma, cn, …)
 ```
 

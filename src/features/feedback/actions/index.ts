@@ -1,8 +1,7 @@
 "use server";
 
 import {
-  ActionErrors,
-  actionError,
+  actionErrorCode,
   actionSuccess,
   type ActionResult,
 } from "@/lib/action-result";
@@ -60,7 +59,7 @@ export async function submitFeedbackAction(
         });
       } catch (err) {
         console.error("[feedback] create failed", err);
-        return actionError(ActionErrors.generic);
+        return actionErrorCode("generic");
       }
 
       return actionSuccess("Terima kasih — masukanmu sudah terkirim.");

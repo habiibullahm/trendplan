@@ -4,7 +4,7 @@ import { redirect } from "next/navigation";
 import { auth } from "@/auth";
 import {
   ActionErrors,
-  actionError,
+  actionErrorCode,
   actionSuccess,
   type ActionResult,
 } from "@/lib/action-result";
@@ -72,7 +72,7 @@ export async function verifyEmailAction(
           return userId;
         },
       );
-      if (!consumed) return actionError(ActionErrors.verifyInvalid);
+      if (!consumed) return actionErrorCode("verifyInvalid");
 
       const session = await auth();
       const callbackUrl = String(formData.get("callbackUrl") ?? "");
@@ -97,7 +97,7 @@ export async function resendVerificationEmailAction(
   if (!gated.ok) return gated.result;
 
   if (!isTransactionalEmailEnabled()) {
-    return actionError(ActionErrors.emailDisabled);
+    return actionErrorCode("emailDisabled");
   }
 
   const userId = gated.userId;
@@ -112,7 +112,7 @@ export async function resendVerificationEmailAction(
     where: { id: userId },
     select: { email: true, emailVerified: true },
   });
-  if (!user) return actionError(ActionErrors.unauthorized);
+  if (!user) return actionErrorCode("unauthorized");
 
   if (!user.emailVerified) {
     try {

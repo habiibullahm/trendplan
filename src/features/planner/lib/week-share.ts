@@ -18,6 +18,7 @@ import {
   type ShareRole,
 } from "@/features/planner/lib/week-share-pure";
 import { softDeleteStaleBefore } from "@/features/planner/lib/soft-delete";
+import type { Result } from "@/lib/result";
 
 export {
   isSelfInviteEmail,
@@ -257,9 +258,10 @@ export async function getWeekShareSnapshot(
 /** Revoke outstanding unused invites for a week, then create a fresh token. */
 export type CreateWeekInviteErrorCode = "partner_exists" | "self_invite";
 
-export type CreateWeekInviteResult =
-  | { ok: true; rawToken: string; inviteId: string; url: string }
-  | { ok: false; code: CreateWeekInviteErrorCode };
+export type CreateWeekInviteResult = Result<
+  { rawToken: string; inviteId: string; url: string },
+  CreateWeekInviteErrorCode
+>;
 
 export async function createOrRotateWeekInvite(params: {
   weekPlanId: string;
@@ -393,18 +395,18 @@ export async function leaveSharedPlan(
   return result.count > 0;
 }
 
-export type AcceptInviteResult =
-  | { ok: true; weekPlanId: string; weekStart: Date }
-  | {
-      ok: false;
-      code:
-        | "invalid"
-        | "expired"
-        | "revoked"
-        | "self"
-        | "partner_exists"
-        | "already_member";
-    };
+export type AcceptInviteErrorCode =
+  | "invalid"
+  | "expired"
+  | "revoked"
+  | "self"
+  | "partner_exists"
+  | "already_member";
+
+export type AcceptInviteResult = Result<
+  { weekPlanId: string; weekStart: Date },
+  AcceptInviteErrorCode
+>;
 
 export async function acceptWeekInvite(
   rawToken: string,

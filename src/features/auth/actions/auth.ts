@@ -6,8 +6,7 @@ import { redirect } from "next/navigation";
 import { signIn } from "@/auth";
 import { sendVerificationEmailForUser } from "@/lib/auth/send-verification-email";
 import {
-  ActionErrors,
-  actionError,
+  actionErrorCode,
   type ActionResult,
 } from "@/lib/action-result";
 import {
@@ -135,7 +134,7 @@ export async function loginAction(
         });
       } catch (error) {
         if (error instanceof AuthError) {
-          return actionError(ActionErrors.loginFailed);
+          return actionErrorCode("loginFailed");
         }
         throw error;
       }
