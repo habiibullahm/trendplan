@@ -12,3 +12,4 @@ Short MVP stories for TrendPlan. Each file: **Story** → **Acceptance criteria*
 | Akun & pengingat | [akun-reminders.md](akun-reminders.md) |
 | Demo tour | [demo-tour.md](demo-tour.md) |
 | AI caption assist | [ai-caption-assist.md](ai-caption-assist.md) |
+| Bantu AI coachmark | [bantu-ai-coachmark.md](bantu-ai-coachmark.md) |
