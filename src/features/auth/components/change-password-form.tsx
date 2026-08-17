@@ -11,8 +11,9 @@ import { FormField } from "@/components/ui/form-field";
 import { Input } from "@/components/ui/input";
 import { Modal } from "@/components/ui/modal";
 import { useActionToasts } from "@/hooks/use-action-toasts";
+import { idleActionResult } from "@/lib/action-result";
 
-const initial: PasswordActionState = {};
+const initial: PasswordActionState = idleActionResult;
 
 export function ChangePasswordForm() {
   const [open, setOpen] = useState(false);
@@ -50,7 +51,7 @@ export function ChangePasswordForm() {
         <form action={action} className="flex flex-col gap-3">
           <FormField
             label="Password saat ini"
-            error={state.fieldErrors?.currentPassword}
+            error={state.data?.fieldErrors?.currentPassword}
           >
             <Input
               name="currentPassword"
@@ -63,7 +64,7 @@ export function ChangePasswordForm() {
           </FormField>
           <FormField
             label="Password baru"
-            error={state.fieldErrors?.newPassword}
+            error={state.data?.fieldErrors?.newPassword}
           >
             <Input
               name="newPassword"
@@ -77,7 +78,7 @@ export function ChangePasswordForm() {
           </FormField>
           <FormField
             label="Konfirmasi password baru"
-            error={state.fieldErrors?.confirmPassword}
+            error={state.data?.fieldErrors?.confirmPassword}
           >
             <Input
               name="confirmPassword"

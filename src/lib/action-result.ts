@@ -1,16 +1,23 @@
 import type { z } from "zod";
 
-/** Server-action return for `useActionState` / Sonner. */
-export type ActionResult = {
-  error?: string;
-  fieldErrors?: Record<string, string[]>;
-  success?: string;
-  /** Machine-stable failure id; UI may ignore. */
-  errorCode?: ActionResultErrorCode;
-};
+export type ActionStatus = "success" | "error";
 
 export type ActionErrorCode = keyof typeof ActionErrors;
 export type ActionResultErrorCode = ActionErrorCode | (string & {});
+
+/** Optional payload on ActionResult (codes, fields, feature extras). */
+export type ActionResultData = {
+  errorCode?: ActionResultErrorCode;
+  fieldErrors?: Record<string, string[]>;
+  inviteUrl?: string;
+};
+
+/** Server-action return for `useActionState` / Sonner. */
+export type ActionResult<T extends ActionResultData = ActionResultData> = {
+  status: ActionStatus;
+  message?: string;
+  data?: T;
+};
 
 /** Shared Indonesian failure/success copy. */
 export const ActionErrors = {
@@ -20,8 +27,7 @@ export const ActionErrors = {
   generic: "Terjadi kesalahan. Coba lagi.",
   loginFailed: "Email atau password salah.",
   registerNeutral: "Daftar berhasil. Silakan masuk.",
-  resetRequested:
-    "Jika email terdaftar, kami mengirim tautan reset password.",
+  resetRequested: "Jika email terdaftar, kami mengirim tautan reset password.",
   resetInvalid: "Tautan reset tidak valid atau sudah kedaluwarsa.",
   resetSuccess: "Password berhasil diperbarui. Silakan masuk.",
   passwordChanged: "Password berhasil diperbarui.",
@@ -41,16 +47,16 @@ function isActionErrorCode(code: string): code is ActionErrorCode {
 }
 
 export type ActionFailExtras = {
-  error?: string;
+  message?: string;
   fieldErrors?: Record<string, string[]>;
 };
 
 export type ActionFailDomainExtras = {
-  error: string;
+  message: string;
   fieldErrors?: Record<string, string[]>;
 };
 
-/** Failure with `errorCode` + `error`. Domain codes require `extras.error`. */
+/** Failure: `status: "error"` + `message` + `data.errorCode`. Domain codes require `extras.message`. */
 export function actionFail(
   errorCode: ActionErrorCode,
   extras?: ActionFailExtras,
@@ -63,37 +69,46 @@ export function actionFail(
   errorCode: string,
   extras?: ActionFailExtras,
 ): ActionResult {
-  let error: string;
+  let message: string;
   if (isActionErrorCode(errorCode)) {
-    error = extras?.error ?? ActionErrors[errorCode];
-  } else if (extras?.error) {
-    error = extras.error;
+    message = extras?.message ?? ActionErrors[errorCode];
+  } else if (extras?.message) {
+    message = extras.message;
   } else {
     throw new Error(
-      `actionFail("${errorCode}"): domain error codes require extras.error`,
+      `actionFail("${errorCode}"): domain error codes require extras.message`,
     );
   }
 
-  const result: ActionResult = { errorCode, error };
+  const data: ActionResultData = { errorCode };
   if (extras?.fieldErrors && Object.keys(extras.fieldErrors).length > 0) {
-    result.fieldErrors = extras.fieldErrors;
+    data.fieldErrors = extras.fieldErrors;
   }
-  return result;
+  return { status: "error", message, data };
 }
 
 export function actionError(message: string): ActionResult {
-  return { error: message };
+  return { status: "error", message };
 }
 
 export function actionErrorCode(errorCode: ActionErrorCode): ActionResult {
   return actionFail(errorCode);
 }
 
-export function actionSuccess(message: string): ActionResult {
-  return { success: message };
+export function actionSuccess(
+  message: string,
+  data?: ActionResultData,
+): ActionResult {
+  if (data && Object.keys(data).length > 0) {
+    return { status: "success", message, data };
+  }
+  return { status: "success", message };
 }
 
-/** Field errors only (`errorCode: "validation"`) — no toast string. */
+/**
+ * Field errors only — `data.errorCode: "validation"` (not in ActionErrors).
+ * Omits `message` so Sonner stays quiet.
+ */
 export function actionFieldErrors(
   fieldErrors: Record<string, string[] | undefined>,
 ): ActionResult {
@@ -101,9 +116,30 @@ export function actionFieldErrors(
   for (const [key, value] of Object.entries(fieldErrors)) {
     if (value?.length) cleaned[key] = value;
   }
-  return { errorCode: "validation", fieldErrors: cleaned };
+  return {
+    status: "error",
+    data: { errorCode: "validation", fieldErrors: cleaned },
+  };
 }
 
 export function fromZodError(error: z.ZodError): ActionResult {
   return actionFieldErrors(error.flatten().fieldErrors);
+}
+
+/**
+ * Idle `useActionState` initial value.
+ * `status: "success"` without `message` — do not treat as a completed action
+ * (toasts / refresh / close-modal side effects need `message`).
+ */
+export const idleActionResult: ActionResult = { status: "success" };
+
+/** Completed success with user-facing copy (not idle). */
+export function isCompletedActionSuccess(result: ActionResult): boolean {
+  return result.status === "success" && Boolean(result.message);
+}
+
+export function actionFieldErrorsOf(
+  result: ActionResult,
+): Record<string, string[]> | undefined {
+  return result.data?.fieldErrors;
 }

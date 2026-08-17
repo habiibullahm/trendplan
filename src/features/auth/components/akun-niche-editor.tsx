@@ -11,8 +11,12 @@ import { ChipButton } from "@/components/ui/chip-button";
 import { Modal } from "@/components/ui/modal";
 import { useActionToasts } from "@/hooks/use-action-toasts";
 import { NICHES, resolveNiche, type Niche } from "@/lib/niches";
+import {
+  idleActionResult,
+  isCompletedActionSuccess,
+} from "@/lib/action-result";
 
-const initial: NicheActionState = {};
+const initial: NicheActionState = idleActionResult;
 
 function SaveNicheButton() {
   const { pending } = useFormStatus();
@@ -68,7 +72,7 @@ export function AkunNicheEditor({ niche }: { niche: string }) {
   const [state, action, pending] = useActionState(
     async (prev: NicheActionState, formData: FormData) => {
       const next = await updateNicheAction(prev, formData);
-      if (next.success) setOpen(false);
+      if (isCompletedActionSuccess(next)) setOpen(false);
       return next;
     },
     initial,

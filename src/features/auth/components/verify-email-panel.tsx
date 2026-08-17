@@ -8,8 +8,12 @@ import {
 } from "@/features/auth/actions/email-verification";
 import { Button } from "@/components/ui/button";
 import { useActionToasts } from "@/hooks/use-action-toasts";
+import {
+  idleActionResult,
+  isCompletedActionSuccess,
+} from "@/lib/action-result";
 
-const initial: EmailVerificationState = {};
+const initial: EmailVerificationState = idleActionResult;
 
 export function VerifyEmailPanel({
   token,
@@ -41,7 +45,7 @@ export function VerifyEmailPanel({
     formRef.current?.requestSubmit();
   }, [token, alreadyVerified]);
 
-  if (alreadyVerified || verifyState.success) {
+  if (alreadyVerified || isCompletedActionSuccess(verifyState)) {
     return (
       <p className="text-sm text-ink-muted">
         Email sudah diverifikasi.{" "}
@@ -73,8 +77,8 @@ export function VerifyEmailPanel({
       {token && verifyPending ? (
         <p className="text-sm text-ink-muted">Memverifikasi tautan…</p>
       ) : null}
-      {verifyState.error ? (
-        <p className="text-sm text-coral">{verifyState.error}</p>
+      {verifyState.status === "error" && verifyState.message ? (
+        <p className="text-sm text-coral">{verifyState.message}</p>
       ) : null}
 
       {canResend ? (

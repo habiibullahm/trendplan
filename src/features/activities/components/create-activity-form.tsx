@@ -13,8 +13,9 @@ import { Select } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { useActionToasts } from "@/hooks/use-action-toasts";
 import { DAY_LABELS, type PlannerView } from "@/lib/week";
+import { idleActionResult } from "@/lib/action-result";
 
-const initial: ActivityActionState = {};
+const initial: ActivityActionState = idleActionResult;
 
 export function CreateActivityForm({
   defaultDay,
@@ -94,7 +95,7 @@ export function CreateActivityForm({
             }}
             rows={5}
             placeholder={"Picnic di taman\nNonton malam\nDinner cafe"}
-            aria-invalid={Boolean(clientError || state.error)}
+            aria-invalid={Boolean(clientError || state.status === "error")}
           />
         </FormField>
         <p className="mt-1.5 text-xs text-ink-muted">

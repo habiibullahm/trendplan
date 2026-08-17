@@ -139,7 +139,7 @@ export async function loginAction(
         throw error;
       }
 
-      return {};
+      return { status: "success" };
     },
   );
 }

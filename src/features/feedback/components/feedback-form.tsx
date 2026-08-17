@@ -16,8 +16,12 @@ import { Modal } from "@/components/ui/modal";
 import { Select } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { useActionToasts } from "@/hooks/use-action-toasts";
+import {
+  idleActionResult,
+  isCompletedActionSuccess,
+} from "@/lib/action-result";
 
-const initial: FeedbackActionState = {};
+const initial: FeedbackActionState = idleActionResult;
 
 export function FeedbackForm() {
   const [open, setOpen] = useState(false);
@@ -27,8 +31,8 @@ export function FeedbackForm() {
   const [state, action, pending] = useActionState(
     async (prev: FeedbackActionState, formData: FormData) => {
       const next = await submitFeedbackAction(prev, formData);
-      setShowFieldErrors(Boolean(next.fieldErrors));
-      if (next.success) {
+      setShowFieldErrors(Boolean(next.data?.fieldErrors));
+      if (isCompletedActionSuccess(next)) {
         formRef.current?.reset();
         setShowFieldErrors(false);
         setOpen(false);
@@ -75,7 +79,7 @@ export function FeedbackForm() {
           <FormField
             label="Kategori"
             htmlFor="feedback-category"
-            error={showFieldErrors ? state.fieldErrors?.category : undefined}
+            error={showFieldErrors ? state.data?.fieldErrors?.category : undefined}
           >
             <Select
               id="feedback-category"
@@ -83,7 +87,7 @@ export function FeedbackForm() {
               defaultValue="saran"
               disabled={pending}
               aria-invalid={Boolean(
-                showFieldErrors && state.fieldErrors?.category,
+                showFieldErrors && state.data?.fieldErrors?.category,
               )}
             >
               {FEEDBACK_CATEGORIES.map((value) => (
@@ -97,7 +101,7 @@ export function FeedbackForm() {
           <FormField
             label="Pesan"
             htmlFor="feedback-message"
-            error={showFieldErrors ? state.fieldErrors?.message : undefined}
+            error={showFieldErrors ? state.data?.fieldErrors?.message : undefined}
           >
             <Textarea
               id="feedback-message"
@@ -108,7 +112,7 @@ export function FeedbackForm() {
               disabled={pending}
               placeholder="Ceritakan saran atau masalahmu (min. 10 karakter)…"
               aria-invalid={Boolean(
-                showFieldErrors && state.fieldErrors?.message,
+                showFieldErrors && state.data?.fieldErrors?.message,
               )}
             />
           </FormField>

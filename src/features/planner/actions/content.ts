@@ -6,8 +6,14 @@ import { z } from "zod";
 import { ContentStatus } from "@/generated/prisma/client";
 import { prisma } from "@/lib/prisma";
 import { requireUserId } from "@/features/planner/lib/planner";
-import { getWeekPlanForViewer, weekPlanAccessWhere } from "@/features/planner/lib/week-share";
-import { suggestCaption, suggestHashtags } from "@/features/planner/lib/export-text";
+import {
+  getWeekPlanForViewer,
+  weekPlanAccessWhere,
+} from "@/features/planner/lib/week-share";
+import {
+  suggestCaption,
+  suggestHashtags,
+} from "@/features/planner/lib/export-text";
 import {
   isParkedSoftDeleteDay,
   parkDayOfWeek,
@@ -27,6 +33,7 @@ import {
 } from "@/features/planner/lib/content-field-schemas";
 import {
   actionFail,
+  actionSuccess,
   type ActionResult,
 } from "@/lib/action-result";
 
@@ -80,11 +87,12 @@ export async function addTrendToPlannerAction(
   const dayParsed = daySchema.safeParse(formData.get("dayOfWeek"));
 
   if (!trendId || !dayParsed.success) {
-    return actionFail("invalid_day", { error: "Pilih hari yang valid." });
+    return actionFail("invalid_day", { message: "Pilih hari yang valid." });
   }
 
   const trend = await prisma.trend.findUnique({ where: { id: trendId } });
-  if (!trend) return actionFail("trend_not_found", { error: "Tren tidak ditemukan." });
+  if (!trend)
+    return actionFail("trend_not_found", { message: "Tren tidak ditemukan." });
 
   const weekPlan = await getWeekPlanForViewer(
     userId,
@@ -93,7 +101,9 @@ export async function addTrendToPlannerAction(
   );
   const existing = weekPlan.items.find((i) => i.dayOfWeek === dayParsed.data);
   if (existing) {
-    return actionFail("day_occupied", { error: "Hari itu sudah ada ide — pilih hari lain." });
+    return actionFail("day_occupied", {
+      message: "Hari itu sudah ada ide — pilih hari lain.",
+    });
   }
 
   await prisma.contentItem.create({
@@ -110,7 +120,7 @@ export async function addTrendToPlannerAction(
   });
 
   revalidatePlanner();
-  return { success: "Ide ditambahkan ke planner" };
+  return actionSuccess("Ide ditambahkan ke planner");
 }
 
 export async function createContentItemAction(
@@ -122,15 +132,15 @@ export async function createContentItemAction(
   const titleParsed = titleSchema.safeParse(formData.get("title"));
 
   if (!dayParsed.success) {
-    return actionFail("invalid_day", { error: "Pilih hari yang valid." });
+    return actionFail("invalid_day", { message: "Pilih hari yang valid." });
   }
   if (!titleParsed.success) {
-    return actionFail("title_required", { error: "Judul wajib diisi." });
+    return actionFail("title_required", { message: "Judul wajib diisi." });
   }
 
   const hookParsed = hookSchema.safeParse(formData.get("hook") ?? "");
   if (!hookParsed.success) {
-    return actionFail("hook_too_long", { error: "Hook terlalu panjang." });
+    return actionFail("hook_too_long", { message: "Hook terlalu panjang." });
   }
   const hook = hookParsed.data || null;
   const weekStart = resolveWeekStartFromForm(formData);
@@ -140,7 +150,9 @@ export async function createContentItemAction(
   });
   const existing = weekPlan.items.find((i) => i.dayOfWeek === dayParsed.data);
   if (existing) {
-    return actionFail("day_occupied", { error: "Hari itu sudah ada ide — pilih hari lain." });
+    return actionFail("day_occupied", {
+      message: "Hari itu sudah ada ide — pilih hari lain.",
+    });
   }
 
   await prisma.contentItem.create({
@@ -168,7 +180,7 @@ export async function updateContentItemAction(
   const statusParsed = statusSchema.safeParse(formData.get("status"));
 
   if (!itemId || !statusParsed.success) {
-    return actionFail("invalid_payload", { error: "Data tidak valid." });
+    return actionFail("invalid_payload", { message: "Data tidak valid." });
   }
 
   const captionParsed = captionSchema.safeParse(formData.get("caption") ?? "");
@@ -176,20 +188,33 @@ export async function updateContentItemAction(
     formData.get("hashtags") ?? "",
   );
   if (!captionParsed.success) {
-    return actionFail("caption_too_long", { error: "Caption terlalu panjang." });
+    return actionFail("caption_too_long", {
+      message: "Caption terlalu panjang.",
+    });
   }
   if (!hashtagsParsed.success) {
-    return actionFail("hashtags_too_long", { error: "Hashtag terlalu panjang." });
+    return actionFail("hashtags_too_long", {
+      message: "Hashtag terlalu panjang.",
+    });
   }
 
   const item = await prisma.contentItem.findFirst({
-    where: { id: itemId, deletedAt: null, weekPlan: weekPlanAccessWhere(userId) },
+    where: {
+      id: itemId,
+      deletedAt: null,
+      weekPlan: weekPlanAccessWhere(userId),
+    },
     include: { weekPlan: { select: { weekStart: true } } },
   });
-  if (!item) return actionFail("content_not_found", { error: "Konten tidak ditemukan." });
+  if (!item)
+    return actionFail("content_not_found", {
+      message: "Konten tidak ditemukan.",
+    });
 
   if (item.status === "POSTED") {
-    return actionFail("content_posted_readonly", { error: "Konten Posted hanya bisa dibaca." });
+    return actionFail("content_posted_readonly", {
+      message: "Konten Posted hanya bisa dibaca.",
+    });
   }
 
   await prisma.contentItem.update({
@@ -269,7 +294,8 @@ export async function restoreContentItemAction(
   itemId: string,
 ): Promise<PlannerActionState> {
   const userId = await requireUserId();
-  if (!itemId) return actionFail("invalid_payload", { error: "Data tidak valid." });
+  if (!itemId)
+    return actionFail("invalid_payload", { message: "Data tidak valid." });
 
   try {
     const result = await prisma.$transaction(async (tx) => {
@@ -280,9 +306,14 @@ export async function restoreContentItemAction(
           weekPlan: weekPlanAccessWhere(userId),
         },
       });
-      if (!item) return actionFail("undo_unavailable", { error: "Ide sudah tidak bisa diurungkan." });
+      if (!item)
+        return actionFail("undo_unavailable", {
+          message: "Ide sudah tidak bisa diurungkan.",
+        });
       if (!isParkedSoftDeleteDay(item.dayOfWeek)) {
-        return actionFail("undo_unavailable", { error: "Ide sudah tidak bisa diurungkan." });
+        return actionFail("undo_unavailable", {
+          message: "Ide sudah tidak bisa diurungkan.",
+        });
       }
 
       const restoreDay = unparkDayOfWeek(item.dayOfWeek);
@@ -295,7 +326,9 @@ export async function restoreContentItemAction(
         },
       });
       if (occupant) {
-        return actionFail("undo_day_occupied", { error: "Hari sudah terisi — tidak bisa urungkan." });
+        return actionFail("undo_day_occupied", {
+          message: "Hari sudah terisi — tidak bisa urungkan.",
+        });
       }
 
       await tx.contentItem.update({
@@ -306,13 +339,15 @@ export async function restoreContentItemAction(
         },
       });
 
-      return { success: "Ide dikembalikan" } as const;
+      return actionSuccess("Ide dikembalikan");
     });
 
-    if (result.success) revalidatePlanner();
+    if (result.status === "success") revalidatePlanner();
     return result;
   } catch {
-    return actionFail("undo_failed", { error: "Gagal mengembalikan ide. Coba lagi." });
+    return actionFail("undo_failed", {
+      message: "Gagal mengembalikan ide. Coba lagi.",
+    });
   }
 }
 
@@ -320,7 +355,8 @@ export async function purgeDeletedContentItemAction(
   itemId: string,
 ): Promise<PlannerActionState> {
   const userId = await requireUserId();
-  if (!itemId) return actionFail("invalid_payload", { error: "Data tidak valid." });
+  if (!itemId)
+    return actionFail("invalid_payload", { message: "Data tidak valid." });
 
   await prisma.contentItem.deleteMany({
     where: {
@@ -331,7 +367,7 @@ export async function purgeDeletedContentItemAction(
   });
 
   revalidatePlanner();
-  return {};
+  return { status: "success" };
 }
 
 /** Move item to another day; swap if that day is occupied. */
@@ -343,7 +379,7 @@ export async function moveContentItemAction(
   const userId = await requireUserId();
   const dayParsed = daySchema.safeParse(toDayOfWeek);
   if (!itemId || !dayParsed.success) {
-    return actionFail("invalid_day", { error: "Hari tidak valid." });
+    return actionFail("invalid_day", { message: "Hari tidak valid." });
   }
 
   const toDay = dayParsed.data;
@@ -358,23 +394,26 @@ export async function moveContentItemAction(
           weekPlan: weekPlanAccessWhere(userId),
         },
       });
-      if (!item) return actionFail("content_not_found", { error: "Konten tidak ditemukan." });
+      if (!item)
+        return actionFail("content_not_found", {
+          message: "Konten tidak ditemukan.",
+        });
 
       if (item.status === "POSTED") {
-        return {
-          error: "Konten Posted tidak bisa dipindahkan.",
-        } as const;
+        return actionFail("content_posted_readonly", {
+          message: "Konten Posted tidak bisa dipindahkan.",
+        });
       }
 
       const fromDay = item.dayOfWeek;
       if (expectedFromDay !== undefined && expectedFromDay !== fromDay) {
-        return {
-          error: "Planner sudah berubah. Muat ulang lalu coba lagi.",
-        } as const;
+        return actionFail("stale_planner", {
+          message: "Planner sudah berubah. Muat ulang lalu coba lagi.",
+        });
       }
 
       if (fromDay === toDay) {
-        return {} as const;
+        return { status: "success" } as const;
       }
 
       const occupant = await tx.contentItem.findFirst({
@@ -388,7 +427,7 @@ export async function moveContentItemAction(
 
       if (occupant?.status === "POSTED") {
         return actionFail("posted_slot_locked", {
-          error: "Slot Posted tidak bisa digeser. Pilih hari lain.",
+          message: "Slot Posted tidak bisa digeser. Pilih hari lain.",
         });
       }
 
@@ -397,7 +436,7 @@ export async function moveContentItemAction(
           where: { id: item.id },
           data: { dayOfWeek: toDay },
         });
-        return { success: "Ide dipindahkan" } as const;
+        return actionSuccess("Ide dipindahkan");
       }
 
       // Unique (weekPlanId, dayOfWeek): park on temp day, then finish swap
@@ -415,14 +454,16 @@ export async function moveContentItemAction(
         data: { dayOfWeek: toDay },
       });
 
-      return { success: "Ide ditukar harinya" } as const;
+      return actionSuccess("Ide ditukar harinya");
     });
 
-    if (result.success) {
+    if (result.status === "success") {
       revalidatePlanner();
     }
     return result;
   } catch {
-    return actionFail("move_failed", { error: "Gagal memindahkan ide. Coba lagi." });
+    return actionFail("move_failed", {
+      message: "Gagal memindahkan ide. Coba lagi.",
+    });
   }
 }

@@ -13,8 +13,9 @@ import { Select } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { useActionToasts } from "@/hooks/use-action-toasts";
 import { DAY_LABELS, type PlannerView } from "@/lib/week";
+import { idleActionResult } from "@/lib/action-result";
 
-const initial: PlannerActionState = {};
+const initial: PlannerActionState = idleActionResult;
 
 export function CreatePlanForm({
   defaultDay,

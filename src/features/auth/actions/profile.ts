@@ -4,10 +4,7 @@ import { del, put } from "@vercel/blob";
 import { revalidatePath } from "next/cache";
 import { AVATAR_MAX_BYTES } from "@/features/auth/lib/avatar-image";
 import { prepareAvatarUpload } from "@/features/auth/lib/prepare-avatar-upload";
-import {
-  assertRateLimits,
-  getClientIp,
-} from "@/lib/action-middleware";
+import { assertRateLimits, getClientIp } from "@/lib/action-middleware";
 import {
   actionFail,
   actionSuccess,
@@ -56,20 +53,16 @@ export async function uploadProfileImageAction(
 
   if (!process.env.BLOB_READ_WRITE_TOKEN) {
     return actionFail("blob_not_configured", {
-      error: "Upload belum dikonfigurasi (BLOB_READ_WRITE_TOKEN).",
+      message: "Upload belum dikonfigurasi (BLOB_READ_WRITE_TOKEN).",
     });
   }
 
   const file = formData.get("image");
   if (!(file instanceof File) || file.size === 0) {
-    return actionFail("no_file", {
-      error: "Pilih foto terlebih dahulu.",
-    });
+    return actionFail("no_file", { message: "Pilih foto terlebih dahulu." });
   }
   if (file.size > AVATAR_MAX_BYTES) {
-    return actionFail("file_too_large", {
-      error: "Ukuran maksimal 2 MB.",
-    });
+    return actionFail("file_too_large", { message: "Ukuran maksimal 2 MB." });
   }
 
   const ip = await getClientIp();
@@ -88,12 +81,12 @@ export async function uploadProfileImageAction(
     prepared = await prepareAvatarUpload(raw);
   } catch {
     return actionFail("process_failed", {
-      error: "Gagal memproses foto. Coba lagi.",
+      message: "Gagal memproses foto. Coba lagi.",
     });
   }
   if ("error" in prepared) {
     return actionFail("invalid_format", {
-      error: "Format harus JPEG, PNG, atau WebP.",
+      message: "Format harus JPEG, PNG, atau WebP.",
     });
   }
 
@@ -115,7 +108,7 @@ export async function uploadProfileImageAction(
     blobUrl = blob.url;
   } catch {
     return actionFail("upload_failed", {
-      error: "Gagal mengunggah foto. Coba lagi.",
+      message: "Gagal mengunggah foto. Coba lagi.",
     });
   }
 
@@ -131,13 +124,13 @@ export async function uploadProfileImageAction(
     if (updated.count === 0) {
       await deleteAvatarBestEffort(blobUrl, userId);
       return actionFail("conflict", {
-        error: "Foto berubah di perangkat lain. Coba lagi.",
+        message: "Foto berubah di perangkat lain. Coba lagi.",
       });
     }
   } catch {
     await deleteAvatarBestEffort(blobUrl, userId);
     return actionFail("save_failed", {
-      error: "Gagal menyimpan foto. Coba lagi.",
+      message: "Gagal menyimpan foto. Coba lagi.",
     });
   }
 
@@ -164,9 +157,7 @@ export async function removeProfileImageAction(
   });
 
   if (!existing?.imageUrl) {
-    return actionFail("no_avatar", {
-      error: "Belum ada foto profil.",
-    });
+    return actionFail("no_avatar", { message: "Belum ada foto profil." });
   }
 
   try {
@@ -176,12 +167,12 @@ export async function removeProfileImageAction(
     });
     if (updated.count === 0) {
       return actionFail("remove_conflict", {
-        error: "Foto sudah dihapus atau diganti.",
+        message: "Foto sudah dihapus atau diganti.",
       });
     }
   } catch {
     return actionFail("remove_failed", {
-      error: "Gagal menghapus foto. Coba lagi.",
+      message: "Gagal menghapus foto. Coba lagi.",
     });
   }
 

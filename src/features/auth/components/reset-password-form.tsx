@@ -9,8 +9,9 @@ import { Button } from "@/components/ui/button";
 import { FormField } from "@/components/ui/form-field";
 import { Input } from "@/components/ui/input";
 import { useActionToasts } from "@/hooks/use-action-toasts";
+import { idleActionResult } from "@/lib/action-result";
 
-const initial: PasswordActionState = {};
+const initial: PasswordActionState = idleActionResult;
 
 export function ResetPasswordForm({ token }: { token: string }) {
   const [state, action, pending] = useActionState(
@@ -22,7 +23,7 @@ export function ResetPasswordForm({ token }: { token: string }) {
   return (
     <form action={action} className="flex w-full flex-col gap-4">
       <input type="hidden" name="token" value={token} />
-      <FormField label="Password baru" error={state.fieldErrors?.newPassword}>
+      <FormField label="Password baru" error={state.data?.fieldErrors?.newPassword}>
         <Input
           name="newPassword"
           type="password"
@@ -35,7 +36,7 @@ export function ResetPasswordForm({ token }: { token: string }) {
       </FormField>
       <FormField
         label="Konfirmasi password"
-        error={state.fieldErrors?.confirmPassword}
+        error={state.data?.fieldErrors?.confirmPassword}
       >
         <Input
           name="confirmPassword"

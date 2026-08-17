@@ -56,9 +56,9 @@ Never trust client ids without ownership/ACL checks. Don’t throw raw `Unauthor
 
 **Results / errors (structure):**
 
-- **`ActionResult`** (`src/lib/action-result.ts`) — base client-facing server-action response for `useActionState` / Sonner across **all features**. Prefer `actionFail(errorCode)` / `actionErrorCode` / `actionSuccess`. Optional **`errorCode`** is the machine-stable failure id; UI may keep reading `error` / `success` only. Field-only validation uses `errorCode: "validation"` **without** an `error` string (no toast).
-- **`Result<T, C>`** (`src/lib/result.ts`) — domain lib union (`{ ok: true } & T` | `{ ok: false; code }`). Domain failures use **`code`** (not `errorCode`). Prefer `resultOk` / `resultErr`. Used by week-share create/accept today.
-- **`CodedError`** (`src/lib/errors/coded-error.ts`) — throw-only boundaries (e.g. `MailSendError` from `sendMail`). Actions catch and map to `actionFail` / message maps; never leak provider/stack text to the client.
+- **`ActionResult`** (`src/lib/action-result.ts`) — `{ status: "success" | "error", message?, data? }` for `useActionState` / Sonner. Prefer `actionFail` / `actionErrorCode` / `actionSuccess`. Machine id is `data.errorCode`; fields are `data.fieldErrors`. Validation-only errors use `data.errorCode: "validation"` and omit `message` (no toast). Seed forms with `idleActionResult` (`success` without `message`). Side effects (toast / refresh / close) must use `message` or `isCompletedActionSuccess` — never `status === "success"` alone.
+- **`Result<T, C>`** (`src/lib/result.ts`) — domain lib union (`{ ok: true } & T` | `{ ok: false; code }`). Prefer `resultOk` / `resultErr`. Used by week-share create/accept.
+- **`CodedError`** (`src/lib/errors/coded-error.ts`) — throw-only boundaries (e.g. `MailSendError`). Actions map to `actionFail`; never leak provider/stack text.
 
 ## 6. UI
 

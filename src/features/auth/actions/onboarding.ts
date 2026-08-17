@@ -57,9 +57,7 @@ export async function updateWeeklyGoalAction(
 
   const raw = Number(formData.get("weeklyGoal"));
   if (!Number.isInteger(raw) || raw < 1 || raw > 7) {
-    return actionFail("invalid_weekly_goal", {
-      error: "Pilih target 1–7.",
-    });
+    return actionFail("invalid_weekly_goal", { message: "Pilih target 1–7." });
   }
 
   try {
@@ -69,7 +67,7 @@ export async function updateWeeklyGoalAction(
     });
   } catch {
     return actionFail("save_goal_failed", {
-      error: "Gagal menyimpan target. Coba lagi.",
+      message: "Gagal menyimpan target. Coba lagi.",
     });
   }
 
@@ -91,9 +89,7 @@ export async function updateNicheAction(
 
   const nicheRaw = String(formData.get("niche") ?? "");
   if (!isNiche(nicheRaw)) {
-    return actionFail("invalid_niche", {
-      error: "Pilih niche yang valid.",
-    });
+    return actionFail("invalid_niche", { message: "Pilih niche yang valid." });
   }
 
   try {
@@ -103,7 +99,7 @@ export async function updateNicheAction(
     });
   } catch {
     return actionFail("save_niche_failed", {
-      error: "Gagal menyimpan niche. Coba lagi.",
+      message: "Gagal menyimpan niche. Coba lagi.",
     });
   }
 

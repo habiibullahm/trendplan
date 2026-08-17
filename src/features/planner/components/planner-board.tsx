@@ -642,13 +642,15 @@ function InteractiveBoard({
             toDay,
             fromDay,
           );
-          if (result.error) {
+          if (result.status === "error") {
             setLocalItems(previous);
-            toast.error(result.error, { id: TOAST_ID });
+            toast.error(result.message ?? "Gagal memindahkan ide. Coba lagi.", {
+              id: TOAST_ID,
+            });
             return;
           }
-          if (result.success) {
-            toast.success(result.success, { id: TOAST_ID });
+          if (result.status === "success" && result.message) {
+            toast.success(result.message, { id: TOAST_ID });
           }
         } catch {
           setLocalItems(previous);
