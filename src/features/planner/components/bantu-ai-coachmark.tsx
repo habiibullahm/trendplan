@@ -27,7 +27,7 @@ function subscribe(onStoreChange: () => void) {
 
 /**
  * First-run callout on the Bantu AI control.
- * Anchored under the button (does not cover Simpan). No focus steal.
+ * Anchored to the left of the button (does not cover Simpan). No focus steal.
  */
 export function BantuAiCoachmark({ children }: { children: ReactNode }) {
   const pathname = usePathname();
@@ -105,7 +105,7 @@ export function BantuAiCoachmark({ children }: { children: ReactNode }) {
           aria-labelledby={titleId}
           aria-describedby={descId}
           className={cn(
-            "absolute right-0 top-[calc(100%+0.5rem)] z-50 w-72 max-w-[calc(100vw-2rem)] rounded-xl border border-border bg-paper p-3 text-left shadow-md",
+            "absolute top-0 right-[calc(100%+0.5rem)] z-50 w-72 max-w-[calc(100vw-2rem)] rounded-xl border border-border bg-paper p-3 text-left shadow-md",
             !reduceMotion && "ring-2 ring-coral/40",
           )}
         >
