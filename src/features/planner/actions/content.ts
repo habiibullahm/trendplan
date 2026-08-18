@@ -36,10 +36,12 @@ import {
   actionSuccess,
   type ActionResult,
 } from "@/lib/action-result";
+import { isPrismaUniqueConflict } from "@/lib/prisma-errors";
 
 const daySchema = z.coerce.number().int().min(0).max(6);
 const statusSchema = z.enum(["IDE", "POSTED"]);
 const titleSchema = z.string().trim().min(1).max(120);
+const DAY_OCCUPIED_MESSAGE = "Hari itu sudah ada ide — pilih hari lain.";
 
 function resolveWeekStartFromForm(formData: FormData): Date {
   return (
@@ -101,23 +103,28 @@ export async function addTrendToPlannerAction(
   );
   const existing = weekPlan.items.find((i) => i.dayOfWeek === dayParsed.data);
   if (existing) {
-    return actionFail("day_occupied", {
-      message: "Hari itu sudah ada ide — pilih hari lain.",
-    });
+    return actionFail("day_occupied", { message: DAY_OCCUPIED_MESSAGE });
   }
 
-  await prisma.contentItem.create({
-    data: {
-      weekPlanId: weekPlan.id,
-      dayOfWeek: dayParsed.data,
-      title: trend.title,
-      hook: trend.hook,
-      caption: suggestCaption({ title: trend.title, hook: trend.hook }),
-      status: ContentStatus.IDE,
-      trendId: trend.id,
-      hashtags: suggestHashtags(),
-    },
-  });
+  try {
+    await prisma.contentItem.create({
+      data: {
+        weekPlanId: weekPlan.id,
+        dayOfWeek: dayParsed.data,
+        title: trend.title,
+        hook: trend.hook,
+        caption: suggestCaption({ title: trend.title, hook: trend.hook }),
+        status: ContentStatus.IDE,
+        trendId: trend.id,
+        hashtags: suggestHashtags(),
+      },
+    });
+  } catch (error) {
+    if (isPrismaUniqueConflict(error)) {
+      return actionFail("day_occupied", { message: DAY_OCCUPIED_MESSAGE });
+    }
+    throw error;
+  }
 
   revalidatePlanner();
   return actionSuccess("Ide ditambahkan ke planner");
@@ -150,22 +157,27 @@ export async function createContentItemAction(
   });
   const existing = weekPlan.items.find((i) => i.dayOfWeek === dayParsed.data);
   if (existing) {
-    return actionFail("day_occupied", {
-      message: "Hari itu sudah ada ide — pilih hari lain.",
-    });
+    return actionFail("day_occupied", { message: DAY_OCCUPIED_MESSAGE });
   }
 
-  await prisma.contentItem.create({
-    data: {
-      weekPlanId: weekPlan.id,
-      dayOfWeek: dayParsed.data,
-      title: titleParsed.data,
-      hook,
-      caption: suggestCaption({ title: titleParsed.data, hook }),
-      hashtags: suggestHashtags(),
-      status: ContentStatus.IDE,
-    },
-  });
+  try {
+    await prisma.contentItem.create({
+      data: {
+        weekPlanId: weekPlan.id,
+        dayOfWeek: dayParsed.data,
+        title: titleParsed.data,
+        hook,
+        caption: suggestCaption({ title: titleParsed.data, hook }),
+        hashtags: suggestHashtags(),
+        status: ContentStatus.IDE,
+      },
+    });
+  } catch (error) {
+    if (isPrismaUniqueConflict(error)) {
+      return actionFail("day_occupied", { message: DAY_OCCUPIED_MESSAGE });
+    }
+    throw error;
+  }
 
   revalidatePlanner();
   redirect(returnHref(formData, weekStart, { toast: "created" }));

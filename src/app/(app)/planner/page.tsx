@@ -18,7 +18,15 @@ import {
 } from "@/features/planner/components/share-week-button";
 import { STATUS_LABEL } from "@/lib/labels";
 import { buildMonthWeekChips } from "@/features/planner/lib/month-week";
-import { countActiveItemsByWeekStarts } from "@/features/planner/lib/planner";
+import {
+  countActiveItemsByWeekStarts,
+  getRecommendations,
+} from "@/features/planner/lib/planner";
+import {
+  emptyPlannerDays,
+  shouldShowEmptySlotSaran,
+  unusedTrendsForEmptyDays,
+} from "@/features/planner/lib/empty-slot-assist";
 import {
   getWeekPlanForViewer,
   getWeekShareSnapshot,
@@ -62,7 +70,7 @@ export default async function PlannerPage({ searchParams }: Readonly<Props>) {
 
   const user = await prisma.user.findUnique({
     where: { id: userId },
-    select: { weeklyGoal: true },
+    select: { weeklyGoal: true, niche: true },
   });
 
   const weekStartParam = formatWeekStartParam(selection.weekStart);
@@ -210,6 +218,28 @@ export default async function PlannerPage({ searchParams }: Readonly<Props>) {
     selectedChip.filled = weekPlan.items.length;
   }
 
+  const catalog = await getRecommendations(user?.niche ?? null, 12);
+  const unusedTrends = unusedTrendsForEmptyDays({
+    trends: catalog.map((trend) => ({
+      id: trend.id,
+      title: trend.title,
+      reason: trend.reason,
+      score: trend.score,
+    })),
+    usedTrendIds: weekPlan.items.map((item) => item.trendId),
+  });
+  const emptyDays = emptyPlannerDays(
+    weekPlan.items.map((item) => item.dayOfWeek),
+  );
+  const saran = shouldShowEmptySlotSaran({ emptyDays, unusedTrends })
+    ? {
+        suggestions: unusedTrends,
+        emptyDays,
+        weekStartParam,
+        view,
+      }
+    : null;
+
   return (
     <main className="flex flex-1 flex-col">
       <Suspense fallback={null}>
@@ -284,6 +314,7 @@ export default async function PlannerPage({ searchParams }: Readonly<Props>) {
         returnMonth={selection.monthParam}
         returnWeek={selection.weekIndex}
         view={view}
+        saran={saran}
         items={weekPlan.items.map((item) => ({
           id: item.id,
           dayOfWeek: item.dayOfWeek,

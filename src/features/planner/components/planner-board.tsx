@@ -35,6 +35,11 @@ import { Badge } from "@/components/ui/badge";
 import { STATUS_CLASS, STATUS_LABEL } from "@/lib/labels";
 import { DAY_SHORT, type PlannerView } from "@/lib/week";
 import type { ContentStatus } from "@/generated/prisma/client";
+import {
+  EmptySlotSaranProvider,
+  EmptySlotSaranTrigger,
+  type EmptySlotSaranConfig,
+} from "@/features/planner/components/empty-slot-saran";
 
 export type PlannerBoardItem = {
   id: string;
@@ -127,19 +132,22 @@ function DaySlot({
             view={view}
           />
         ) : (
-          <Link
-            href={newPlanHref(
-              day,
-              weekStartParam,
-              returnMonth,
-              returnWeek,
-              view,
-            )}
-            className="min-touch flex items-center gap-3 rounded-2xl border border-dashed border-border px-4 py-3 transition-colors hover:border-coral/50 hover:bg-coral/5"
-          >
-            <p className="text-xs font-semibold text-ink-muted">{label}</p>
-            <p className="text-sm text-ink-muted">+ Buat ide</p>
-          </Link>
+          <div className="flex items-center gap-1 rounded-2xl border border-dashed border-border transition-colors hover:border-coral/50 hover:bg-coral/5">
+            <Link
+              href={newPlanHref(
+                day,
+                weekStartParam,
+                returnMonth,
+                returnWeek,
+                view,
+              )}
+              className="min-touch flex min-w-0 flex-1 items-center gap-3 px-4 py-3"
+            >
+              <p className="text-xs font-semibold text-ink-muted">{label}</p>
+              <p className="text-sm text-ink-muted">+ Buat ide</p>
+            </Link>
+            <EmptySlotSaranTrigger day={day} className="shrink-0 pr-3" />
+          </div>
         )}
       </li>
     );
@@ -176,18 +184,21 @@ function DaySlot({
           view={view}
         />
       ) : (
-        <Link
-          href={newPlanHref(
-            day,
-            weekStartParam,
-            returnMonth,
-            returnWeek,
-            view,
-          )}
-          className="mt-3 block text-sm text-ink-muted transition-colors hover:text-coral"
-        >
-          + Buat ide
-        </Link>
+        <div className="mt-3 flex flex-col items-start gap-1">
+          <Link
+            href={newPlanHref(
+              day,
+              weekStartParam,
+              returnMonth,
+              returnWeek,
+              view,
+            )}
+            className="block text-sm text-ink-muted transition-colors hover:text-coral"
+          >
+            + Buat ide
+          </Link>
+          <EmptySlotSaranTrigger day={day} />
+        </div>
       )}
     </div>
   );
@@ -432,19 +443,22 @@ function StaticBoard({
                   <p className="text-sm text-ink-muted">Kosong</p>
                 </div>
               ) : (
-                <Link
-                  href={newPlanHref(
-                    day,
-                    weekStartParam,
-                    returnMonth,
-                    returnWeek,
-                    view,
-                  )}
-                  className="min-touch flex items-center gap-3 rounded-2xl border border-dashed border-border px-4 py-3 transition-colors hover:border-coral/50 hover:bg-coral/5"
-                >
-                  <p className="text-xs font-semibold text-ink-muted">{label}</p>
-                  <p className="text-sm text-ink-muted">+ Buat ide</p>
-                </Link>
+                <div className="flex items-center gap-1 rounded-2xl border border-dashed border-border transition-colors hover:border-coral/50 hover:bg-coral/5">
+                  <Link
+                    href={newPlanHref(
+                      day,
+                      weekStartParam,
+                      returnMonth,
+                      returnWeek,
+                      view,
+                    )}
+                    className="min-touch flex min-w-0 flex-1 items-center gap-3 px-4 py-3"
+                  >
+                    <p className="text-xs font-semibold text-ink-muted">{label}</p>
+                    <p className="text-sm text-ink-muted">+ Buat ide</p>
+                  </Link>
+                  <EmptySlotSaranTrigger day={day} className="shrink-0 pr-3" />
+                </div>
               )}
             </li>
           );
@@ -495,18 +509,21 @@ function StaticBoard({
               ) : readOnly ? (
                 <p className="mt-3 text-sm text-ink-muted">Kosong</p>
               ) : (
-                <Link
-                  href={newPlanHref(
-                    day,
-                    weekStartParam,
-                    returnMonth,
-                    returnWeek,
-                    view,
-                  )}
-                  className="mt-3 block text-sm text-ink-muted transition-colors hover:text-coral"
-                >
-                  + Buat ide
-                </Link>
+                <div className="mt-3 flex flex-col items-start gap-1">
+                  <Link
+                    href={newPlanHref(
+                      day,
+                      weekStartParam,
+                      returnMonth,
+                      returnWeek,
+                      view,
+                    )}
+                    className="block text-sm text-ink-muted transition-colors hover:text-coral"
+                  >
+                    + Buat ide
+                  </Link>
+                  <EmptySlotSaranTrigger day={day} />
+                </div>
               )}
             </div>
           );
@@ -516,11 +533,19 @@ function StaticBoard({
   );
 }
 
-function PlannerHint() {
+function PlannerHint({ showSaran }: { showSaran: boolean }) {
   return (
     <p className="mt-4 text-sm text-ink-muted">
       Seret kartu ke hari lain untuk memindahkan atau menukar. Ketuk singkat
-      untuk membuka detail. Slot kosong? Ambil ide dari{" "}
+      untuk membuka detail. Slot kosong?{" "}
+      {showSaran ? (
+        <>
+          Pakai <span className="font-semibold text-ink">Saran ide</span>, atau
+          ambil dari{" "}
+        </>
+      ) : (
+        <>Ambil ide dari </>
+      )}
       <Link href="/rekomendasi" className="font-semibold text-coral transition-colors hover:underline">
         Rekomendasi
       </Link>{" "}
@@ -540,6 +565,7 @@ function InteractiveBoard({
   returnMonth,
   returnWeek,
   view,
+  saran,
 }: {
   items: PlannerBoardItem[];
   layout: LayoutKind;
@@ -547,6 +573,7 @@ function InteractiveBoard({
   returnMonth?: string;
   returnWeek?: number;
   view?: PlannerView;
+  saran?: EmptySlotSaranConfig | null;
 }) {
   const [localItems, setLocalItems] = useState(items);
   const [activeItemId, setActiveItemId] = useState<string | null>(null);
@@ -664,31 +691,33 @@ function InteractiveBoard({
   );
 
   return (
-    <SkipClickContext.Provider value={skipClickRef}>
-      <DndContext
-        sensors={sensors}
-        collisionDetection={closestCorners}
-        onDragStart={onDragStart}
-        onDragEnd={onDragEnd}
-        onDragCancel={() => {
-          setActiveItemId(null);
-          armSkipClick();
-        }}
-      >
-        <BoardLayout
-          layout={layout}
-          byDay={byDay}
-          pending={pending}
-          weekStartParam={weekStartParam}
-          returnMonth={returnMonth}
-          returnWeek={returnWeek}
-          view={view}
-        />
-        <DragOverlay dropAnimation={null}>
-          {activeItem ? <OverlayCard item={activeItem} /> : null}
-        </DragOverlay>
-      </DndContext>
-    </SkipClickContext.Provider>
+    <EmptySlotSaranProvider config={saran ?? null} disabled={pending}>
+      <SkipClickContext.Provider value={skipClickRef}>
+        <DndContext
+          sensors={sensors}
+          collisionDetection={closestCorners}
+          onDragStart={onDragStart}
+          onDragEnd={onDragEnd}
+          onDragCancel={() => {
+            setActiveItemId(null);
+            armSkipClick();
+          }}
+        >
+          <BoardLayout
+            layout={layout}
+            byDay={byDay}
+            pending={pending}
+            weekStartParam={weekStartParam}
+            returnMonth={returnMonth}
+            returnWeek={returnWeek}
+            view={view}
+          />
+          <DragOverlay dropAnimation={null}>
+            {activeItem ? <OverlayCard item={activeItem} /> : null}
+          </DragOverlay>
+        </DndContext>
+      </SkipClickContext.Provider>
+    </EmptySlotSaranProvider>
   );
 }
 
@@ -698,12 +727,14 @@ export function PlannerBoard({
   returnMonth,
   returnWeek,
   view,
+  saran = null,
 }: {
   items: PlannerBoardItem[];
   weekStartParam?: string;
   returnMonth?: string;
   returnWeek?: number;
   view?: PlannerView;
+  saran?: EmptySlotSaranConfig | null;
 }) {
   const layout = usePlannerLayout();
   const boardKey = items
@@ -721,17 +752,20 @@ export function PlannerBoard({
           returnMonth={returnMonth}
           returnWeek={returnWeek}
           view={view}
+          saran={saran}
         />
       ) : (
-        <StaticBoard
-          items={items}
-          weekStartParam={weekStartParam}
-          returnMonth={returnMonth}
-          returnWeek={returnWeek}
-          view={view}
-        />
+        <EmptySlotSaranProvider config={saran}>
+          <StaticBoard
+            items={items}
+            weekStartParam={weekStartParam}
+            returnMonth={returnMonth}
+            returnWeek={returnWeek}
+            view={view}
+          />
+        </EmptySlotSaranProvider>
       )}
-      <PlannerHint />
+      <PlannerHint showSaran={Boolean(saran)} />
     </>
   );
 }
