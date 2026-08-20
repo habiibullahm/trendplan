@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { auth } from "@/auth";
+import { getSafeSession } from "@/lib/auth/session";
 import { FadeIn, Stagger } from "@/components/motion";
 import { EmptyState } from "@/components/ui/empty-state";
 import { ThemeToggle } from "@/components/theme/theme-toggle";
@@ -17,17 +17,19 @@ import { STATUS_LABEL } from "@/lib/labels";
 import { resolveNiche } from "@/lib/niches";
 
 export default async function DashboardPage() {
-  const session = await auth();
+  const session = await getSafeSession();
   if (!session?.user?.id) redirect("/login");
   const userId = session.user.id;
 
-  const user = await prisma.user.findUnique({
-    where: { id: userId },
-    select: { weeklyGoal: true, niche: true, name: true },
-  });
+  const [user, weekPlan] = await Promise.all([
+    prisma.user.findUnique({
+      where: { id: userId },
+      select: { weeklyGoal: true, niche: true, name: true },
+    }),
+    getWeekPlanForViewer(userId),
+  ]);
 
   const niche = resolveNiche(user?.niche);
-  const weekPlan = await getWeekPlanForViewer(userId);
   const scheduled = weekPlan.items.length;
   const goal = user?.weeklyGoal ?? 3;
   const progress = Math.min(100, Math.round((scheduled / goal) * 100));

@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
-import { auth } from "@/auth";
+import { getSafeSession } from "@/lib/auth/session";
 import { FadeIn, Stagger } from "@/components/motion";
 import { EmptyState } from "@/components/ui/empty-state";
 import { RiwayatPostedCard } from "@/features/planner/components/riwayat-posted-card";
@@ -8,7 +8,7 @@ import { prisma } from "@/lib/prisma";
 import { DAY_SHORT, formatWeekRange } from "@/lib/week";
 
 export default async function RiwayatPage() {
-  const session = await auth();
+  const session = await getSafeSession();
   if (!session?.user?.id) redirect("/login");
   const userId = session.user.id;
 

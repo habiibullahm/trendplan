@@ -31,10 +31,10 @@ export {
 /** ±14h around UTC midnight covers legacy Asia/Jakarta local-midnight rows. */
 const LEGACY_OFFSET_MS = 14 * 60 * 60 * 1000;
 
+/** Board/share loads: content rows only (no trend join — detail pages fetch trend). */
 const weekPlanItemsInclude = {
   items: {
     where: { deletedAt: null, dayOfWeek: { gte: 0 } },
-    include: { trend: true },
     orderBy: { dayOfWeek: "asc" as const },
   },
   user: { select: { id: true, name: true, email: true, imageUrl: true } },
@@ -157,8 +157,28 @@ export async function userHasPartnerSeatForWeek(
   userId: string,
   weekStart: Date,
 ): Promise<boolean> {
-  const shared = await findMembershipWeekPlan(userId, weekStart);
-  return Boolean(shared && shared.userId !== userId);
+  const canonical = getWeekStart(weekStart);
+  const key = formatWeekStartParam(canonical);
+
+  const membership = await prisma.weekPlanMember.findFirst({
+    where: {
+      userId,
+      weekPlan: {
+        weekStart: {
+          gte: new Date(canonical.getTime() - LEGACY_OFFSET_MS),
+          lte: new Date(canonical.getTime() + LEGACY_OFFSET_MS),
+        },
+        // Partner seat only — exclude the owner's own plan membership rows.
+        NOT: { userId },
+      },
+    },
+    select: {
+      weekPlan: { select: { weekStart: true } },
+    },
+  });
+
+  if (!membership) return false;
+  return formatWeekStartParam(membership.weekPlan.weekStart) === key;
 }
 
 /**

@@ -22,6 +22,13 @@ export const APP_VERSION = packageJson.version;
 
 export const UPDATE_LOG: UpdateEntry[] = [
   {
+    id: "2026-08-20-planner-load-performance",
+    version: "0.4.4",
+    date: "20 Agu 2026",
+    title: "Plan lebih cepat terbuka",
+    body: "Halaman Plan menampilkan grid lebih dulu; geser-ide dan bagikan minggu dimuat setelahnya supaya loading terasa lebih ringan.",
+  },
+  {
     id: "2026-08-20-admin-feedback-inbox",
     version: "0.4.3",
     date: "20 Agu 2026",

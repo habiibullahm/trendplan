@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
-import { auth } from "@/auth";
+import { getSafeSession } from "@/lib/auth/session";
 import { CreatePlanForm } from "@/features/planner/components/create-plan-form";
 import { getWeekPlanForViewer } from "@/features/planner/lib/week-share";
 import {
@@ -29,7 +29,7 @@ function parseDay(raw?: string): number {
 export default async function PlannerNewPage({
   searchParams,
 }: Readonly<Props>) {
-  const session = await auth();
+  const session = await getSafeSession();
   if (!session?.user?.id) redirect("/login");
 
   const {
