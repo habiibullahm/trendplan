@@ -11,6 +11,7 @@ import { LogoutButton } from "@/features/auth/components/logout-button";
 import { UpdateLog } from "@/features/auth/components/update-log";
 import { PushReminderToggle } from "@/features/reminders/components/push-reminder-toggle";
 import { FeedbackForm } from "@/features/feedback/components/feedback-form";
+import { isAdminEmail } from "@/lib/auth/admin";
 import { prisma } from "@/lib/prisma";
 
 function initialFrom(name: string | null | undefined, email: string): string {
@@ -41,6 +42,7 @@ export default async function AkunPage() {
 
   const displayName = user.name?.trim() || "Creator";
   const initial = initialFrom(user.name, user.email);
+  const showAdminInbox = isAdminEmail(user.email);
 
   return (
     <main className="mx-auto flex w-full max-w-lg flex-1 flex-col">
@@ -84,6 +86,22 @@ export default async function AkunPage() {
         <p className="text-sm font-semibold text-ink">Masukan</p>
         <div className="mt-1 divide-y divide-border">
           <FeedbackForm />
+          {showAdminInbox ? (
+            <Link
+              href="/admin/feedback"
+              className="min-touch flex items-center justify-between py-3 transition-colors hover:text-coral"
+            >
+              <span>
+                <span className="block text-sm font-semibold text-ink">
+                  Lihat masukan
+                </span>
+                <span className="text-xs text-ink-muted">
+                  Daftar masukan yang masuk
+                </span>
+              </span>
+              <span className="text-ink-muted">→</span>
+            </Link>
+          ) : null}
         </div>
       </section>
 

@@ -22,6 +22,13 @@ export const APP_VERSION = packageJson.version;
 
 export const UPDATE_LOG: UpdateEntry[] = [
   {
+    id: "2026-08-20-admin-feedback-inbox",
+    version: "0.4.3",
+    date: "20 Agu 2026",
+    title: "Inbox masukan untuk owner",
+    body: "Kalau emailmu ada di daftar owner, Akun punya Lihat masukan: baca saran/bug dari pengguna. Saat email transaksi aktif, owner juga dapat notifikasi email.",
+  },
+  {
     id: "2026-08-17-plan-saya-bersama",
     version: "0.4.2",
     date: "17 Agu 2026",
