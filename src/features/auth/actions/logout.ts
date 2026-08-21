@@ -1,11 +1,11 @@
 "use server";
 
-import { redirect } from "next/navigation";
+import { signOut } from "@/auth";
 
 /**
- * Clear JWT cookies via the dedicated route (no Auth.js signOut round-trip).
- * Cookie writes are illegal in RSC/actions — clear-session Set-Cookies on the response.
+ * Auth.js signOut clears the JWT session cookie on the action response.
+ * (Edge `/logout` remains for RSC orphan-cookie redirects.)
  */
 export async function logoutAction() {
-  redirect("/api/auth/clear-session");
+  await signOut({ redirectTo: "/login" });
 }
