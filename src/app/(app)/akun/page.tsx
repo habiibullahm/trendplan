@@ -6,9 +6,7 @@ import { AkunAvatar } from "@/features/auth/components/akun-avatar";
 import { AkunGoalEditor } from "@/features/auth/components/akun-goal-editor";
 import { AkunNicheEditor } from "@/features/auth/components/akun-niche-editor";
 import { AkunToastFromQuery } from "@/features/auth/components/akun-toast-from-query";
-import { LogoutButton } from "@/features/auth/components/logout-button";
-import { PushReminderToggle } from "@/features/reminders/components/push-reminder-toggle";
-import { logoutAction } from "@/features/auth/actions/logout";
+import { AkunPushReminder } from "@/features/reminders/components/akun-push-reminder";
 import { isAdminEmail } from "@/lib/auth/admin";
 import { getSafeSession } from "@/lib/auth/session";
 import { prisma } from "@/lib/prisma";
@@ -37,6 +35,14 @@ const UpdateLog = dynamic(
   { loading: () => <div className="h-10" aria-hidden /> },
 );
 
+const LogoutForm = dynamic(
+  () =>
+    import("@/features/auth/components/logout-form").then((m) => ({
+      default: m.LogoutForm,
+    })),
+  { loading: () => <div className="mt-6 h-12" aria-hidden /> },
+);
+
 function initialFrom(name: string | null | undefined, email: string): string {
   const source = name?.trim() || email.trim();
   return (source[0] ?? "?").toUpperCase();
@@ -46,21 +52,17 @@ export default async function AkunPage() {
   const session = await getSafeSession();
   if (!session?.user?.id) redirect("/login");
 
-  const [user, pushCount] = await Promise.all([
-    prisma.user.findUnique({
-      where: { id: session.user.id },
-      select: {
-        name: true,
-        email: true,
-        imageUrl: true,
-        niche: true,
-        weeklyGoal: true,
-      },
-    }),
-    prisma.pushSubscription.count({
-      where: { userId: session.user.id },
-    }),
-  ]);
+  // Profile only — push count streams in Suspense so first paint is not blocked.
+  const user = await prisma.user.findUnique({
+    where: { id: session.user.id },
+    select: {
+      name: true,
+      email: true,
+      imageUrl: true,
+      niche: true,
+      weeklyGoal: true,
+    },
+  });
 
   if (!user) redirect("/login");
 
@@ -91,7 +93,9 @@ export default async function AkunPage() {
         <div className="mt-1 divide-y divide-border">
           <AkunNicheEditor key={user.niche} niche={user.niche} />
           <AkunGoalEditor key={user.weeklyGoal} weeklyGoal={user.weeklyGoal} />
-          <PushReminderToggle initialEnabled={pushCount > 0} />
+          <Suspense fallback={<div className="min-touch h-12" aria-hidden />}>
+            <AkunPushReminder userId={session.user.id} />
+          </Suspense>
         </div>
       </section>
 
@@ -158,9 +162,7 @@ export default async function AkunPage() {
         <UpdateLog />
       </section>
 
-      <form className="mt-6" action={logoutAction}>
-        <LogoutButton />
-      </form>
+      <LogoutForm />
     </main>
   );
 }

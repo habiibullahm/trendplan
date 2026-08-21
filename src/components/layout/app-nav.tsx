@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { scrollWindowTop } from "@/components/layout/scroll-to-top";
 
 const primaryNav = [
@@ -31,8 +31,21 @@ function isActive(pathname: string, href: string, basePath = "") {
   return pathname === full || pathname.startsWith(`${full}/`);
 }
 
+function warmHref(router: ReturnType<typeof useRouter>, href: string) {
+  if (process.env.NODE_ENV === "development") {
+    void fetch(href, {
+      credentials: "same-origin",
+      redirect: "manual",
+      headers: { Purpose: "prefetch" },
+    }).catch(() => undefined);
+    return;
+  }
+  router.prefetch(href);
+}
+
 export function TopNav({ basePath = "" }: { basePath?: string }) {
   const pathname = usePathname();
+  const router = useRouter();
   const homeHref = withBase(basePath, "/dashboard");
 
   return (
@@ -52,6 +65,12 @@ export function TopNav({ basePath = "" }: { basePath?: string }) {
               <Link
                 key={item.href}
                 href={href}
+                onMouseEnter={() => {
+                  if (!basePath) warmHref(router, href);
+                }}
+                onFocus={() => {
+                  if (!basePath) warmHref(router, href);
+                }}
                 onClick={() => {
                   if (item.href === "/tren") scrollWindowTop();
                 }}
@@ -73,6 +92,7 @@ export function TopNav({ basePath = "" }: { basePath?: string }) {
 
 export function BottomNav({ basePath = "" }: { basePath?: string }) {
   const pathname = usePathname();
+  const router = useRouter();
 
   return (
     <nav
@@ -87,6 +107,9 @@ export function BottomNav({ basePath = "" }: { basePath?: string }) {
             <li key={item.href}>
               <Link
                 href={href}
+                onTouchStart={() => {
+                  if (!basePath) warmHref(router, href);
+                }}
                 onClick={() => {
                   if (item.href === "/tren") scrollWindowTop();
                 }}
