@@ -87,37 +87,29 @@ export default async function PlannerPage({ searchParams }: Readonly<Props>) {
   const weekStartParam = formatWeekStartParam(selection.weekStart);
   const weekLabel = formatWeekRange(selection.weekStart);
 
-  const [user, canToggleShareView] = await Promise.all([
-    prisma.user.findUnique({
-      where: { id: userId },
-      select: { weeklyGoal: true },
-    }),
-    userHasPartnerSeatForWeek(userId, selection.weekStart),
-  ]);
-  const goal = user?.weeklyGoal ?? 3;
-
-  // Drop stale view=shared when this week has no partner seat (nav / after leave).
-  if (view === "shared" && !canToggleShareView) {
-    redirect(
-      plannerHref({
-        weekStart: selection.weekStart,
-        monthParam: selection.monthParam,
-        weekParam: String(selection.weekIndex),
-        tab,
-        toast: params.toast,
-      }),
-    );
-  }
-
   const weekPlanPromise = getWeekPlanForViewer(userId, selection.weekStart, {
     view,
   });
 
   if (tab === "aktivitas") {
-    const [weekPlan, activityCounts] = await Promise.all([
+    const [canToggleShareView, weekPlan, activityCounts] = await Promise.all([
+      userHasPartnerSeatForWeek(userId, selection.weekStart),
       weekPlanPromise,
       countActivitiesByWeekStarts(userId, selection.weekStarts, { view }),
     ]);
+
+    if (view === "shared" && !canToggleShareView) {
+      redirect(
+        plannerHref({
+          weekStart: selection.weekStart,
+          monthParam: selection.monthParam,
+          weekParam: String(selection.weekIndex),
+          tab,
+          toast: params.toast,
+        }),
+      );
+    }
+
     const activities = await listActivitiesForWeekPlan(weekPlan.id);
     const shareSnap = weekShareSnapshotFromPlan(weekPlan, userId);
     const role = shareRoleForUser(weekPlan, userId);
@@ -196,10 +188,29 @@ export default async function PlannerPage({ searchParams }: Readonly<Props>) {
     );
   }
 
-  const [weekPlan, counts] = await Promise.all([
+  const [user, canToggleShareView, weekPlan, counts] = await Promise.all([
+    prisma.user.findUnique({
+      where: { id: userId },
+      select: { weeklyGoal: true },
+    }),
+    userHasPartnerSeatForWeek(userId, selection.weekStart),
     weekPlanPromise,
     countActiveItemsByWeekStarts(userId, selection.weekStarts, { view }),
   ]);
+  const goal = user?.weeklyGoal ?? 3;
+
+  if (view === "shared" && !canToggleShareView) {
+    redirect(
+      plannerHref({
+        weekStart: selection.weekStart,
+        monthParam: selection.monthParam,
+        weekParam: String(selection.weekIndex),
+        tab,
+        toast: params.toast,
+      }),
+    );
+  }
+
   const shareSnap = weekShareSnapshotFromPlan(weekPlan, userId);
   const role = shareRoleForUser(weekPlan, userId);
   const shareUi = buildShareUi(shareSnap, weekLabel);

@@ -25,7 +25,6 @@ import { prisma } from "@/lib/prisma";
 import {
   loginPath,
   safeAuthCallbackUrl,
-  withAuthCallbackQuery,
 } from "@/lib/auth/callback-url";
 
 export type AuthFormState = ActionResult;
@@ -104,31 +103,16 @@ export async function loginAction(
       password: fd.get("password"),
     }),
     async (data) => {
-      const email = data.email.toLowerCase().trim();
-      // Rate limits enforced in authorize() so /api/auth/callback is covered too.
-
-      const user = await prisma.user.findUnique({
-        where: { email },
-        select: { onboardingComplete: true, emailVerified: true },
-      });
-
-      const verificationRequired = isEmailVerificationRequired();
-      const needsVerify =
-        verificationRequired && user && !user.emailVerified;
-
+      // Redirect target is coarse; verify/onboarding gates run on the destination.
+      // Skipping a pre-signIn User.findUnique saves a Neon RTT (authorize loads the user).
       const safeCallback = safeAuthCallbackUrl(
         String(formData.get("callbackUrl") ?? ""),
       );
-
-      const redirectTo = needsVerify
-        ? withAuthCallbackQuery("/verify-email", safeCallback)
-        : user?.onboardingComplete
-          ? (safeCallback ?? "/dashboard")
-          : withAuthCallbackQuery("/onboarding", safeCallback);
+      const redirectTo = safeCallback ?? "/dashboard";
 
       try {
         await signIn("credentials", {
-          email,
+          email: data.email,
           password: data.password,
           redirectTo,
         });

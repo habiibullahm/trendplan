@@ -1,8 +1,11 @@
 "use server";
 
-import { signOut } from "@/auth";
+import { redirect } from "next/navigation";
 
-/** Thin logout action so Akun RSC does not pull NextAuth into the page module graph. */
+/**
+ * Clear JWT cookies via the dedicated route (no Auth.js signOut round-trip).
+ * Cookie writes are illegal in RSC/actions — clear-session Set-Cookies on the response.
+ */
 export async function logoutAction() {
-  await signOut({ redirectTo: "/" });
+  redirect("/api/auth/clear-session");
 }
