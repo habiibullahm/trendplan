@@ -22,6 +22,13 @@ export const APP_VERSION = packageJson.version;
 
 export const UPDATE_LOG: UpdateEntry[] = [
   {
+    id: "2026-08-21-logout-fix",
+    version: "0.4.9",
+    date: "21 Agu 2026",
+    title: "Keluar akun kembali andal",
+    body: "Tombol Keluar dan sesi yang sudah tidak valid sekarang membersihkan cookie dengan benar, jadi kamu tidak tertahan di Beranda seolah masih masuk.",
+  },
+  {
     id: "2026-08-21-planner-drag-handle",
     version: "0.4.8",
     date: "21 Agu 2026",

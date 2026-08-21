@@ -32,8 +32,8 @@ export const getSafeSession = cache(async () => {
  * Node may invalidate the JWT (user missing / passwordVersion) while the
  * cookie still looks valid to the edge proxy — bare redirect("/login") leaves
  * the cookie and causes login ↔ onboarding loops.
- * Cookie writes are illegal in RSC; clear via Route Handler instead.
+ * Cookie writes are illegal in RSC; clear via `/logout` (proxy Set-Cookie).
  */
 export function redirectToLoginClearingSession(): never {
-  redirect("/api/auth/clear-session");
+  redirect("/logout");
 }
