@@ -158,3 +158,35 @@ export function AkunPageLoading({ as }: ShellProps = {}) {
     </PageLoading>
   );
 }
+
+/** Edit / buat aktivitas — form shell (not the Plan board). */
+export function ActivityEditPageLoading({ as }: ShellProps = {}) {
+  return (
+    <PageLoading
+      label="Memuat aktivitas…"
+      className="mx-auto max-w-lg"
+      as={as}
+    >
+      <div aria-hidden>
+        <Skeleton className="h-4 w-40" />
+        <Skeleton className="mt-3 h-8 w-48 max-w-full rounded-lg sm:h-9" />
+        <Skeleton className="mt-2 h-3.5 w-56 max-w-full" />
+      </div>
+
+      <div className="mt-6 flex flex-col gap-4" aria-hidden>
+        <div className="flex flex-col gap-1.5">
+          <Skeleton className="h-3.5 w-12" />
+          <Skeleton className="h-11 w-full rounded-xl" />
+        </div>
+        <div className="flex flex-col gap-1.5">
+          <Skeleton className="h-3.5 w-14" />
+          <Skeleton className="h-11 w-full rounded-xl" />
+        </div>
+        <div className="flex flex-wrap items-center gap-2">
+          <Skeleton className="h-11 w-24 rounded-xl" />
+          <Skeleton className="h-11 w-20 rounded-xl" />
+        </div>
+      </div>
+    </PageLoading>
+  );
+}
