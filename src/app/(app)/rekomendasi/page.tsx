@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { auth } from "@/auth";
+import { getSafeSession } from "@/lib/auth/session";
 import { AddToPlannerForm } from "@/features/planner/components/add-to-planner-form";
 import { CompactTrendMedia } from "@/features/planner/components/trend-media";
 import { FadeIn, Stagger } from "@/components/motion";
@@ -11,7 +11,7 @@ import { prisma } from "@/lib/prisma";
 import { getRecommendations } from "@/features/planner/lib/planner";
 
 export default async function RekomendasiPage() {
-  const session = await auth();
+  const session = await getSafeSession();
   if (!session?.user?.id) redirect("/login");
 
   const user = await prisma.user.findUnique({

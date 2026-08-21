@@ -22,7 +22,8 @@ Perencanaan konten TikTok mingguan berbasis tren — niche **Couple Date Ideas**
 - **Bagikan minggu ke partner** — undang 1 partner via tautan (opsional email) ke week plan yang sama
 - Hapus dengan toast Urungkan singkat, lalu hapus permanen
 - Dashboard progress + riwayat
-- Akun: identitas, foto profil (unggah), target mingguan (ubah), **pengingat plan** (Web Push), pintasan Riwayat/Rekomendasi, keluar
+- Akun: identitas, foto profil (unggah), target mingguan (ubah), **pengingat plan** (Web Push), **Kirim masukan**, pintasan Riwayat/Rekomendasi, keluar
+- Owner inbox masukan di `/admin/feedback` (`ADMIN_EMAILS` + opsional email Resend) — lihat [admin feedback](docs/user-stories/admin-feedback.md)
 - Demo baca saja di `/demo` (embed portfolio)
 - Toast sukses/error (Bahasa Indonesia)
 
@@ -35,6 +36,7 @@ See [docs/user-stories/](docs/user-stories/README.md). Highlights:
 - [Partner week share](docs/user-stories/partner-week-share.md)
 - [AI caption assist](docs/user-stories/ai-caption-assist.md)
 - [Empty-slot Saran ide](docs/user-stories/empty-slot-assist.md)
+- [Admin feedback inbox](docs/user-stories/admin-feedback.md)
 
 ## Guides
 
@@ -46,6 +48,7 @@ See [docs/user-stories/](docs/user-stories/README.md). Highlights:
 ## AI assist
 
 Tombol **Bantu AI** di detail ide (Groq) dan **Saran ide** di hari kosong planner (katalog tren, bukan riset FYP live). Env: lihat [`.env.example`](.env.example) dan [AI caption assist](docs/user-stories/ai-caption-assist.md).
+Tombol **Bantu AI** di detail ide (Groq). Kunjungan pertama menampilkan petunjuk singkat. Env: lihat [`.env.example`](.env.example) dan [AI caption assist](docs/user-stories/ai-caption-assist.md).
 
 ## Setup lokal
 
@@ -64,7 +67,7 @@ AUTH_SECRET="generate-a-long-random-string"
 AUTH_TRUST_HOST="true"
 ```
 
-Email, Web Push, Blob, AI, dll. → komentar di [`.env.example`](.env.example). Buat DB/user `trendplan` jika belum ada.
+Email, Web Push, Blob, AI, dll. → komentar di [`.env.example`](.env.example). Buat DB/user `trendplan` jika belum ada. Owner inbox: set `ADMIN_EMAILS`; notifikasi email butuh transactional mail aktif.
 
 ```bash
 npx prisma migrate deploy

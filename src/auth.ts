@@ -11,6 +11,7 @@ import {
 import {
   dbSecurityClaims,
   shouldInvalidateForPasswordVersion,
+  shouldRefreshSecurityClaims,
 } from "@/lib/auth/jwt-claims";
 import { passwordSchema } from "@/lib/auth/validation";
 import {
@@ -60,14 +61,12 @@ export const { handlers, auth, signIn, signOut, unstable_update } = NextAuth({
 
         const email = parsed.data.email.toLowerCase().trim();
         const ip = await getClientIp();
-        // Same buckets as loginAction — covers direct /api/auth/callback/credentials.
-        const ipLimit = await checkRateLimit(`login:ip:${ip}`, LOGIN_IP_LIMIT);
-        if (!ipLimit.ok) return null;
-        const emailLimit = await checkRateLimit(
-          `login:email:${email}`,
-          LOGIN_EMAIL_LIMIT,
-        );
-        if (!emailLimit.ok) return null;
+        // Parallel buckets — separate keys/transactions; halves wall-clock vs serial.
+        const [ipLimit, emailLimit] = await Promise.all([
+          checkRateLimit(`login:ip:${ip}`, LOGIN_IP_LIMIT),
+          checkRateLimit(`login:email:${email}`, LOGIN_EMAIL_LIMIT),
+        ]);
+        if (!ipLimit.ok || !emailLimit.ok) return null;
 
         const user = await prisma.user.findUnique({ where: { email } });
         const storedHash = user?.passwordHash ?? DUMMY_PASSWORD_HASH;
@@ -105,11 +104,25 @@ export const { handlers, auth, signIn, signOut, unstable_update } = NextAuth({
       if (!token) return token;
 
       // Sign-in already stamped claims from authorize().
-      if (params.user) return token;
+      if (params.user) {
+        token.securityClaimsAt = Date.now();
+        return token;
+      }
       if (typeof token.id !== "string") return token;
 
-      // Always reload security claims from DB so edge soft-gates match Node
-      // (stale emailVerified after verify caused dashboard ↔ verify redirect loops).
+      // Soft-nav hits auth() often. Reload security claims on `update` or when
+      // SECURITY_CLAIMS_MAX_AGE_MS elapses (documented ≤30s revoke window for
+      // passwordVersion / deleted user on other sessions). Verify / password /
+      // onboarding call unstable_update and refresh immediately.
+      if (
+        !shouldRefreshSecurityClaims({
+          trigger: params.trigger,
+          securityClaimsAt: token.securityClaimsAt,
+        })
+      ) {
+        return token;
+      }
+
       const row = await prisma.user.findUnique({
         where: { id: token.id },
         select: {
@@ -169,7 +182,9 @@ export const { handlers, auth, signIn, signOut, unstable_update } = NextAuth({
         }
       }
 
-      Object.assign(token, dbSecurityClaims(row));
+      Object.assign(token, dbSecurityClaims(row), {
+        securityClaimsAt: Date.now(),
+      });
       return token;
     },
     async session(params) {

@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
-import { auth } from "@/auth";
+import { getSafeSession } from "@/lib/auth/session";
 import { ContentEditForm } from "@/features/planner/components/content-edit-form";
 import { RiwayatPostedCard } from "@/features/planner/components/riwayat-posted-card";
 import {
@@ -21,7 +21,7 @@ export default async function PlannerItemPage({
   params,
   searchParams,
 }: Readonly<Props>) {
-  const session = await auth();
+  const session = await getSafeSession();
   if (!session?.user?.id) redirect("/login");
 
   const { itemId } = await params;

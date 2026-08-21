@@ -33,6 +33,7 @@ import type { ContentStatus } from "@/generated/prisma/client";
 import { cn } from "@/lib/cn";
 import type { PlannerView } from "@/lib/week";
 import { idleActionResult } from "@/lib/action-result";
+import { BantuAiCoachmark } from "@/features/planner/components/bantu-ai-coachmark";
 
 const initial: PlannerActionState = idleActionResult;
 
@@ -77,12 +78,7 @@ function ReturnFields({
 
 function toastForAssistResult(data: {
   source?: "ai" | "template";
-  reason?:
-    | "disabled"
-    | "missing_key"
-    | "quota"
-    | "unsupported_model"
-    | "error";
+  reason?: "disabled" | "missing_key" | "quota" | "unsupported_model" | "error";
 }) {
   const feedback = assistFeedbackForResult(data);
   if (feedback.tone === "success") copyToastSuccess(feedback.message);
@@ -207,7 +203,9 @@ export function ContentEditForm({
 
       if (!res.ok) {
         if (res.status === 401 || res.status === 403) {
-          copyToastError("Sesi tidak valid. Masuk lagi untuk memakai Bantu AI.");
+          copyToastError(
+            "Sesi tidak valid. Masuk lagi untuk memakai Bantu AI.",
+          );
         } else if (res.status === 404) {
           copyToastError("Ide tidak ditemukan.");
         } else {
@@ -221,11 +219,7 @@ export function ContentEditForm({
         hashtags?: string;
         source?: "ai" | "template";
         reason?:
-          | "disabled"
-          | "missing_key"
-          | "quota"
-          | "unsupported_model"
-          | "error";
+          "disabled" | "missing_key" | "quota" | "unsupported_model" | "error";
       };
 
       const nextCaption =
@@ -308,21 +302,23 @@ export function ContentEditForm({
           label="Caption"
           htmlFor="caption-field"
           action={
-            <ChipButton
-              variant="ghost"
-              onClick={bantuAi}
-              disabled={controlsBusy}
-              aria-busy={aiPending || undefined}
-            >
-              {aiPending ? (
-                <span className="inline-flex items-center gap-1.5">
-                  <Spinner className="size-3.5 text-coral" />
-                  Menyusun…
-                </span>
-              ) : (
-                "Bantu AI"
-              )}
-            </ChipButton>
+            <BantuAiCoachmark>
+              <ChipButton
+                variant="ghost"
+                onClick={bantuAi}
+                disabled={controlsBusy}
+                aria-busy={aiPending || undefined}
+              >
+                {aiPending ? (
+                  <span className="inline-flex items-center gap-1.5">
+                    <Spinner className="size-3.5 text-coral" />
+                    Menyusun…
+                  </span>
+                ) : (
+                  "Bantu AI"
+                )}
+              </ChipButton>
+            </BantuAiCoachmark>
           }
         >
           <div className={fieldBusyClass} aria-busy={aiPending || undefined}>

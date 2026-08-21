@@ -5,7 +5,7 @@ import { redirect } from "next/navigation";
 import { z } from "zod";
 import { ContentStatus } from "@/generated/prisma/client";
 import { prisma } from "@/lib/prisma";
-import { requireUserId } from "@/features/planner/lib/planner";
+import { requireUserId, purgeStaleSoftDeletes } from "@/features/planner/lib/planner";
 import {
   getWeekPlanForViewer,
   weekPlanAccessWhere,
@@ -292,6 +292,9 @@ export async function softDeleteContentItemAction(formData: FormData) {
       },
     }),
   ]);
+
+  // Sequential GC (not concurrent with the transaction) — keeps pg client happy.
+  await purgeStaleSoftDeletes(userId);
 
   revalidatePlanner();
   redirect(

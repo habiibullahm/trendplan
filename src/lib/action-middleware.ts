@@ -53,8 +53,12 @@ export async function getClientIp(): Promise<string> {
 export async function assertRateLimits(
   ...checks: { key: string; options: RateLimitOptions }[]
 ): Promise<ActionResult | null> {
-  for (const { key, options } of checks) {
-    const result = await checkRateLimit(key, options);
+  if (checks.length === 0) return null;
+  // Independent keys — run in parallel to cut Neon RTT on multi-bucket checks.
+  const results = await Promise.all(
+    checks.map(({ key, options }) => checkRateLimit(key, options)),
+  );
+  for (const result of results) {
     if (!result.ok) return actionFail("rateLimited");
   }
   return null;

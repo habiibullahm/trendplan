@@ -17,6 +17,16 @@ export type JwtSecurityClaims = {
   emailVerified: string | null;
 };
 
+/**
+ * Max age of JWT-embedded security claims before Node reloads them from DB.
+ *
+ * Intentional revoke window: other devices / stolen cookies may keep working for
+ * up to this long after a passwordVersion bump or user delete, until the next
+ * DB refresh. Same-tab flows (verify-email, password change, onboarding) call
+ * Auth.js `update` and refresh immediately. Keep this short (≤30s).
+ */
+export const SECURITY_CLAIMS_MAX_AGE_MS = 30_000;
+
 /** Map DB user security fields onto JWT claim shape. */
 export function dbSecurityClaims(
   row: UserSecurityClaimsRow,
@@ -51,4 +61,18 @@ export function shouldInvalidateForPasswordVersion(
   dbVersion: number,
 ): boolean {
   return !isPasswordVersionCurrent(tokenVersion, dbVersion);
+}
+
+/** Whether the Node jwt callback should reload security claims from DB. */
+export function shouldRefreshSecurityClaims(opts: {
+  trigger: string | undefined;
+  securityClaimsAt: unknown;
+  now?: number;
+  maxAgeMs?: number;
+}): boolean {
+  if (opts.trigger === "update") return true;
+  const claimsAt =
+    typeof opts.securityClaimsAt === "number" ? opts.securityClaimsAt : 0;
+  const maxAge = opts.maxAgeMs ?? SECURITY_CLAIMS_MAX_AGE_MS;
+  return (opts.now ?? Date.now()) - claimsAt >= maxAge;
 }
