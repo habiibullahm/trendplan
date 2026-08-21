@@ -22,6 +22,13 @@ export const APP_VERSION = packageJson.version;
 
 export const UPDATE_LOG: UpdateEntry[] = [
   {
+    id: "2026-08-18-empty-slot-saran-ide",
+    version: "0.4.12",
+    date: "21 Agu 2026",
+    title: "Saran ide untuk hari kosong",
+    body: "Di Plan, hari kosong punya Saran ide: 1–2 tren yang belum kamu pakai minggu ini. Pilih hari, lalu Pakai — caption tetap lewat Bantu AI di detail. Bukan riset FYP live.",
+  },
+  {
     id: "2026-08-18-bantu-ai-coachmark",
     version: "0.4.11",
     date: "21 Agu 2026",

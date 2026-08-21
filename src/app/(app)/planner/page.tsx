@@ -17,7 +17,15 @@ import type { ShareWeekUiSnapshot } from "@/features/planner/components/share-we
 import { SharedWeekBanner } from "@/features/planner/components/shared-week-banner";
 import { STATUS_LABEL } from "@/lib/labels";
 import { buildMonthWeekChips } from "@/features/planner/lib/month-week";
-import { countActiveItemsByWeekStarts } from "@/features/planner/lib/planner";
+import {
+  countActiveItemsByWeekStarts,
+  getRecommendations,
+} from "@/features/planner/lib/planner";
+import {
+  emptyPlannerDays,
+  shouldShowEmptySlotSaran,
+  unusedTrendsForEmptyDays,
+} from "@/features/planner/lib/empty-slot-assist";
 import {
   getWeekPlanForViewer,
   partnerDisplayName,
@@ -188,15 +196,22 @@ export default async function PlannerPage({ searchParams }: Readonly<Props>) {
     );
   }
 
-  const [user, canToggleShareView, weekPlan, counts] = await Promise.all([
-    prisma.user.findUnique({
-      where: { id: userId },
-      select: { weeklyGoal: true },
-    }),
-    userHasPartnerSeatForWeek(userId, selection.weekStart),
-    weekPlanPromise,
-    countActiveItemsByWeekStarts(userId, selection.weekStarts, { view }),
-  ]);
+  const userPromise = prisma.user.findUnique({
+    where: { id: userId },
+    select: { weeklyGoal: true, niche: true },
+  });
+  const catalogPromise = userPromise.then((user) =>
+    getRecommendations(user?.niche ?? null, 12),
+  );
+
+  const [user, canToggleShareView, weekPlan, counts, catalog] =
+    await Promise.all([
+      userPromise,
+      userHasPartnerSeatForWeek(userId, selection.weekStart),
+      weekPlanPromise,
+      countActiveItemsByWeekStarts(userId, selection.weekStarts, { view }),
+      catalogPromise,
+    ]);
   const goal = user?.weeklyGoal ?? 3;
 
   if (view === "shared" && !canToggleShareView) {
@@ -232,6 +247,27 @@ export default async function PlannerPage({ searchParams }: Readonly<Props>) {
   if (selectedChip) {
     selectedChip.filled = weekPlan.items.length;
   }
+
+  const unusedTrends = unusedTrendsForEmptyDays({
+    trends: catalog.map((trend) => ({
+      id: trend.id,
+      title: trend.title,
+      reason: trend.reason,
+      score: trend.score,
+    })),
+    usedTrendIds: weekPlan.items.map((item) => item.trendId),
+  });
+  const emptyDays = emptyPlannerDays(
+    weekPlan.items.map((item) => item.dayOfWeek),
+  );
+  const saran = shouldShowEmptySlotSaran({ emptyDays, unusedTrends })
+    ? {
+        suggestions: unusedTrends,
+        emptyDays,
+        weekStartParam,
+        view,
+      }
+    : null;
 
   return (
     <main className="flex flex-1 flex-col">
@@ -307,6 +343,7 @@ export default async function PlannerPage({ searchParams }: Readonly<Props>) {
         returnMonth={selection.monthParam}
         returnWeek={selection.weekIndex}
         view={view}
+        saran={saran}
         items={weekPlan.items.map((item) => ({
           id: item.id,
           dayOfWeek: item.dayOfWeek,

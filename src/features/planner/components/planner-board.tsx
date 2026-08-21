@@ -9,6 +9,10 @@ import {
 import { usePlannerLayout } from "@/hooks/use-planner-layout";
 import type { PlannerView } from "@/lib/week";
 import {
+  EmptySlotSaranProvider,
+  type EmptySlotSaranConfig,
+} from "@/features/planner/components/empty-slot-saran";
+import {
   PlannerHint,
   StaticBoard,
   type LayoutKind,
@@ -24,6 +28,7 @@ type InteractiveBoardProps = {
   returnMonth?: string;
   returnWeek?: number;
   view?: PlannerView;
+  saran?: EmptySlotSaranConfig | null;
 };
 
 export function PlannerBoard({
@@ -32,12 +37,14 @@ export function PlannerBoard({
   returnMonth,
   returnWeek,
   view,
+  saran = null,
 }: {
   items: PlannerBoardItem[];
   weekStartParam?: string;
   returnMonth?: string;
   returnWeek?: number;
   view?: PlannerView;
+  saran?: EmptySlotSaranConfig | null;
 }) {
   const layout = usePlannerLayout();
   const [Interactive, setInteractive] = useState<ComponentType<
@@ -65,13 +72,15 @@ export function PlannerBoard({
   }, [layout]);
 
   const staticBoard = (
-    <StaticBoard
-      items={items}
-      weekStartParam={weekStartParam}
-      returnMonth={returnMonth}
-      returnWeek={returnWeek}
-      view={view}
-    />
+    <EmptySlotSaranProvider config={saran}>
+      <StaticBoard
+        items={items}
+        weekStartParam={weekStartParam}
+        returnMonth={returnMonth}
+        returnWeek={returnWeek}
+        view={view}
+      />
+    </EmptySlotSaranProvider>
   );
 
   return (
@@ -85,11 +94,12 @@ export function PlannerBoard({
           returnMonth={returnMonth}
           returnWeek={returnWeek}
           view={view}
+          saran={saran}
         />
       ) : (
         staticBoard
       )}
-      <PlannerHint />
+      <PlannerHint showSaran={Boolean(saran)} />
     </>
   );
 }

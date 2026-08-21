@@ -35,6 +35,7 @@ See [docs/user-stories/](docs/user-stories/README.md). Highlights:
 - [Weekly planner](docs/user-stories/weekly-planner.md)
 - [Partner week share](docs/user-stories/partner-week-share.md)
 - [AI caption assist](docs/user-stories/ai-caption-assist.md)
+- [Empty-slot Saran ide](docs/user-stories/empty-slot-assist.md)
 - [Admin feedback inbox](docs/user-stories/admin-feedback.md)
 
 ## Guides
@@ -46,6 +47,7 @@ See [docs/user-stories/](docs/user-stories/README.md). Highlights:
 
 ## AI assist
 
+Tombol **Bantu AI** di detail ide (Groq) dan **Saran ide** di hari kosong planner (katalog tren, bukan riset FYP live). Env: lihat [`.env.example`](.env.example) dan [AI caption assist](docs/user-stories/ai-caption-assist.md).
 Tombol **Bantu AI** di detail ide (Groq). Kunjungan pertama menampilkan petunjuk singkat. Env: lihat [`.env.example`](.env.example) dan [AI caption assist](docs/user-stories/ai-caption-assist.md).
 
 ## Setup lokal

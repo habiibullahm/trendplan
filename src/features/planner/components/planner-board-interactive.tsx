@@ -42,6 +42,11 @@ import {
   type LayoutKind,
   type PlannerBoardItem,
 } from "@/features/planner/components/planner-board-shared";
+import {
+  EmptySlotSaranProvider,
+  EmptySlotSaranTrigger,
+  type EmptySlotSaranConfig,
+} from "@/features/planner/components/empty-slot-saran";
 
 const TOAST_ID = "planner-dnd";
 
@@ -92,19 +97,22 @@ function DaySlot({
             view={view}
           />
         ) : (
-          <Link
-            href={newPlanHref(
-              day,
-              weekStartParam,
-              returnMonth,
-              returnWeek,
-              view,
-            )}
-            className="min-touch flex items-center gap-3 rounded-2xl border border-dashed border-border px-4 py-3 transition-colors hover:border-coral/50 hover:bg-coral/5"
-          >
-            <p className="text-xs font-semibold text-ink-muted">{label}</p>
-            <p className="text-sm text-ink-muted">+ Buat ide</p>
-          </Link>
+          <div className="flex items-center gap-1 rounded-2xl border border-dashed border-border transition-colors hover:border-coral/50 hover:bg-coral/5">
+            <Link
+              href={newPlanHref(
+                day,
+                weekStartParam,
+                returnMonth,
+                returnWeek,
+                view,
+              )}
+              className="min-touch flex min-w-0 flex-1 items-center gap-3 px-4 py-3"
+            >
+              <p className="text-xs font-semibold text-ink-muted">{label}</p>
+              <p className="text-sm text-ink-muted">+ Buat ide</p>
+            </Link>
+            <EmptySlotSaranTrigger day={day} className="shrink-0 pr-3" />
+          </div>
         )}
       </li>
     );
@@ -141,18 +149,21 @@ function DaySlot({
           view={view}
         />
       ) : (
-        <Link
-          href={newPlanHref(
-            day,
-            weekStartParam,
-            returnMonth,
-            returnWeek,
-            view,
-          )}
-          className="mt-3 block text-sm text-ink-muted transition-colors hover:text-coral"
-        >
-          + Buat ide
-        </Link>
+        <div className="mt-3 flex flex-col items-start gap-1">
+          <Link
+            href={newPlanHref(
+              day,
+              weekStartParam,
+              returnMonth,
+              returnWeek,
+              view,
+            )}
+            className="block text-sm text-ink-muted transition-colors hover:text-coral"
+          >
+            + Buat ide
+          </Link>
+          <EmptySlotSaranTrigger day={day} />
+        </div>
       )}
     </div>
   );
@@ -355,6 +366,7 @@ export function InteractiveBoard({
   returnMonth,
   returnWeek,
   view,
+  saran = null,
 }: {
   items: PlannerBoardItem[];
   layout: LayoutKind;
@@ -362,6 +374,7 @@ export function InteractiveBoard({
   returnMonth?: string;
   returnWeek?: number;
   view?: PlannerView;
+  saran?: EmptySlotSaranConfig | null;
 }) {
   const [localItems, setLocalItems] = useState(items);
   const [activeItemId, setActiveItemId] = useState<string | null>(null);
@@ -479,30 +492,32 @@ export function InteractiveBoard({
   );
 
   return (
-    <SkipClickContext.Provider value={skipClickRef}>
-      <DndContext
-        sensors={sensors}
-        collisionDetection={closestCorners}
-        onDragStart={onDragStart}
-        onDragEnd={onDragEnd}
-        onDragCancel={() => {
-          setActiveItemId(null);
-          armSkipClick();
-        }}
-      >
-        <BoardLayout
-          layout={layout}
-          byDay={byDay}
-          pending={pending}
-          weekStartParam={weekStartParam}
-          returnMonth={returnMonth}
-          returnWeek={returnWeek}
-          view={view}
-        />
-        <DragOverlay dropAnimation={null}>
-          {activeItem ? <OverlayCard item={activeItem} /> : null}
-        </DragOverlay>
-      </DndContext>
-    </SkipClickContext.Provider>
+    <EmptySlotSaranProvider config={saran} disabled={pending}>
+      <SkipClickContext.Provider value={skipClickRef}>
+        <DndContext
+          sensors={sensors}
+          collisionDetection={closestCorners}
+          onDragStart={onDragStart}
+          onDragEnd={onDragEnd}
+          onDragCancel={() => {
+            setActiveItemId(null);
+            armSkipClick();
+          }}
+        >
+          <BoardLayout
+            layout={layout}
+            byDay={byDay}
+            pending={pending}
+            weekStartParam={weekStartParam}
+            returnMonth={returnMonth}
+            returnWeek={returnWeek}
+            view={view}
+          />
+          <DragOverlay dropAnimation={null}>
+            {activeItem ? <OverlayCard item={activeItem} /> : null}
+          </DragOverlay>
+        </DndContext>
+      </SkipClickContext.Provider>
+    </EmptySlotSaranProvider>
   );
 }

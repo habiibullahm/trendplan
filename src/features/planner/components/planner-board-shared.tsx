@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
+import { EmptySlotSaranTrigger } from "@/features/planner/components/empty-slot-saran";
 import { STATUS_CLASS, STATUS_LABEL } from "@/lib/labels";
 import { DAY_SHORT, type PlannerView } from "@/lib/week";
 import type { ContentStatus } from "@/generated/prisma/client";
@@ -111,19 +112,24 @@ export function StaticBoard({
                   <p className="text-sm text-ink-muted">Kosong</p>
                 </div>
               ) : (
-                <Link
-                  href={newPlanHref(
-                    day,
-                    weekStartParam,
-                    returnMonth,
-                    returnWeek,
-                    view,
-                  )}
-                  className="min-touch flex items-center gap-3 rounded-2xl border border-dashed border-border px-4 py-3 transition-colors hover:border-coral/50 hover:bg-coral/5"
-                >
-                  <p className="text-xs font-semibold text-ink-muted">{label}</p>
-                  <p className="text-sm text-ink-muted">+ Buat ide</p>
-                </Link>
+                <div className="flex items-center gap-1 rounded-2xl border border-dashed border-border transition-colors hover:border-coral/50 hover:bg-coral/5">
+                  <Link
+                    href={newPlanHref(
+                      day,
+                      weekStartParam,
+                      returnMonth,
+                      returnWeek,
+                      view,
+                    )}
+                    className="min-touch flex min-w-0 flex-1 items-center gap-3 px-4 py-3"
+                  >
+                    <p className="text-xs font-semibold text-ink-muted">
+                      {label}
+                    </p>
+                    <p className="text-sm text-ink-muted">+ Buat ide</p>
+                  </Link>
+                  <EmptySlotSaranTrigger day={day} className="shrink-0 pr-3" />
+                </div>
               )}
             </li>
           );
@@ -174,18 +180,21 @@ export function StaticBoard({
               ) : readOnly ? (
                 <p className="mt-3 text-sm text-ink-muted">Kosong</p>
               ) : (
-                <Link
-                  href={newPlanHref(
-                    day,
-                    weekStartParam,
-                    returnMonth,
-                    returnWeek,
-                    view,
-                  )}
-                  className="mt-3 block text-sm text-ink-muted transition-colors hover:text-coral"
-                >
-                  + Buat ide
-                </Link>
+                <div className="mt-3 flex flex-col items-start gap-1">
+                  <Link
+                    href={newPlanHref(
+                      day,
+                      weekStartParam,
+                      returnMonth,
+                      returnWeek,
+                      view,
+                    )}
+                    className="block text-sm text-ink-muted transition-colors hover:text-coral"
+                  >
+                    + Buat ide
+                  </Link>
+                  <EmptySlotSaranTrigger day={day} />
+                </div>
               )}
             </div>
           );
@@ -195,11 +204,19 @@ export function StaticBoard({
   );
 }
 
-export function PlannerHint() {
+export function PlannerHint({ showSaran = false }: { showSaran?: boolean }) {
   return (
     <p className="mt-4 text-sm text-ink-muted">
       Seret lewat ikon di kiri kartu untuk memindahkan atau menukar. Ketuk judul
-      untuk membuka detail. Slot kosong? Ambil ide dari{" "}
+      untuk membuka detail. Slot kosong?{" "}
+      {showSaran ? (
+        <>
+          Pakai <span className="font-semibold text-ink">Saran ide</span>, atau
+          ambil dari{" "}
+        </>
+      ) : (
+        <>Ambil ide dari </>
+      )}
       <Link
         href="/rekomendasi"
         className="font-semibold text-coral transition-colors hover:underline"
