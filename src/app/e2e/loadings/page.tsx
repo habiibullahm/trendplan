@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import {
+  ActivityEditPageLoading,
   AkunPageLoading,
   DashboardPageLoading,
   PlannerPageLoading,
@@ -54,6 +55,9 @@ export default function E2ELoadingGalleryPage() {
       </section>
       <section data-loading="akun">
         <AkunPageLoading as="div" />
+      </section>
+      <section data-loading="aktivitas-edit">
+        <ActivityEditPageLoading as="div" />
       </section>
     </div>
   );
