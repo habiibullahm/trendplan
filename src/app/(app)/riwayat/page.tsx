@@ -3,8 +3,7 @@ import { getSafeSession } from "@/lib/auth/session";
 import { FadeIn, Stagger } from "@/components/motion";
 import { EmptyState } from "@/components/ui/empty-state";
 import { RiwayatPostedCard } from "@/features/planner/components/riwayat-posted-card";
-import { weekPlanAccessWhere } from "@/features/planner/lib/week-share";
-import { prisma } from "@/lib/prisma";
+import { listPostedContentItems } from "@/features/planner/fetchers/riwayat";
 import { DAY_SHORT, formatWeekRange } from "@/lib/week";
 
 export default async function RiwayatPage() {
@@ -12,19 +11,7 @@ export default async function RiwayatPage() {
   if (!session?.user?.id) redirect("/login");
   const userId = session.user.id;
 
-  const items = await prisma.contentItem.findMany({
-    where: {
-      status: "POSTED",
-      deletedAt: null,
-      dayOfWeek: { gte: 0 },
-      weekPlan: weekPlanAccessWhere(userId),
-    },
-    include: {
-      weekPlan: { select: { weekStart: true } },
-      trend: { select: { title: true } },
-    },
-    orderBy: { updatedAt: "desc" },
-  });
+  const items = await listPostedContentItems(userId);
 
   return (
     <main className="flex flex-1 flex-col">

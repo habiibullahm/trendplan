@@ -7,17 +7,14 @@ import { FadeIn, Stagger } from "@/components/motion";
 import { EmptyState } from "@/components/ui/empty-state";
 import { FORMAT_LABEL } from "@/lib/labels";
 import { resolveNiche } from "@/lib/niches";
-import { prisma } from "@/lib/prisma";
-import { getRecommendations } from "@/features/planner/lib/planner";
+import { getRecommendations } from "@/features/planner/fetchers/recommendations";
+import { getUserNiche } from "@/features/planner/fetchers/planner-user";
 
 export default async function RekomendasiPage() {
   const session = await getSafeSession();
   if (!session?.user?.id) redirect("/login");
 
-  const user = await prisma.user.findUnique({
-    where: { id: session.user.id },
-    select: { niche: true },
-  });
+  const user = await getUserNiche(session.user.id);
   const niche = resolveNiche(user?.niche);
   const trends = await getRecommendations(niche, 12);
 

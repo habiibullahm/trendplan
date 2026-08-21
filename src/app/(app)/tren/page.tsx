@@ -1,8 +1,8 @@
 import { redirect } from "next/navigation";
 import { TrenFeed } from "@/features/planner/components/tren-feed";
-import { getRecommendations } from "@/features/planner/lib/planner";
+import { getRecommendations } from "@/features/planner/fetchers/recommendations";
+import { getUserNiche } from "@/features/planner/fetchers/planner-user";
 import { getSafeSession } from "@/lib/auth/session";
-import { prisma } from "@/lib/prisma";
 import { resolveNiche } from "@/lib/niches";
 
 export default async function TrenPage() {
@@ -10,10 +10,7 @@ export default async function TrenPage() {
   if (!session?.user?.id) redirect("/login");
 
   const [user, trends] = await Promise.all([
-    prisma.user.findUnique({
-      where: { id: session.user.id },
-      select: { niche: true },
-    }),
+    getUserNiche(session.user.id),
     getRecommendations(null, 48),
   ]);
   const userNiche = resolveNiche(user?.niche);

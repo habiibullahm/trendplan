@@ -68,3 +68,15 @@ export async function requireAppUserAction(
   }
   return { ok: false, result: actionFail("unauthorized") };
 }
+
+/**
+ * Throws when unauthenticated — for Server Actions that already use throw-style gates.
+ * Prefer `requireAppUserAction` / `gateAppUser` for ActionResult flows.
+ */
+export async function requireUserId(): Promise<string> {
+  const gate = await gateAppUser();
+  if (!gate.ok) {
+    throw new Error("Unauthorized");
+  }
+  return gate.userId;
+}

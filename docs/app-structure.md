@@ -21,8 +21,8 @@ docs/                  # Guides + user stories
 | Layer | Responsibility |
 |-------|----------------|
 | **`app/`** | URL segments, `page.tsx` / `layout.tsx`, load data, wire actions/components |
-| **`features/<domain>/`** | Domain actions, components, lib — **not** routes |
-| **`lib/`** | Shared infra used by **2+** features (auth gates, mail, prisma, week) |
+| **`features/<domain>/`** | Domain fetchers (reads), actions (writes), components, pure lib — **not** routes |
+| **`lib/`** | Shared infra used by **2+** features (auth gates, mail, db/prisma, week) |
 
 Pages stay thin: gate → load → render feature components. Import from `@/features/...` and `@/lib/...`.
 
@@ -41,11 +41,13 @@ Pages stay thin: gate → load → render feature components. Import from `@/fea
 
 ```
 features/<name>/
-  actions/                 # "use server" — always a directory
+  fetchers/                # Prisma/cache READS for RSC (no "use server")
+    <topic>.ts
+  actions/                 # "use server" WRITE mutations — always a directory
     index.ts               # OK for a single action module
     <topic>.ts             # split when the domain grows (e.g. content.ts, week-share.ts)
   components/              # UI for this domain only
-  lib/                     # pure helpers + DB/orchestration
+  lib/                     # pure helpers only (no Prisma)
     *-pure.ts              # optional: no I/O, easy unit tests
     *.test.ts              # unit tests next to code
     *.integration.test.ts  # optional DB integration
@@ -66,7 +68,7 @@ features/<name>/
 
 1. **Do not** add a root `features/<name>/actions.ts` next to an `actions/` folder.
 2. Prefer **topic files** inside `actions/` once a feature has more than one concern.
-3. **Mutations** live in `actions/`; **reads/orchestration** in `lib/`; **UI** in `components/`.
+3. **Mutations** live in `actions/`; **reads** in `fetchers/`; **pure helpers** in `lib/`; **UI** in `components/`.
 4. Cross-feature reuse → move shared bits to `src/lib/` (or a small shared feature), don’t deep-import another feature’s internals casually.
 5. Demo: disable or stub mutating controls; don’t invent a parallel feature tree.
 
@@ -79,11 +81,12 @@ Group by concern (same idea as features):
 ```
 lib/
   auth/          # session, gates, tokens, validation, env
+  db/            # pool + prisma client (import via @/lib/prisma for compat)
   errors/        # CodedError
   mail/          # sendMail + MailSendError
   result.ts      # domain Result<T, C> + resultOk/resultErr
   action-result.ts  # ActionResult { status, message, data }
-  *.ts           # small single-purpose shared modules (week, prisma, cn, …)
+  *.ts           # small single-purpose shared modules (week, cn, …)
 ```
 
 - New **multi-file** concerns → new folder (`lib/<concern>/`).
@@ -99,8 +102,9 @@ lib/
 
 ## Data & auth
 
-- Prisma: `prisma/schema.prisma` + `@/lib/prisma`.
-- Mutations: `requireAppUserAction` / `gateAppUser` (not throwing `requireUserId` in new action code).
+- Prisma: `prisma/schema.prisma` + `@/lib/prisma` (re-exports `@/lib/db/client`).
+- Reads: `features/*/fetchers` from RSC pages (not Server Actions).
+- Mutations: `requireAppUserAction` / `gateAppUser` (prefer over throwing `requireUserId` in new ActionResult flows).
 - Planner ACL: `weekPlanAccessWhere` / `getWeekPlanForViewer`.
 
 ## Tests & docs

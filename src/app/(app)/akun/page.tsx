@@ -8,9 +8,9 @@ import { AkunNicheEditor } from "@/features/auth/components/akun-niche-editor";
 import { AkunToastFromQuery } from "@/features/auth/components/akun-toast-from-query";
 import { LogoutForm } from "@/features/auth/components/logout-form";
 import { AkunPushReminder } from "@/features/reminders/components/akun-push-reminder";
+import { getAkunProfile } from "@/features/auth/fetchers/akun-profile";
 import { isAdminEmail } from "@/lib/auth/admin";
 import { getSafeSession } from "@/lib/auth/session";
-import { prisma } from "@/lib/prisma";
 
 const ChangePasswordForm = dynamic(
   () =>
@@ -46,16 +46,7 @@ export default async function AkunPage() {
   if (!session?.user?.id) redirect("/login");
 
   // Profile only — push count streams in Suspense so first paint is not blocked.
-  const user = await prisma.user.findUnique({
-    where: { id: session.user.id },
-    select: {
-      name: true,
-      email: true,
-      imageUrl: true,
-      niche: true,
-      weeklyGoal: true,
-    },
-  });
+  const user = await getAkunProfile(session.user.id);
 
   if (!user) redirect("/login");
 

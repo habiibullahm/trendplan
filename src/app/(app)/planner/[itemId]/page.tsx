@@ -3,14 +3,13 @@ import { notFound, redirect } from "next/navigation";
 import { getSafeSession } from "@/lib/auth/session";
 import { ContentEditForm } from "@/features/planner/components/content-edit-form";
 import { RiwayatPostedCard } from "@/features/planner/components/riwayat-posted-card";
+import { getContentItemForEditor } from "@/features/planner/fetchers/content-item";
 import {
   DAY_LABELS,
   formatWeekRange,
   parsePlannerView,
   plannerHref,
 } from "@/lib/week";
-import { weekPlanAccessWhere } from "@/features/planner/lib/week-share";
-import { prisma } from "@/lib/prisma";
 
 type Props = {
   params: Promise<{ itemId: string }>;
@@ -26,18 +25,7 @@ export default async function PlannerItemPage({
 
   const { itemId } = await params;
   const { month, week, view: viewRaw } = await searchParams;
-  const item = await prisma.contentItem.findFirst({
-    where: {
-      id: itemId,
-      deletedAt: null,
-      dayOfWeek: { gte: 0 },
-      weekPlan: weekPlanAccessWhere(session.user.id),
-    },
-    include: {
-      trend: true,
-      weekPlan: { select: { weekStart: true, userId: true } },
-    },
-  });
+  const item = await getContentItemForEditor(session.user.id, itemId);
 
   if (!item) notFound();
 
