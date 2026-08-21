@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { appBaseUrl } from "@/lib/auth/env";
+import { isClearSessionRequestAllowed } from "@/lib/auth/clear-session-guard";
 import {
   AUTH_SESSION_COOKIES,
   authSessionCookieClearOptions,
@@ -8,42 +9,9 @@ import {
 
 /**
  * Clears Auth.js session cookies then redirects to /login.
- * Cookie writes are illegal in RSC — call this via redirect() from Server Components
- * when Node auth() is empty but the edge still sees a JWT (orphan cookie).
- *
- * GET is intentional for RSC redirect(); treat as panic logout.
- * Residual CSRF: navigations with neither Origin nor Referer still clear the session.
- * When Origin or Referer is present, require same origin as appBaseUrl() (deny if
- * the app origin cannot be resolved).
+ * Prefer `/logout` (proxy) for app logout — Route Handlers under /api can 404
+ * in some next dev / Turbopack states. This path remains for older links.
  */
-export function isClearSessionRequestAllowed(request: Request): boolean {
-  const originHeader = request.headers.get("origin");
-  const refererHeader = request.headers.get("referer");
-  if (!originHeader && !refererHeader) return true;
-
-  let appOrigin: string;
-  try {
-    appOrigin = new URL(`${appBaseUrl()}/`).origin;
-  } catch {
-    // Site header present but we cannot establish our origin → deny.
-    return false;
-  }
-
-  if (originHeader) {
-    try {
-      return new URL(originHeader).origin === appOrigin;
-    } catch {
-      return false;
-    }
-  }
-
-  try {
-    return new URL(refererHeader!).origin === appOrigin;
-  } catch {
-    return false;
-  }
-}
-
 export function GET(request: Request) {
   if (!isClearSessionRequestAllowed(request)) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
@@ -74,3 +42,5 @@ export function GET(request: Request) {
 
   return response;
 }
+
+export { isClearSessionRequestAllowed };

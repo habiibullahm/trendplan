@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { auth } from "@/auth";
+import { getSafeSession } from "@/lib/auth/session";
 import { FadeIn, Stagger } from "@/components/motion";
 import { EmptyState } from "@/components/ui/empty-state";
 import { ThemeToggle } from "@/components/theme/theme-toggle";
@@ -17,7 +17,7 @@ import { STATUS_LABEL } from "@/lib/labels";
 import { resolveNiche } from "@/lib/niches";
 
 export default async function DashboardPage() {
-  const session = await auth();
+  const session = await getSafeSession();
   if (!session?.user?.id) redirect("/login");
   const userId = session.user.id;
 
@@ -25,13 +25,15 @@ export default async function DashboardPage() {
     where: { id: userId },
     select: { weeklyGoal: true, niche: true, name: true },
   });
-
   const niche = resolveNiche(user?.niche);
-  const weekPlan = await getWeekPlanForViewer(userId);
+  const [weekPlan, topRecs] = await Promise.all([
+    getWeekPlanForViewer(userId),
+    getRecommendations(niche, 2),
+  ]);
+
   const scheduled = weekPlan.items.length;
   const goal = user?.weeklyGoal ?? 3;
   const progress = Math.min(100, Math.round((scheduled / goal) * 100));
-  const topRecs = await getRecommendations(niche, 2);
   const inProgressItems = listInProgressContentItems(weekPlan.items);
 
   return (
@@ -52,19 +54,21 @@ export default async function DashboardPage() {
 
       <WeekTargetCard scheduled={scheduled} goal={goal} progress={progress} />
 
-      {inProgressItems.length > 0 ? (
-        <section className="mt-8">
-          <div className="flex items-center justify-between gap-3">
-            <h2 className="min-w-0 text-lg font-semibold text-ink">
-              Konten dalam proses ({inProgressItems.length})
-            </h2>
-            <Link
-              href="/planner"
-              className="min-touch inline-flex shrink-0 items-center text-sm font-semibold text-coral transition-colors hover:underline"
-            >
-              Buka Plan
-            </Link>
-          </div>
+      <section className="mt-8">
+        <div className="flex items-center justify-between gap-3">
+          <h2 className="min-w-0 text-lg font-semibold text-ink">
+            {inProgressItems.length > 0
+              ? `Konten dalam proses (${inProgressItems.length})`
+              : "Konten dalam proses"}
+          </h2>
+          <Link
+            href="/planner"
+            className="min-touch inline-flex shrink-0 items-center text-sm font-semibold text-coral transition-colors hover:underline"
+          >
+            Buka Plan
+          </Link>
+        </div>
+        {inProgressItems.length > 0 ? (
           <Stagger
             as="ul"
             className="mt-3 divide-y divide-border overflow-hidden rounded-2xl border border-border bg-surface"
@@ -85,8 +89,15 @@ export default async function DashboardPage() {
               </FadeIn>
             ))}
           </Stagger>
-        </section>
-      ) : null}
+        ) : (
+          <EmptyState className="mt-3">
+            <p className="font-medium text-ink">Belum ada ide minggu ini</p>
+            <p className="mt-1">
+              Isi slot dari Tren atau buat ide sendiri di planner.
+            </p>
+          </EmptyState>
+        )}
+      </section>
 
       <section className="mt-8">
         <div className="flex items-center justify-between gap-3">

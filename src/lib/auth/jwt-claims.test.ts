@@ -3,7 +3,9 @@ import { describe, it } from "node:test";
 import {
   dbSecurityClaims,
   isPasswordVersionCurrent,
+  SECURITY_CLAIMS_MAX_AGE_MS,
   shouldInvalidateForPasswordVersion,
+  shouldRefreshSecurityClaims,
 } from "./jwt-claims";
 
 describe("dbSecurityClaims", () => {
@@ -65,5 +67,57 @@ describe("shouldInvalidateForPasswordVersion", () => {
   it("invalidates other sessions when version diverges", () => {
     assert.equal(shouldInvalidateForPasswordVersion(undefined, 0, 1), true);
     assert.equal(shouldInvalidateForPasswordVersion("signIn", 1, 1), false);
+  });
+});
+
+describe("shouldRefreshSecurityClaims", () => {
+  const now = 1_000_000;
+
+  it("always refreshes on Auth.js update trigger", () => {
+    assert.equal(
+      shouldRefreshSecurityClaims({
+        trigger: "update",
+        securityClaimsAt: now,
+        now,
+      }),
+      true,
+    );
+  });
+
+  it("refreshes when claims were never stamped", () => {
+    assert.equal(
+      shouldRefreshSecurityClaims({
+        trigger: undefined,
+        securityClaimsAt: undefined,
+        now,
+      }),
+      true,
+    );
+  });
+
+  it("skips DB within the documented revoke window", () => {
+    assert.equal(
+      shouldRefreshSecurityClaims({
+        trigger: undefined,
+        securityClaimsAt: now - (SECURITY_CLAIMS_MAX_AGE_MS - 1),
+        now,
+      }),
+      false,
+    );
+  });
+
+  it("refreshes once the revoke window elapses", () => {
+    assert.equal(
+      shouldRefreshSecurityClaims({
+        trigger: undefined,
+        securityClaimsAt: now - SECURITY_CLAIMS_MAX_AGE_MS,
+        now,
+      }),
+      true,
+    );
+  });
+
+  it("keeps max age at most 30s (merge-blocker contract)", () => {
+    assert.ok(SECURITY_CLAIMS_MAX_AGE_MS <= 30_000);
   });
 });

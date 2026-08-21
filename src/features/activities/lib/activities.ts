@@ -11,6 +11,17 @@ export type ActivityListItem = {
   title: string;
 };
 
+/** Activities for a known week plan id, ordered by day then createdAt. */
+export async function listActivitiesForWeekPlan(
+  weekPlanId: string,
+): Promise<ActivityListItem[]> {
+  return prisma.activity.findMany({
+    where: { weekPlanId },
+    orderBy: [{ dayOfWeek: "asc" }, { createdAt: "asc" }],
+    select: { id: true, dayOfWeek: true, title: true },
+  });
+}
+
 /** Activities for a week plan (owned or partner), ordered by day then createdAt. */
 export async function listActivitiesForWeek(
   userId: string,
@@ -21,12 +32,7 @@ export async function listActivitiesForWeek(
     "@/features/planner/lib/week-share"
   );
   const plan = await getWeekPlanForViewer(userId, weekStart, opts);
-  const activities = await prisma.activity.findMany({
-    where: { weekPlanId: plan.id },
-    orderBy: [{ dayOfWeek: "asc" }, { createdAt: "asc" }],
-    select: { id: true, dayOfWeek: true, title: true },
-  });
-  return activities;
+  return listActivitiesForWeekPlan(plan.id);
 }
 
 /** Activity counts keyed by YYYY-MM-DD weekStart. */

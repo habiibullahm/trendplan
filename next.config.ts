@@ -36,6 +36,23 @@ const nextConfig: NextConfig = {
       "./node_modules/@img/sharp-linux-x64/**/*",
     ],
   },
+  // Next ships unconditional Baseline polyfills; TrendPlan targets modern
+  // browsers (package.json browserslist, safari >= 17 / URL.canParse). Stub
+  // for smaller client JS. Re-check resolve paths after Next upgrades.
+  turbopack: {
+    resolveAlias: {
+      "../build/polyfills/polyfill-module": "./src/lib/modern-polyfill.js",
+      "next/dist/build/polyfills/polyfill-module": "./src/lib/modern-polyfill.js",
+    },
+  },
+  webpack(config) {
+    config.resolve.alias = {
+      ...config.resolve.alias,
+      "../build/polyfills/polyfill-module": false,
+      "next/dist/build/polyfills/polyfill-module": false,
+    };
+    return config;
+  },
   // Default Server Action body limit is 1 MB; profile photo allows up to 2 MB
   // (+ multipart overhead). See serverActions.bodySizeLimit docs.
   experimental: {
@@ -52,9 +69,39 @@ const nextConfig: NextConfig = {
       value:
         "frame-ancestors 'self' https://habiibullahm.vercel.app http://localhost:4321",
     };
+    // Prefer BFCache-friendly caching for authenticated HTML shells.
+    // Keep no-store on auth/session JSON (see proxy-errors / Auth routes).
+    const appHtmlCache = {
+      key: "Cache-Control",
+      value: "private, no-cache",
+    };
+    const appHtmlSources = [
+      "/dashboard",
+      "/dashboard/:path*",
+      "/planner",
+      "/planner/:path*",
+      "/tren",
+      "/tren/:path*",
+      "/rekomendasi",
+      "/rekomendasi/:path*",
+      "/riwayat",
+      "/riwayat/:path*",
+      "/akun",
+      "/akun/:path*",
+      "/admin",
+      "/admin/:path*",
+      "/onboarding",
+      "/onboarding/:path*",
+      "/invite",
+      "/invite/:path*",
+    ];
     return [
       { source: "/demo", headers: [frameAncestors] },
       { source: "/demo/:path*", headers: [frameAncestors] },
+      ...appHtmlSources.map((source) => ({
+        source,
+        headers: [appHtmlCache],
+      })),
     ];
   },
 };

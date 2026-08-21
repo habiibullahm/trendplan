@@ -3,11 +3,14 @@
 import {
   createContext,
   useContext,
-  useEffect,
-  useState,
   type ReactNode,
 } from "react";
 import { motion, useReducedMotion } from "motion/react";
+
+export {
+  useIsDesktop,
+  usePlannerLayout,
+} from "@/hooks/use-planner-layout";
 
 export function usePrefersReducedMotion() {
   return Boolean(useReducedMotion());
@@ -70,22 +73,26 @@ export function FadeIn({
   className,
   as = "div",
   id,
+  /** Skip opacity/y entrance so above-fold content can be LCP (e.g. first Tren cards). */
+  instant = false,
 }: {
   children: ReactNode;
   className?: string;
   as?: "div" | "li";
   id?: string;
+  instant?: boolean;
 }) {
   const reduce = usePrefersReducedMotion();
   const inStagger = useContext(StaggerContext);
+  const skipMotion = reduce || instant;
 
   const variants = {
-    hidden: reduce ? { opacity: 1, y: 0 } : { opacity: 0, y: 8 },
+    hidden: skipMotion ? { opacity: 1, y: 0 } : { opacity: 0, y: 8 },
     show: {
       opacity: 1,
       y: 0,
       transition: {
-        duration: reduce ? 0 : 0.28,
+        duration: skipMotion ? 0 : 0.28,
         ease: easeOut,
       },
     },
@@ -106,27 +113,6 @@ export function FadeIn({
   }
 
   return <motion.div {...shared}>{children}</motion.div>;
-}
-
-/** Returns viewport layout after mount; `null` until media query is known. */
-export function usePlannerLayout(): "list" | "grid" | null {
-  const [layout, setLayout] = useState<"list" | "grid" | null>(null);
-
-  useEffect(() => {
-    const mq = window.matchMedia("(min-width: 768px)");
-    const apply = () => setLayout(mq.matches ? "grid" : "list");
-    apply();
-    mq.addEventListener("change", apply);
-    return () => mq.removeEventListener("change", apply);
-  }, []);
-
-  return layout;
-}
-
-/** @deprecated Prefer usePlannerLayout — kept for callers that only need boolean. */
-export function useIsDesktop() {
-  const layout = usePlannerLayout();
-  return layout === "grid";
 }
 
 export function ProgressBar({ value }: { value: number }) {

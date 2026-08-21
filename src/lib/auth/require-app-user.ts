@@ -1,16 +1,19 @@
 import "server-only";
 
-import { auth } from "@/auth";
 import {
   actionFail,
   type ActionResult,
 } from "@/lib/action-result";
+import { getSafeSession } from "@/lib/auth/session";
 import { isEmailVerificationRequired } from "./env";
-import { isPasswordVersionCurrent } from "./jwt-claims";
-import { prisma } from "@/lib/prisma";
 
 export type AppUserGate =
-  | { ok: true; userId: string }
+  | {
+      ok: true;
+      userId: string;
+      onboardingComplete: boolean;
+      passwordNeedsUpgrade: boolean;
+    }
   | { ok: false; kind: "unauthorized" | "unverified" | "stale" };
 
 export type GateAppUserOptions = {
@@ -18,36 +21,36 @@ export type GateAppUserOptions = {
   requireVerified?: boolean;
 };
 
-/** Session gate (passwordVersion + optional emailVerified). */
+/**
+ * Session gate for RSC/actions.
+ * Relies on auth() JWT callback (security claims refreshed at least every
+ * SECURITY_CLAIMS_MAX_AGE_MS / on session update — see jwt-claims.ts);
+ * getSafeSession is React.cache'd so layout + page share one auth() call per request.
+ */
 export async function gateAppUser(
   options: GateAppUserOptions = {},
 ): Promise<AppUserGate> {
   const requireVerified = options.requireVerified !== false;
-  const session = await auth();
+  const session = await getSafeSession();
   const userId = session?.user?.id;
   if (!userId) return { ok: false, kind: "unauthorized" };
 
-  const row = await prisma.user.findUnique({
-    where: { id: userId },
-    select: { emailVerified: true, passwordVersion: true },
-  });
-  if (!row) return { ok: false, kind: "unauthorized" };
-
-  if (
-    !isPasswordVersionCurrent(session.user.passwordVersion, row.passwordVersion)
-  ) {
-    return { ok: false, kind: "stale" };
-  }
-
+  // JWT callback returns null when passwordVersion is stale (or user missing).
+  // A session here already passed that check for this request.
   if (
     requireVerified &&
     isEmailVerificationRequired() &&
-    !row.emailVerified
+    !session.user.emailVerified
   ) {
     return { ok: false, kind: "unverified" };
   }
 
-  return { ok: true, userId };
+  return {
+    ok: true,
+    userId,
+    onboardingComplete: Boolean(session.user.onboardingComplete),
+    passwordNeedsUpgrade: Boolean(session.user.passwordNeedsUpgrade),
+  };
 }
 
 /** Maps gate failures to ActionResult. */

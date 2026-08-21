@@ -1,17 +1,41 @@
 import Link from "next/link";
+import dynamic from "next/dynamic";
 import { Suspense } from "react";
 import { redirect } from "next/navigation";
-import { auth, signOut } from "@/auth";
 import { AkunAvatar } from "@/features/auth/components/akun-avatar";
 import { AkunGoalEditor } from "@/features/auth/components/akun-goal-editor";
 import { AkunNicheEditor } from "@/features/auth/components/akun-niche-editor";
 import { AkunToastFromQuery } from "@/features/auth/components/akun-toast-from-query";
-import { ChangePasswordForm } from "@/features/auth/components/change-password-form";
 import { LogoutButton } from "@/features/auth/components/logout-button";
-import { UpdateLog } from "@/features/auth/components/update-log";
 import { PushReminderToggle } from "@/features/reminders/components/push-reminder-toggle";
-import { FeedbackForm } from "@/features/feedback/components/feedback-form";
+import { logoutAction } from "@/features/auth/actions/logout";
+import { isAdminEmail } from "@/lib/auth/admin";
+import { getSafeSession } from "@/lib/auth/session";
 import { prisma } from "@/lib/prisma";
+
+const ChangePasswordForm = dynamic(
+  () =>
+    import("@/features/auth/components/change-password-form").then((m) => ({
+      default: m.ChangePasswordForm,
+    })),
+  { loading: () => <div className="h-12" aria-hidden /> },
+);
+
+const FeedbackForm = dynamic(
+  () =>
+    import("@/features/feedback/components/feedback-form").then((m) => ({
+      default: m.FeedbackForm,
+    })),
+  { loading: () => <div className="h-12" aria-hidden /> },
+);
+
+const UpdateLog = dynamic(
+  () =>
+    import("@/features/auth/components/update-log").then((m) => ({
+      default: m.UpdateLog,
+    })),
+  { loading: () => <div className="h-10" aria-hidden /> },
+);
 
 function initialFrom(name: string | null | undefined, email: string): string {
   const source = name?.trim() || email.trim();
@@ -19,28 +43,30 @@ function initialFrom(name: string | null | undefined, email: string): string {
 }
 
 export default async function AkunPage() {
-  const session = await auth();
+  const session = await getSafeSession();
   if (!session?.user?.id) redirect("/login");
 
-  const user = await prisma.user.findUnique({
-    where: { id: session.user.id },
-    select: {
-      name: true,
-      email: true,
-      imageUrl: true,
-      niche: true,
-      weeklyGoal: true,
-    },
-  });
+  const [user, pushCount] = await Promise.all([
+    prisma.user.findUnique({
+      where: { id: session.user.id },
+      select: {
+        name: true,
+        email: true,
+        imageUrl: true,
+        niche: true,
+        weeklyGoal: true,
+      },
+    }),
+    prisma.pushSubscription.count({
+      where: { userId: session.user.id },
+    }),
+  ]);
 
   if (!user) redirect("/login");
 
-  const pushCount = await prisma.pushSubscription.count({
-    where: { userId: session.user.id },
-  });
-
   const displayName = user.name?.trim() || "Creator";
   const initial = initialFrom(user.name, user.email);
+  const showAdminInbox = isAdminEmail(user.email);
 
   return (
     <main className="mx-auto flex w-full max-w-lg flex-1 flex-col">
@@ -84,6 +110,22 @@ export default async function AkunPage() {
         <p className="text-sm font-semibold text-ink">Masukan</p>
         <div className="mt-1 divide-y divide-border">
           <FeedbackForm />
+          {showAdminInbox ? (
+            <Link
+              href="/admin/feedback"
+              className="min-touch flex items-center justify-between py-3 transition-colors hover:text-coral"
+            >
+              <span>
+                <span className="block text-sm font-semibold text-ink">
+                  Lihat masukan
+                </span>
+                <span className="text-xs text-ink-muted">
+                  Daftar masukan yang masuk
+                </span>
+              </span>
+              <span className="text-ink-muted">→</span>
+            </Link>
+          ) : null}
         </div>
       </section>
 
@@ -116,13 +158,7 @@ export default async function AkunPage() {
         <UpdateLog />
       </section>
 
-      <form
-        className="mt-6"
-        action={async () => {
-          "use server";
-          await signOut({ redirectTo: "/" });
-        }}
-      >
+      <form className="mt-6" action={logoutAction}>
         <LogoutButton />
       </form>
     </main>

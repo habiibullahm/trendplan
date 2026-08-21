@@ -9,7 +9,7 @@ export const FEEDBACK_CATEGORY_LABELS: Record<FeedbackCategory, string> = {
   lainnya: "Lainnya",
 };
 
-/** Strip C0 controls (keep \\t \\n \\r) so stored text stays safe for later admin UI. */
+/** Strip C0 controls (keep \\t \\n \\r) so stored text stays safe for the admin inbox. */
 export function sanitizeFeedbackMessage(raw: string): string {
   return raw
     .trim()

@@ -1,30 +1,29 @@
 import { Suspense } from "react";
 import { redirect } from "next/navigation";
-import { auth } from "@/auth";
+import { getSafeSession } from "@/lib/auth/session";
 import {
   countActivitiesByWeekStarts,
-  listActivitiesForWeek,
+  listActivitiesForWeekPlan,
 } from "@/features/activities/lib/activities";
 import { ActivitiesBoard } from "@/features/activities/components/activities-board";
 import { CopyWeekButton } from "@/features/planner/components/copy-week-button";
+import { DeferredShareWeekButton } from "@/features/planner/components/deferred-share-week-button";
 import { MonthWeekNav } from "@/features/planner/components/month-week-nav";
 import { PlannerBoard } from "@/features/planner/components/planner-board";
 import { PlannerTabs } from "@/features/planner/components/planner-tabs";
 import { PlannerToastFromQuery } from "@/features/planner/components/planner-toast";
 import { PlannerViewToggle } from "@/features/planner/components/planner-view-toggle";
-import {
-  ShareWeekButton,
-  SharedWeekBanner,
-} from "@/features/planner/components/share-week-button";
+import type { ShareWeekUiSnapshot } from "@/features/planner/components/share-week-button";
+import { SharedWeekBanner } from "@/features/planner/components/shared-week-banner";
 import { STATUS_LABEL } from "@/lib/labels";
 import { buildMonthWeekChips } from "@/features/planner/lib/month-week";
 import { countActiveItemsByWeekStarts } from "@/features/planner/lib/planner";
 import {
   getWeekPlanForViewer,
-  getWeekShareSnapshot,
   partnerDisplayName,
   shareRoleForUser,
   userHasPartnerSeatForWeek,
+  weekShareSnapshotFromPlan,
 } from "@/features/planner/lib/week-share";
 import {
   DAY_SHORT,
@@ -47,8 +46,33 @@ type Props = {
   }>;
 };
 
+function buildShareUi(
+  shareSnap: ReturnType<typeof weekShareSnapshotFromPlan>,
+  weekLabel: string,
+): ShareWeekUiSnapshot | null {
+  if (!shareSnap) return null;
+  if (shareSnap.role !== "owner" && shareSnap.role !== "partner") return null;
+  return {
+    role: shareSnap.role,
+    weekPlanId: shareSnap.weekPlanId,
+    weekLabel,
+    partner: shareSnap.partner,
+    pendingInvite: shareSnap.pendingInvite
+      ? {
+          id: shareSnap.pendingInvite.id,
+          invitedEmail: shareSnap.pendingInvite.invitedEmail,
+          expiresAt: shareSnap.pendingInvite.expiresAt.toISOString(),
+        }
+      : null,
+    partnerLabel: shareSnap.partner
+      ? partnerDisplayName(shareSnap.partner)
+      : null,
+  };
+}
+
+
 export default async function PlannerPage({ searchParams }: Readonly<Props>) {
-  const session = await auth();
+  const session = await getSafeSession();
   if (!session?.user?.id) redirect("/login");
   const userId = session.user.id;
 
@@ -60,75 +84,41 @@ export default async function PlannerPage({ searchParams }: Readonly<Props>) {
     weekParam: params.week,
   });
 
-  const user = await prisma.user.findUnique({
-    where: { id: userId },
-    select: { weeklyGoal: true },
-  });
-
   const weekStartParam = formatWeekStartParam(selection.weekStart);
   const weekLabel = formatWeekRange(selection.weekStart);
-  const goal = user?.weeklyGoal ?? 3;
 
-  const canToggleShareView = await userHasPartnerSeatForWeek(
-    userId,
-    selection.weekStart,
-  );
-  // Drop stale view=shared when this week has no partner seat (nav / after leave).
-  if (view === "shared" && !canToggleShareView) {
-    redirect(
-      plannerHref({
-        weekStart: selection.weekStart,
-        monthParam: selection.monthParam,
-        weekParam: String(selection.weekIndex),
-        tab,
-        toast: params.toast,
-      }),
-    );
-  }
-
-  const weekPlan = await getWeekPlanForViewer(userId, selection.weekStart, {
+  const weekPlanPromise = getWeekPlanForViewer(userId, selection.weekStart, {
     view,
   });
-  const shareSnap = await getWeekShareSnapshot(userId, weekPlan.id);
-  const role = shareRoleForUser(weekPlan, userId);
-
-  // Banner: shared view as partner, or owner looking at their plan with a partner.
-  // Avoid implying Plan saya (partner's owned week) is "bersama".
-  const showShareBanner =
-    (view === "shared" && role === "partner") ||
-    (role === "owner" && Boolean(shareSnap?.partner));
-
-  const shareUi =
-    shareSnap && (shareSnap.role === "owner" || shareSnap.role === "partner")
-      ? {
-          role: shareSnap.role,
-          weekPlanId: shareSnap.weekPlanId,
-          weekLabel,
-          partner: shareSnap.partner,
-          pendingInvite: shareSnap.pendingInvite
-            ? {
-                id: shareSnap.pendingInvite.id,
-                invitedEmail: shareSnap.pendingInvite.invitedEmail,
-                expiresAt: shareSnap.pendingInvite.expiresAt.toISOString(),
-              }
-            : null,
-          partnerLabel: shareSnap.partner
-            ? partnerDisplayName(shareSnap.partner)
-            : null,
-        }
-      : null;
-
-  // Owner controls on owned plan; partner leave only on shared view (not mine).
-  const showShareButton =
-    shareUi &&
-    (shareUi.role === "owner" ||
-      (shareUi.role === "partner" && view === "shared"));
 
   if (tab === "aktivitas") {
-    const [activities, activityCounts] = await Promise.all([
-      listActivitiesForWeek(userId, selection.weekStart, { view }),
+    const [canToggleShareView, weekPlan, activityCounts] = await Promise.all([
+      userHasPartnerSeatForWeek(userId, selection.weekStart),
+      weekPlanPromise,
       countActivitiesByWeekStarts(userId, selection.weekStarts, { view }),
     ]);
+
+    if (view === "shared" && !canToggleShareView) {
+      redirect(
+        plannerHref({
+          weekStart: selection.weekStart,
+          monthParam: selection.monthParam,
+          weekParam: String(selection.weekIndex),
+          tab,
+          toast: params.toast,
+        }),
+      );
+    }
+
+    const activities = await listActivitiesForWeekPlan(weekPlan.id);
+    const shareSnap = weekShareSnapshotFromPlan(weekPlan, userId);
+    const role = shareRoleForUser(weekPlan, userId);
+    const shareUi = buildShareUi(shareSnap, weekLabel);
+
+    const showShareBanner =
+      (view === "shared" && role === "partner") ||
+      (role === "owner" && Boolean(shareSnap.partner));
+
     const weeks = buildMonthWeekChips(selection.weekStarts, activityCounts);
     const selectedChip = weeks.find((w) => w.index === selection.weekIndex);
     if (selectedChip) {
@@ -198,11 +188,44 @@ export default async function PlannerPage({ searchParams }: Readonly<Props>) {
     );
   }
 
-  const counts = await countActiveItemsByWeekStarts(
-    userId,
-    selection.weekStarts,
-    { view },
-  );
+  const [user, canToggleShareView, weekPlan, counts] = await Promise.all([
+    prisma.user.findUnique({
+      where: { id: userId },
+      select: { weeklyGoal: true },
+    }),
+    userHasPartnerSeatForWeek(userId, selection.weekStart),
+    weekPlanPromise,
+    countActiveItemsByWeekStarts(userId, selection.weekStarts, { view }),
+  ]);
+  const goal = user?.weeklyGoal ?? 3;
+
+  if (view === "shared" && !canToggleShareView) {
+    redirect(
+      plannerHref({
+        weekStart: selection.weekStart,
+        monthParam: selection.monthParam,
+        weekParam: String(selection.weekIndex),
+        tab,
+        toast: params.toast,
+      }),
+    );
+  }
+
+  const shareSnap = weekShareSnapshotFromPlan(weekPlan, userId);
+  const role = shareRoleForUser(weekPlan, userId);
+  const shareUi = buildShareUi(shareSnap, weekLabel);
+
+  // Banner: shared view as partner, or owner looking at their plan with a partner.
+  // Avoid implying Plan saya (partner's owned week) is "bersama".
+  const showShareBanner =
+    (view === "shared" && role === "partner") ||
+    (role === "owner" && Boolean(shareSnap.partner));
+
+  // Owner controls on owned plan; partner leave only on shared view (not mine).
+  const showShareButton =
+    shareUi &&
+    (shareUi.role === "owner" ||
+      (shareUi.role === "partner" && view === "shared"));
 
   const weeks = buildMonthWeekChips(selection.weekStarts, counts);
   const selectedChip = weeks.find((w) => w.index === selection.weekIndex);
@@ -237,7 +260,7 @@ export default async function PlannerPage({ searchParams }: Readonly<Props>) {
             }))}
           />
           {showShareButton && shareUi ? (
-            <ShareWeekButton share={shareUi} />
+            <DeferredShareWeekButton share={shareUi} />
           ) : null}
         </div>
       </div>
