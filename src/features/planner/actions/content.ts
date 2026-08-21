@@ -1,11 +1,15 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
+import { revalidatePath, updateTag } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
 import { ContentStatus } from "@/generated/prisma/client";
 import { prisma } from "@/lib/prisma";
-import { requireUserId, purgeStaleSoftDeletes } from "@/features/planner/lib/planner";
+import { berandaUserTag } from "@/features/planner/lib/beranda-cache-tag";
+import {
+  requireUserId,
+  purgeStaleSoftDeletes,
+} from "@/features/planner/lib/planner";
 import {
   getWeekPlanForViewer,
   weekPlanAccessWhere,
@@ -70,12 +74,12 @@ function returnHref(
   });
 }
 
-function revalidatePlanner() {
+function revalidatePlanner(userId: string) {
   revalidatePath("/planner");
   revalidatePath("/dashboard");
   revalidatePath("/riwayat");
-  revalidatePath("/tren");
-  revalidatePath("/rekomendasi");
+  // Immediate tag purge so Beranda week cache reads fresh after writes.
+  updateTag(berandaUserTag(userId));
 }
 
 export type PlannerActionState = ActionResult;
@@ -126,7 +130,7 @@ export async function addTrendToPlannerAction(
     throw error;
   }
 
-  revalidatePlanner();
+  revalidatePlanner(userId);
   return actionSuccess("Ide ditambahkan ke planner");
 }
 
@@ -179,7 +183,7 @@ export async function createContentItemAction(
     throw error;
   }
 
-  revalidatePlanner();
+  revalidatePlanner(userId);
   redirect(returnHref(formData, weekStart, { toast: "created" }));
 }
 
@@ -240,7 +244,7 @@ export async function updateContentItemAction(
     },
   });
 
-  revalidatePlanner();
+  revalidatePlanner(userId);
   revalidatePath(`/planner/${itemId}`);
   redirect(returnHref(formData, item.weekPlan.weekStart, { toast: "saved" }));
 }
@@ -296,7 +300,7 @@ export async function softDeleteContentItemAction(formData: FormData) {
   // Sequential GC (not concurrent with the transaction) — keeps pg client happy.
   await purgeStaleSoftDeletes(userId);
 
-  revalidatePlanner();
+  revalidatePlanner(userId);
   redirect(
     returnHref(formData, item.weekPlan.weekStart, {
       toast: "deleted",
@@ -357,7 +361,7 @@ export async function restoreContentItemAction(
       return actionSuccess("Ide dikembalikan");
     });
 
-    if (result.status === "success") revalidatePlanner();
+    if (result.status === "success") revalidatePlanner(userId);
     return result;
   } catch {
     return actionFail("undo_failed", {
@@ -381,7 +385,7 @@ export async function purgeDeletedContentItemAction(
     },
   });
 
-  revalidatePlanner();
+  revalidatePlanner(userId);
   return { status: "success" };
 }
 
@@ -473,7 +477,7 @@ export async function moveContentItemAction(
     });
 
     if (result.status === "success") {
-      revalidatePlanner();
+      revalidatePlanner(userId);
     }
     return result;
   } catch {

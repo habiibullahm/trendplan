@@ -10,6 +10,7 @@ import { CopyWeekButton } from "@/features/planner/components/copy-week-button";
 import { DeferredShareWeekButton } from "@/features/planner/components/deferred-share-week-button";
 import { MonthWeekNav } from "@/features/planner/components/month-week-nav";
 import { PlannerBoard } from "@/features/planner/components/planner-board";
+import { PlannerBoardWithEmptySlotSaran } from "@/features/planner/components/planner-board-with-saran";
 import { PlannerTabs } from "@/features/planner/components/planner-tabs";
 import { PlannerToastFromQuery } from "@/features/planner/components/planner-toast";
 import { PlannerViewToggle } from "@/features/planner/components/planner-view-toggle";
@@ -17,15 +18,9 @@ import type { ShareWeekUiSnapshot } from "@/features/planner/components/share-we
 import { SharedWeekBanner } from "@/features/planner/components/shared-week-banner";
 import { STATUS_LABEL } from "@/lib/labels";
 import { buildMonthWeekChips } from "@/features/planner/lib/month-week";
-import {
-  countActiveItemsByWeekStarts,
-  getRecommendations,
-} from "@/features/planner/lib/planner";
-import {
-  emptyPlannerDays,
-  shouldShowEmptySlotSaran,
-  unusedTrendsForEmptyDays,
-} from "@/features/planner/lib/empty-slot-assist";
+import { countActiveItemsByWeekStarts } from "@/features/planner/fetchers/week-plan";
+import { getPlannerUser } from "@/features/planner/fetchers/planner-user";
+import { emptyPlannerDays } from "@/features/planner/lib/empty-slot-assist";
 import {
   getWeekPlanForViewer,
   partnerDisplayName,
@@ -42,7 +37,6 @@ import {
   plannerHref,
   resolvePlannerSelection,
 } from "@/lib/week";
-import { prisma } from "@/lib/prisma";
 
 type Props = {
   searchParams: Promise<{
@@ -196,22 +190,14 @@ export default async function PlannerPage({ searchParams }: Readonly<Props>) {
     );
   }
 
-  const userPromise = prisma.user.findUnique({
-    where: { id: userId },
-    select: { weeklyGoal: true, niche: true },
-  });
-  const catalogPromise = userPromise.then((user) =>
-    getRecommendations(user?.niche ?? null, 12),
-  );
+  const userPromise = getPlannerUser(userId);
 
-  const [user, canToggleShareView, weekPlan, counts, catalog] =
-    await Promise.all([
-      userPromise,
-      userHasPartnerSeatForWeek(userId, selection.weekStart),
-      weekPlanPromise,
-      countActiveItemsByWeekStarts(userId, selection.weekStarts, { view }),
-      catalogPromise,
-    ]);
+  const [user, canToggleShareView, weekPlan, counts] = await Promise.all([
+    userPromise,
+    userHasPartnerSeatForWeek(userId, selection.weekStart),
+    weekPlanPromise,
+    countActiveItemsByWeekStarts(userId, selection.weekStarts, { view }),
+  ]);
   const goal = user?.weeklyGoal ?? 3;
 
   if (view === "shared" && !canToggleShareView) {
@@ -248,26 +234,23 @@ export default async function PlannerPage({ searchParams }: Readonly<Props>) {
     selectedChip.filled = weekPlan.items.length;
   }
 
-  const unusedTrends = unusedTrendsForEmptyDays({
-    trends: catalog.map((trend) => ({
-      id: trend.id,
-      title: trend.title,
-      reason: trend.reason,
-      score: trend.score,
-    })),
-    usedTrendIds: weekPlan.items.map((item) => item.trendId),
-  });
+  const boardItems = weekPlan.items.map((item) => ({
+    id: item.id,
+    dayOfWeek: item.dayOfWeek,
+    title: item.title,
+    status: item.status,
+  }));
   const emptyDays = emptyPlannerDays(
     weekPlan.items.map((item) => item.dayOfWeek),
   );
-  const saran = shouldShowEmptySlotSaran({ emptyDays, unusedTrends })
-    ? {
-        suggestions: unusedTrends,
-        emptyDays,
-        weekStartParam,
-        view,
-      }
-    : null;
+  const usedTrendIds = weekPlan.items.map((item) => item.trendId);
+  const boardProps = {
+    weekStartParam,
+    returnMonth: selection.monthParam,
+    returnWeek: selection.weekIndex,
+    view,
+    items: boardItems,
+  } as const;
 
   return (
     <main className="flex flex-1 flex-col">
@@ -338,19 +321,16 @@ export default async function PlannerPage({ searchParams }: Readonly<Props>) {
         metric="content"
       />
 
-      <PlannerBoard
-        weekStartParam={weekStartParam}
-        returnMonth={selection.monthParam}
-        returnWeek={selection.weekIndex}
-        view={view}
-        saran={saran}
-        items={weekPlan.items.map((item) => ({
-          id: item.id,
-          dayOfWeek: item.dayOfWeek,
-          title: item.title,
-          status: item.status,
-        }))}
-      />
+      <Suspense
+        fallback={<PlannerBoard {...boardProps} saran={null} />}
+      >
+        <PlannerBoardWithEmptySlotSaran
+          {...boardProps}
+          niche={user?.niche ?? null}
+          usedTrendIds={usedTrendIds}
+          emptyDays={emptyDays}
+        />
+      </Suspense>
     </main>
   );
 }

@@ -1,10 +1,10 @@
 import { AdminFeedbackInbox } from "@/features/feedback/components/admin-feedback-inbox";
+import { listAdminFeedback } from "@/features/feedback/fetchers/admin-list";
 import {
   FEEDBACK_CATEGORIES,
   type FeedbackCategory,
 } from "@/features/feedback/lib/validation";
 import { requireAdminPage } from "@/lib/auth/require-admin";
-import { prisma } from "@/lib/prisma";
 
 type Props = {
   searchParams: Promise<{ category?: string }>;
@@ -27,18 +27,7 @@ export default async function AdminFeedbackPage({
   const params = await searchParams;
   const activeCategory = parseCategory(params.category);
 
-  const rows = await prisma.feedback.findMany({
-    where: activeCategory ? { category: activeCategory } : undefined,
-    orderBy: { createdAt: "desc" },
-    take: 50,
-    select: {
-      id: true,
-      category: true,
-      message: true,
-      createdAt: true,
-      user: { select: { name: true, email: true } },
-    },
-  });
+  const rows = await listAdminFeedback({ category: activeCategory });
 
   const items = rows.map((row) => ({
     id: row.id,

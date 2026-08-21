@@ -2,8 +2,7 @@ import { notFound, redirect } from "next/navigation";
 import Link from "next/link";
 import { getSafeSession } from "@/lib/auth/session";
 import { EditActivityForm } from "@/features/activities/components/edit-activity-form";
-import { prisma } from "@/lib/prisma";
-import { weekPlanAccessWhere } from "@/features/planner/lib/week-share";
+import { getActivityForEditor } from "@/features/activities/fetchers/activity";
 import {
   formatWeekRange,
   parsePlannerView,
@@ -25,15 +24,7 @@ export default async function ActivityEditPage({
   const { activityId } = await params;
   const { month, week, view: viewRaw } = await searchParams;
 
-  const activity = await prisma.activity.findFirst({
-    where: {
-      id: activityId,
-      weekPlan: weekPlanAccessWhere(session.user.id),
-    },
-    include: {
-      weekPlan: { select: { weekStart: true, userId: true } },
-    },
-  });
+  const activity = await getActivityForEditor(session.user.id, activityId);
   if (!activity) notFound();
 
   const view =

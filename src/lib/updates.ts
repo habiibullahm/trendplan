@@ -22,6 +22,20 @@ export const APP_VERSION = packageJson.version;
 
 export const UPDATE_LOG: UpdateEntry[] = [
   {
+    id: "2026-08-21-plan-detail-perf",
+    version: "0.4.16",
+    date: "21 Agu 2026",
+    title: "Plan dan detail ide lebih ringan",
+    body: "Buka detail ide dan kembali ke Plan terasa lebih cepat. Papan Plan muncul dulu; saran ide untuk hari kosong menyusul. Menyimpan atau menghapus ide tidak lagi menyegarkan Tren/Rekomendasi tanpa perlu.",
+  },
+  {
+    id: "2026-08-21-beranda-stream-cache",
+    version: "0.4.15",
+    date: "21 Agu 2026",
+    title: "Beranda lebih cepat saat dibuka ulang",
+    body: "Halo muncul dulu, ringkasan minggu dan rekomendasi menyusul. Data minggu di-cache singkat supaya pindah tab ke Beranda terasa lebih ringan.",
+  },
+  {
     id: "2026-08-21-nav-first-load-warm",
     version: "0.4.14",
     date: "21 Agu 2026",

@@ -5,7 +5,7 @@ Checklist for shipping a new capability using the **canonical** layout in [app-s
 ## 1. Decide the domain
 
 - **New product area** → `src/features/<name>/` with the full skeleton below.
-- **Extension of an existing domain** → add under that feature’s `actions/`, `lib/`, `components/`.
+- **Extension of an existing domain** → add under that feature’s `fetchers/`, `actions/`, `lib/`, `components/`.
 - **Only a new URL** → thin `app/.../page.tsx` + existing feature imports.
 
 Add a short user story under `docs/user-stories/` when behavior is non-obvious.
@@ -14,18 +14,21 @@ Add a short user story under `docs/user-stories/` when behavior is non-obvious.
 
 ```
 features/<name>/
+  fetchers/               # Prisma/cache READS for RSC / route handlers (no "use server")
+    <name>.ts
   actions/
-    index.ts              # or <topic>.ts — "use server"
+    index.ts              # or <topic>.ts — "use server" WRITE mutations + Zod
   components/
     <name>-panel.tsx
   lib/
-    <name>.ts
+    <name>-pure.ts        # pure helpers only — no Prisma
     <name>.test.ts
 
-app/(app)/<route>/page.tsx   # only if it needs its own screen
+app/(app)/<route>/page.tsx   # thin: auth gate + Suspense + fetcher calls
 ```
 
 Never place `actions.ts` at the feature root. Always use `actions/`.
+Do **not** put initial page-load reads in Server Actions or client `useEffect`.
 
 ## 3. Data model (if needed)
 
@@ -35,8 +38,9 @@ Never place `actions.ts` at the feature root. Always use `actions/`.
 
 ## 4. Domain logic
 
-- Pure helpers: `lib/*-pure.ts` (unit-test friendly).
-- DB/orchestration: `lib/*.ts` (`"server-only"` when appropriate).
+- Pure helpers: `lib/*-pure.ts` or `lib/*.ts` without Prisma (unit-test friendly).
+- **Reads:** `fetchers/*.ts` (`"server-only"` when appropriate; may use `React.cache` / `unstable_cache`).
+- **Writes:** `actions/*.ts` only.
 - Reuse `@/lib/auth`, `@/lib/mail`, rate limits, ACL helpers — don’t reinvent.
 
 ## 5. Server actions
