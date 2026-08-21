@@ -22,6 +22,13 @@ export const APP_VERSION = packageJson.version;
 
 export const UPDATE_LOG: UpdateEntry[] = [
   {
+    id: "2026-08-21-aktivitas-loading",
+    version: "0.4.17",
+    date: "21 Agu 2026",
+    title: "Skeleton saat buka aktivitas",
+    body: "Saat membuka edit atau buat aktivitas, muncul kerangka form dulu (bukan skeleton papan Plan) supaya layar tidak kosong saat halaman masih dimuat.",
+  },
+  {
     id: "2026-08-21-plan-detail-perf",
     version: "0.4.16",
     date: "21 Agu 2026",
