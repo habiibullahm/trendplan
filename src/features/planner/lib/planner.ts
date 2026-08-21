@@ -1,6 +1,8 @@
+import { unstable_cache } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { softDeleteStaleBefore } from "@/features/planner/lib/soft-delete";
 import { formatWeekStartParam, getWeekStart, type PlannerView } from "@/lib/week";
+
 
 /** ±14h around UTC midnight covers legacy Asia/Jakarta local-midnight rows. */
 const LEGACY_OFFSET_MS = 14 * 60 * 60 * 1000;
@@ -31,7 +33,6 @@ async function findOrNormalizeWeekPlan(userId: string, weekStart: Date) {
     include: {
       items: {
         where: { deletedAt: null, dayOfWeek: { gte: 0 } },
-        include: { trend: true },
         orderBy: { dayOfWeek: "asc" as const },
       },
     },
@@ -49,7 +50,6 @@ async function findOrNormalizeWeekPlan(userId: string, weekStart: Date) {
     include: {
       items: {
         where: { deletedAt: null, dayOfWeek: { gte: 0 } },
-        include: { trend: true },
         orderBy: { dayOfWeek: "asc" as const },
       },
     },
@@ -67,7 +67,6 @@ async function findOrNormalizeWeekPlan(userId: string, weekStart: Date) {
       include: {
         items: {
           where: { deletedAt: null, dayOfWeek: { gte: 0 } },
-          include: { trend: true },
           orderBy: { dayOfWeek: "asc" },
         },
       },
@@ -92,7 +91,6 @@ export async function getOrCreateWeekPlan(userId: string, date = new Date()) {
     include: {
       items: {
         where: { deletedAt: null, dayOfWeek: { gte: 0 } },
-        include: { trend: true },
         orderBy: { dayOfWeek: "asc" },
       },
     },
@@ -170,26 +168,35 @@ export async function getRecommendations(
   niche: string | null = null,
   limit = 12,
 ) {
-  return prisma.trend.findMany({
-    where: niche ? { niche } : undefined,
-    orderBy: { score: "desc" },
-    take: limit,
-    // Explicit scalars so media fields stay selected even if client/schema drift.
-    select: {
-      id: true,
-      title: true,
-      hook: true,
-      format: true,
-      score: true,
-      reason: true,
-      niche: true,
-      coverUrl: true,
-      videoUrl: true,
-      audioTitle: true,
-      audioUrl: true,
-      createdAt: true,
+  const nicheKey = niche ?? "all";
+  return unstable_cache(
+    async (cachedNicheKey: string, cachedLimit: number) => {
+      const cachedNiche =
+        cachedNicheKey === "all" ? null : cachedNicheKey;
+      return prisma.trend.findMany({
+        where: cachedNiche ? { niche: cachedNiche } : undefined,
+        orderBy: { score: "desc" },
+        take: cachedLimit,
+        // Explicit scalars so media fields stay selected even if client/schema drift.
+        select: {
+          id: true,
+          title: true,
+          hook: true,
+          format: true,
+          score: true,
+          reason: true,
+          niche: true,
+          coverUrl: true,
+          videoUrl: true,
+          audioTitle: true,
+          audioUrl: true,
+          createdAt: true,
+        },
+      });
     },
-  });
+    ["recommendations"],
+    { revalidate: 120, tags: ["trends"] },
+  )(nicheKey, limit);
 }
 
 export async function requireUserId() {

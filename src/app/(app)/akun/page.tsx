@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { Suspense } from "react";
 import { redirect } from "next/navigation";
-import { auth, signOut } from "@/auth";
+import { signOut } from "@/auth";
 import { AkunAvatar } from "@/features/auth/components/akun-avatar";
 import { AkunGoalEditor } from "@/features/auth/components/akun-goal-editor";
 import { AkunNicheEditor } from "@/features/auth/components/akun-niche-editor";
@@ -12,6 +12,7 @@ import { UpdateLog } from "@/features/auth/components/update-log";
 import { PushReminderToggle } from "@/features/reminders/components/push-reminder-toggle";
 import { FeedbackForm } from "@/features/feedback/components/feedback-form";
 import { isAdminEmail } from "@/lib/auth/admin";
+import { getSafeSession } from "@/lib/auth/session";
 import { prisma } from "@/lib/prisma";
 
 function initialFrom(name: string | null | undefined, email: string): string {
@@ -20,25 +21,26 @@ function initialFrom(name: string | null | undefined, email: string): string {
 }
 
 export default async function AkunPage() {
-  const session = await auth();
+  const session = await getSafeSession();
   if (!session?.user?.id) redirect("/login");
 
-  const user = await prisma.user.findUnique({
-    where: { id: session.user.id },
-    select: {
-      name: true,
-      email: true,
-      imageUrl: true,
-      niche: true,
-      weeklyGoal: true,
-    },
-  });
+  const [user, pushCount] = await Promise.all([
+    prisma.user.findUnique({
+      where: { id: session.user.id },
+      select: {
+        name: true,
+        email: true,
+        imageUrl: true,
+        niche: true,
+        weeklyGoal: true,
+      },
+    }),
+    prisma.pushSubscription.count({
+      where: { userId: session.user.id },
+    }),
+  ]);
 
   if (!user) redirect("/login");
-
-  const pushCount = await prisma.pushSubscription.count({
-    where: { userId: session.user.id },
-  });
 
   const displayName = user.name?.trim() || "Creator";
   const initial = initialFrom(user.name, user.email);

@@ -52,9 +52,39 @@ const nextConfig: NextConfig = {
       value:
         "frame-ancestors 'self' https://habiibullahm.vercel.app http://localhost:4321",
     };
+    // Prefer BFCache-friendly caching for authenticated HTML shells.
+    // Keep no-store on auth/session JSON (see proxy-errors / Auth routes).
+    const appHtmlCache = {
+      key: "Cache-Control",
+      value: "private, no-cache",
+    };
+    const appHtmlSources = [
+      "/dashboard",
+      "/dashboard/:path*",
+      "/planner",
+      "/planner/:path*",
+      "/tren",
+      "/tren/:path*",
+      "/rekomendasi",
+      "/rekomendasi/:path*",
+      "/riwayat",
+      "/riwayat/:path*",
+      "/akun",
+      "/akun/:path*",
+      "/admin",
+      "/admin/:path*",
+      "/onboarding",
+      "/onboarding/:path*",
+      "/invite",
+      "/invite/:path*",
+    ];
     return [
       { source: "/demo", headers: [frameAncestors] },
       { source: "/demo/:path*", headers: [frameAncestors] },
+      ...appHtmlSources.map((source) => ({
+        source,
+        headers: [appHtmlCache],
+      })),
     ];
   },
 };
