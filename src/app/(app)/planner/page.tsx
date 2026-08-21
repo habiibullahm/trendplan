@@ -20,10 +20,10 @@ import { buildMonthWeekChips } from "@/features/planner/lib/month-week";
 import { countActiveItemsByWeekStarts } from "@/features/planner/lib/planner";
 import {
   getWeekPlanForViewer,
-  getWeekShareSnapshot,
   partnerDisplayName,
   shareRoleForUser,
   userHasPartnerSeatForWeek,
+  weekShareSnapshotFromPlan,
 } from "@/features/planner/lib/week-share";
 import {
   DAY_SHORT,
@@ -47,7 +47,7 @@ type Props = {
 };
 
 function buildShareUi(
-  shareSnap: Awaited<ReturnType<typeof getWeekShareSnapshot>>,
+  shareSnap: ReturnType<typeof weekShareSnapshotFromPlan>,
   weekLabel: string,
 ): ShareWeekUiSnapshot | null {
   if (!shareSnap) return null;
@@ -114,18 +114,18 @@ export default async function PlannerPage({ searchParams }: Readonly<Props>) {
   });
 
   if (tab === "aktivitas") {
-    const weekPlan = await weekPlanPromise;
-    const [activities, activityCounts] = await Promise.all([
-      listActivitiesForWeekPlan(weekPlan.id),
+    const [weekPlan, activityCounts] = await Promise.all([
+      weekPlanPromise,
       countActivitiesByWeekStarts(userId, selection.weekStarts, { view }),
     ]);
-    const shareSnap = await getWeekShareSnapshot(userId, weekPlan.id);
+    const activities = await listActivitiesForWeekPlan(weekPlan.id);
+    const shareSnap = weekShareSnapshotFromPlan(weekPlan, userId);
     const role = shareRoleForUser(weekPlan, userId);
     const shareUi = buildShareUi(shareSnap, weekLabel);
 
     const showShareBanner =
       (view === "shared" && role === "partner") ||
-      (role === "owner" && Boolean(shareSnap?.partner));
+      (role === "owner" && Boolean(shareSnap.partner));
 
     const weeks = buildMonthWeekChips(selection.weekStarts, activityCounts);
     const selectedChip = weeks.find((w) => w.index === selection.weekIndex);
@@ -200,7 +200,7 @@ export default async function PlannerPage({ searchParams }: Readonly<Props>) {
     weekPlanPromise,
     countActiveItemsByWeekStarts(userId, selection.weekStarts, { view }),
   ]);
-  const shareSnap = await getWeekShareSnapshot(userId, weekPlan.id);
+  const shareSnap = weekShareSnapshotFromPlan(weekPlan, userId);
   const role = shareRoleForUser(weekPlan, userId);
   const shareUi = buildShareUi(shareSnap, weekLabel);
 
@@ -208,7 +208,7 @@ export default async function PlannerPage({ searchParams }: Readonly<Props>) {
   // Avoid implying Plan saya (partner's owned week) is "bersama".
   const showShareBanner =
     (view === "shared" && role === "partner") ||
-    (role === "owner" && Boolean(shareSnap?.partner));
+    (role === "owner" && Boolean(shareSnap.partner));
 
   // Owner controls on owned plan; partner leave only on shared view (not mine).
   const showShareButton =

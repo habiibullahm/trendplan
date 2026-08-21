@@ -1,6 +1,7 @@
 import { unstable_cache } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { softDeleteStaleBefore } from "@/features/planner/lib/soft-delete";
+import { weekPlanBoardInclude } from "@/features/planner/lib/week-plan-board-include";
 import { formatWeekStartParam, getWeekStart, type PlannerView } from "@/lib/week";
 
 
@@ -27,15 +28,11 @@ export async function purgeStaleSoftDeletes(userId: string) {
 async function findOrNormalizeWeekPlan(userId: string, weekStart: Date) {
   const canonical = getWeekStart(weekStart);
   const key = formatWeekStartParam(canonical);
+  const include = weekPlanBoardInclude();
 
   const exact = await prisma.weekPlan.findUnique({
     where: { userId_weekStart: { userId, weekStart: canonical } },
-    include: {
-      items: {
-        where: { deletedAt: null, dayOfWeek: { gte: 0 } },
-        orderBy: { dayOfWeek: "asc" as const },
-      },
-    },
+    include,
   });
   if (exact) return exact;
 
@@ -47,12 +44,7 @@ async function findOrNormalizeWeekPlan(userId: string, weekStart: Date) {
         lte: new Date(canonical.getTime() + LEGACY_OFFSET_MS),
       },
     },
-    include: {
-      items: {
-        where: { deletedAt: null, dayOfWeek: { gte: 0 } },
-        orderBy: { dayOfWeek: "asc" as const },
-      },
-    },
+    include,
   });
 
   const match = candidates.find(
@@ -64,36 +56,31 @@ async function findOrNormalizeWeekPlan(userId: string, weekStart: Date) {
     return prisma.weekPlan.update({
       where: { id: match.id },
       data: { weekStart: canonical },
-      include: {
-        items: {
-          where: { deletedAt: null, dayOfWeek: { gte: 0 } },
-          orderBy: { dayOfWeek: "asc" },
-        },
-      },
+      include,
     });
   }
   return match;
 }
 
-export async function getOrCreateWeekPlan(userId: string, date = new Date()) {
-  await purgeStaleSoftDeletes(userId);
+export async function getOrCreateWeekPlan(
+  userId: string,
+  date = new Date(),
+  opts?: { skipPurge?: boolean },
+) {
+  if (!opts?.skipPurge) await purgeStaleSoftDeletes(userId);
 
   const weekStart = getWeekStart(date);
   const existing = await findOrNormalizeWeekPlan(userId, weekStart);
   if (existing) return existing;
 
+  const include = weekPlanBoardInclude();
   return prisma.weekPlan.upsert({
     where: {
       userId_weekStart: { userId, weekStart },
     },
     create: { userId, weekStart },
     update: {},
-    include: {
-      items: {
-        where: { deletedAt: null, dayOfWeek: { gte: 0 } },
-        orderBy: { dayOfWeek: "asc" },
-      },
-    },
+    include,
   });
 }
 

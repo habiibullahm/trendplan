@@ -22,6 +22,13 @@ export const APP_VERSION = packageJson.version;
 
 export const UPDATE_LOG: UpdateEntry[] = [
   {
+    id: "2026-08-21-soft-nav-ttfb",
+    version: "0.4.5",
+    date: "21 Agu 2026",
+    title: "Pindah halaman lebih ringan",
+    body: "Navigasi antar Dashboard, Plan, Tren, dan Akun terasa lebih cepat karena data minggu dan sesi dimuat dengan lebih sedikit round-trip.",
+  },
+  {
     id: "2026-08-20-planner-load-performance",
     version: "0.4.4",
     date: "20 Agu 2026",

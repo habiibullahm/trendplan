@@ -1,6 +1,6 @@
 import "server-only";
 
-import { Prisma, type Prisma as PrismaTypes } from "@/generated/prisma/client";
+import { Prisma } from "@/generated/prisma/client";
 import { appBaseUrl } from "@/lib/auth/env";
 import { prisma } from "@/lib/prisma";
 import { formatWeekStartParam, getWeekStart, type PlannerView } from "@/lib/week";
@@ -18,6 +18,10 @@ import {
   type ShareRole,
 } from "@/features/planner/lib/week-share-pure";
 import { softDeleteStaleBefore } from "@/features/planner/lib/soft-delete";
+import {
+  weekPlanBoardInclude,
+  type WeekPlanForViewer,
+} from "@/features/planner/lib/week-plan-board-include";
 import type { Result } from "@/lib/result";
 
 export {
@@ -28,32 +32,15 @@ export {
   type ShareRole,
 } from "@/features/planner/lib/week-share-pure";
 
+export type { WeekPlanForViewer } from "@/features/planner/lib/week-plan-board-include";
+
 /** ±14h around UTC midnight covers legacy Asia/Jakarta local-midnight rows. */
 const LEGACY_OFFSET_MS = 14 * 60 * 60 * 1000;
-
-/** Board/share loads: content rows only (no trend join — detail pages fetch trend). */
-const weekPlanItemsInclude = {
-  items: {
-    where: { deletedAt: null, dayOfWeek: { gte: 0 } },
-    orderBy: { dayOfWeek: "asc" as const },
-  },
-  user: { select: { id: true, name: true, email: true, imageUrl: true } },
-  members: {
-    include: {
-      user: { select: { id: true, name: true, email: true, imageUrl: true } },
-    },
-    take: 1,
-  },
-} satisfies PrismaTypes.WeekPlanInclude;
-
-export type WeekPlanForViewer = PrismaTypes.WeekPlanGetPayload<{
-  include: typeof weekPlanItemsInclude;
-}>;
 
 /** Prisma where: user owns the week or is an active partner member. */
 export function weekPlanAccessWhere(
   userId: string,
-): PrismaTypes.WeekPlanWhereInput {
+): Prisma.WeekPlanWhereInput {
   return {
     OR: [{ userId }, { members: { some: { userId } } }],
   };
@@ -109,7 +96,7 @@ async function findMembershipWeekPlan(
       },
     },
     include: {
-      weekPlan: { include: weekPlanItemsInclude },
+      weekPlan: { include: weekPlanBoardInclude() },
     },
   });
 
@@ -124,6 +111,7 @@ async function findMembershipWeekPlan(
  * Load the week plan for display/writes.
  * - view=mine (default): always the user's owned plan for that weekStart
  * - view=shared: membership week when seated as partner; else owned fallback
+ * Single soft-delete purge; board include already has share fields (no re-fetch).
  */
 export async function getWeekPlanForViewer(
   userId: string,
@@ -143,13 +131,7 @@ export async function getWeekPlanForViewer(
   const { getOrCreateWeekPlan } = await import(
     "@/features/planner/lib/planner"
   );
-  const owned = await getOrCreateWeekPlan(userId, weekStart);
-  // Re-fetch with share includes for consistent shape.
-  const full = await prisma.weekPlan.findUniqueOrThrow({
-    where: { id: owned.id },
-    include: weekPlanItemsInclude,
-  });
-  return full;
+  return getOrCreateWeekPlan(userId, weekStart, { skipPurge: true });
 }
 
 /** True when the user is a partner member on some plan for this calendar week. */
@@ -231,40 +213,14 @@ export type WeekShareSnapshot = {
   inviteLinkPreview?: string;
 };
 
-export async function getWeekShareSnapshot(
+/** Build share UI from an already-loaded board plan (avoids a second findFirst). */
+export function weekShareSnapshotFromPlan(
+  plan: WeekPlanForViewer,
   userId: string,
-  weekPlanId: string,
-): Promise<WeekShareSnapshot | null> {
-  const plan = await prisma.weekPlan.findFirst({
-    where: { id: weekPlanId, ...weekPlanAccessWhere(userId) },
-    include: {
-      user: { select: { id: true, name: true, email: true, imageUrl: true } },
-      members: {
-        include: {
-          user: {
-            select: { id: true, name: true, email: true, imageUrl: true },
-          },
-        },
-        take: 1,
-      },
-      invites: {
-        where: {
-          revokedAt: null,
-          acceptedAt: null,
-          expiresAt: { gt: new Date() },
-        },
-        orderBy: { createdAt: "desc" },
-        take: 1,
-        select: { id: true, invitedEmail: true, expiresAt: true },
-      },
-    },
-  });
-  if (!plan) return null;
-
+): WeekShareSnapshot {
   const role = shareRoleForUser(plan, userId);
   const partner = plan.members[0]?.user ?? null;
   const pendingInvite = partner ? null : (plan.invites[0] ?? null);
-
   return {
     role,
     weekPlanId: plan.id,
@@ -273,6 +229,18 @@ export async function getWeekShareSnapshot(
     partner,
     pendingInvite,
   };
+}
+
+export async function getWeekShareSnapshot(
+  userId: string,
+  weekPlanId: string,
+): Promise<WeekShareSnapshot | null> {
+  const plan = await prisma.weekPlan.findFirst({
+    where: { id: weekPlanId, ...weekPlanAccessWhere(userId) },
+    include: weekPlanBoardInclude(),
+  });
+  if (!plan) return null;
+  return weekShareSnapshotFromPlan(plan, userId);
 }
 
 /** Revoke outstanding unused invites for a week, then create a fresh token. */

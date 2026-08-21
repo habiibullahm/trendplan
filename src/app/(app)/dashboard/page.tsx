@@ -21,19 +21,19 @@ export default async function DashboardPage() {
   if (!session?.user?.id) redirect("/login");
   const userId = session.user.id;
 
-  const [user, weekPlan] = await Promise.all([
-    prisma.user.findUnique({
-      where: { id: userId },
-      select: { weeklyGoal: true, niche: true, name: true },
-    }),
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    select: { weeklyGoal: true, niche: true, name: true },
+  });
+  const niche = resolveNiche(user?.niche);
+  const [weekPlan, topRecs] = await Promise.all([
     getWeekPlanForViewer(userId),
+    getRecommendations(niche, 2),
   ]);
 
-  const niche = resolveNiche(user?.niche);
   const scheduled = weekPlan.items.length;
   const goal = user?.weeklyGoal ?? 3;
   const progress = Math.min(100, Math.round((scheduled / goal) * 100));
-  const topRecs = await getRecommendations(niche, 2);
   const inProgressItems = listInProgressContentItems(weekPlan.items);
 
   return (

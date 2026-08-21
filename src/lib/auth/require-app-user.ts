@@ -23,8 +23,9 @@ export type GateAppUserOptions = {
 
 /**
  * Session gate for RSC/actions.
- * Relies on auth() JWT callback (DB-backed security claims); getSafeSession is
- * React.cache'd so layout + page share one JWT/DB round-trip per request.
+ * Relies on auth() JWT callback (security claims refreshed at least every
+ * SECURITY_CLAIMS_MAX_AGE_MS / on session update — see jwt-claims.ts);
+ * getSafeSession is React.cache'd so layout + page share one auth() call per request.
  */
 export async function gateAppUser(
   options: GateAppUserOptions = {},

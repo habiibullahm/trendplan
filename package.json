@@ -1,12 +1,12 @@
 {
   "name": "trendplan",
-  "version": "0.4.4",
+  "version": "0.4.5",
   "private": true,
   "browserslist": [
     "chrome >= 111",
     "edge >= 111",
     "firefox >= 111",
-    "safari >= 16.4"
+    "safari >= 17"
   ],
   "scripts": {
     "dev": "next dev",
