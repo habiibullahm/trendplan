@@ -122,9 +122,7 @@ export async function getWeekPlanForViewer(
   const { getOrCreateWeekPlan } = await import(
     "@/features/planner/lib/planner"
   );
-  return getOrCreateWeekPlan(userId, weekStart, {
-    skipPurge: true,
-  }) as Promise<WeekPlanForViewer>;
+  return getOrCreateWeekPlan(userId, weekStart, { skipPurge: true });
 }
 
 /** True when the user is a partner member on some plan for this calendar week. */

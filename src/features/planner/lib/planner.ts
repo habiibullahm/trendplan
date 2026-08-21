@@ -5,6 +5,7 @@ import {
   weekPlanBerandaInclude,
   weekPlanBoardInclude,
   type WeekPlanForBeranda,
+  type WeekPlanForViewer,
 } from "@/features/planner/lib/week-plan-board-include";
 import { formatWeekStartParam, getWeekStart, type PlannerView } from "@/lib/week";
 import type { Prisma } from "@/generated/prisma/client";
@@ -72,14 +73,14 @@ async function findOrNormalizeWeekPlan(
 export async function getOrCreateWeekPlan(
   userId: string,
   date = new Date(),
-  opts?: { skipPurge?: boolean; include?: Prisma.WeekPlanInclude },
-) {
+  opts?: { skipPurge?: boolean },
+): Promise<WeekPlanForViewer> {
   if (!opts?.skipPurge) await purgeStaleSoftDeletes(userId);
 
   const weekStart = getWeekStart(date);
-  const include = opts?.include ?? weekPlanBoardInclude();
+  const include = weekPlanBoardInclude();
   const existing = await findOrNormalizeWeekPlan(userId, weekStart, include);
-  if (existing) return existing;
+  if (existing) return existing as WeekPlanForViewer;
 
   return prisma.weekPlan.upsert({
     where: {
@@ -88,7 +89,7 @@ export async function getOrCreateWeekPlan(
     create: { userId, weekStart },
     update: {},
     include,
-  });
+  }) as Promise<WeekPlanForViewer>;
 }
 
 /** Owned week for Beranda — lean item select, no share joins. */
@@ -96,9 +97,18 @@ export async function getWeekPlanForBeranda(
   userId: string,
   date = new Date(),
 ): Promise<WeekPlanForBeranda> {
-  return getOrCreateWeekPlan(userId, date, {
-    skipPurge: true,
-    include: weekPlanBerandaInclude(),
+  const weekStart = getWeekStart(date);
+  const include = weekPlanBerandaInclude();
+  const existing = await findOrNormalizeWeekPlan(userId, weekStart, include);
+  if (existing) return existing as WeekPlanForBeranda;
+
+  return prisma.weekPlan.upsert({
+    where: {
+      userId_weekStart: { userId, weekStart },
+    },
+    create: { userId, weekStart },
+    update: {},
+    include,
   }) as Promise<WeekPlanForBeranda>;
 }
 
