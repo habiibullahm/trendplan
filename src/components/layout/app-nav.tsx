@@ -31,18 +31,6 @@ function isActive(pathname: string, href: string, basePath = "") {
   return pathname === full || pathname.startsWith(`${full}/`);
 }
 
-function warmHref(router: ReturnType<typeof useRouter>, href: string) {
-  if (process.env.NODE_ENV === "development") {
-    void fetch(href, {
-      credentials: "same-origin",
-      redirect: "manual",
-      headers: { Purpose: "prefetch" },
-    }).catch(() => undefined);
-    return;
-  }
-  router.prefetch(href);
-}
-
 export function TopNav({ basePath = "" }: { basePath?: string }) {
   const pathname = usePathname();
   const router = useRouter();
@@ -66,10 +54,10 @@ export function TopNav({ basePath = "" }: { basePath?: string }) {
                 key={item.href}
                 href={href}
                 onMouseEnter={() => {
-                  if (!basePath) warmHref(router, href);
-                }}
-                onFocus={() => {
-                  if (!basePath) warmHref(router, href);
+                  // Prod only — next.dev disables prefetch and our fetch warm was noisy.
+                  if (!basePath && process.env.NODE_ENV === "production") {
+                    router.prefetch(href);
+                  }
                 }}
                 onClick={() => {
                   if (item.href === "/tren") scrollWindowTop();
@@ -108,7 +96,9 @@ export function BottomNav({ basePath = "" }: { basePath?: string }) {
               <Link
                 href={href}
                 onTouchStart={() => {
-                  if (!basePath) warmHref(router, href);
+                  if (!basePath && process.env.NODE_ENV === "production") {
+                    router.prefetch(href);
+                  }
                 }}
                 onClick={() => {
                   if (item.href === "/tren") scrollWindowTop();

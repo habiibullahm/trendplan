@@ -25,8 +25,8 @@ export const UPDATE_LOG: UpdateEntry[] = [
     id: "2026-08-21-nav-first-load-warm",
     version: "0.4.14",
     date: "21 Agu 2026",
-    title: "Navigasi tab lebih siap di kunjungan pertama",
-    body: "Setelah masuk app, tab Beranda/Tren/Plan/Akun dihangatkan di latar supaya ketukan pertama tidak terasa menunggu lama. Akun juga memuat profil lebih dulu sebelum pengingat push.",
+    title: "Navigasi dan Akun lebih ringan",
+    body: "Skeleton app muncul lebih cepat saat pindah tab, dan halaman Akun memuat profil dulu sebelum pengingat push — tanpa prefetch berisik di latar.",
   },
   {
     id: "2026-08-21-beranda-posted-empty",
