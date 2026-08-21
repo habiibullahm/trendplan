@@ -61,14 +61,12 @@ export const { handlers, auth, signIn, signOut, unstable_update } = NextAuth({
 
         const email = parsed.data.email.toLowerCase().trim();
         const ip = await getClientIp();
-        // Same buckets as loginAction — covers direct /api/auth/callback/credentials.
-        const ipLimit = await checkRateLimit(`login:ip:${ip}`, LOGIN_IP_LIMIT);
-        if (!ipLimit.ok) return null;
-        const emailLimit = await checkRateLimit(
-          `login:email:${email}`,
-          LOGIN_EMAIL_LIMIT,
-        );
-        if (!emailLimit.ok) return null;
+        // Parallel buckets — separate keys/transactions; halves wall-clock vs serial.
+        const [ipLimit, emailLimit] = await Promise.all([
+          checkRateLimit(`login:ip:${ip}`, LOGIN_IP_LIMIT),
+          checkRateLimit(`login:email:${email}`, LOGIN_EMAIL_LIMIT),
+        ]);
+        if (!ipLimit.ok || !emailLimit.ok) return null;
 
         const user = await prisma.user.findUnique({ where: { email } });
         const storedHash = user?.passwordHash ?? DUMMY_PASSWORD_HASH;

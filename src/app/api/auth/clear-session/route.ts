@@ -8,13 +8,12 @@ import {
 
 /**
  * Clears Auth.js session cookies then redirects to /login.
- * Cookie writes are illegal in RSC — call this via redirect() from Server Components
- * when Node auth() is empty but the edge still sees a JWT (orphan cookie).
+ * Cookie writes are illegal in RSC — call via redirect() from Server Components
+ * or logoutAction when signing out / clearing orphan JWTs.
  *
- * GET is intentional for RSC redirect(); treat as panic logout.
- * Residual CSRF: navigations with neither Origin nor Referer still clear the session.
- * When Origin or Referer is present, require same origin as appBaseUrl() (deny if
- * the app origin cannot be resolved).
+ * GET is intentional for redirect(); treat navigations without Origin/Referer as
+ * allowed. When Origin or Referer is present, require same origin as appBaseUrl()
+ * (deny if the app origin cannot be resolved).
  */
 export function isClearSessionRequestAllowed(request: Request): boolean {
   const originHeader = request.headers.get("origin");
