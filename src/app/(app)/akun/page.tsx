@@ -6,6 +6,7 @@ import { AkunAvatar } from "@/features/auth/components/akun-avatar";
 import { AkunGoalEditor } from "@/features/auth/components/akun-goal-editor";
 import { AkunNicheEditor } from "@/features/auth/components/akun-niche-editor";
 import { AkunToastFromQuery } from "@/features/auth/components/akun-toast-from-query";
+import { LogoutForm } from "@/features/auth/components/logout-form";
 import { AkunPushReminder } from "@/features/reminders/components/akun-push-reminder";
 import { isAdminEmail } from "@/lib/auth/admin";
 import { getSafeSession } from "@/lib/auth/session";
@@ -33,14 +34,6 @@ const UpdateLog = dynamic(
       default: m.UpdateLog,
     })),
   { loading: () => <div className="h-10" aria-hidden /> },
-);
-
-const LogoutForm = dynamic(
-  () =>
-    import("@/features/auth/components/logout-form").then((m) => ({
-      default: m.LogoutForm,
-    })),
-  { loading: () => <div className="mt-6 h-12" aria-hidden /> },
 );
 
 function initialFrom(name: string | null | undefined, email: string): string {

@@ -29,6 +29,29 @@ export function weekPlanBoardInclude() {
   } satisfies PrismaTypes.WeekPlanInclude;
 }
 
+/**
+ * Beranda-only: active items (id/title/status/day) — no share/invite joins.
+ * Keeps soft-nav TTFB off the heavy board include.
+ */
+export function weekPlanBerandaInclude() {
+  return {
+    items: {
+      where: { deletedAt: null, dayOfWeek: { gte: 0 } },
+      orderBy: { dayOfWeek: "asc" as const },
+      select: {
+        id: true,
+        title: true,
+        status: true,
+        dayOfWeek: true,
+      },
+    },
+  } satisfies PrismaTypes.WeekPlanInclude;
+}
+
 export type WeekPlanForViewer = PrismaTypes.WeekPlanGetPayload<{
   include: ReturnType<typeof weekPlanBoardInclude>;
+}>;
+
+export type WeekPlanForBeranda = PrismaTypes.WeekPlanGetPayload<{
+  include: ReturnType<typeof weekPlanBerandaInclude>;
 }>;
