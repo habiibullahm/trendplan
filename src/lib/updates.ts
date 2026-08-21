@@ -22,6 +22,13 @@ export const APP_VERSION = packageJson.version;
 
 export const UPDATE_LOG: UpdateEntry[] = [
   {
+    id: "2026-08-21-nav-first-load-warm",
+    version: "0.4.14",
+    date: "21 Agu 2026",
+    title: "Beranda dan navigasi lebih ringan",
+    body: "Beranda memuat plan minggu dengan query lebih ramping dan paralel. Skeleton app muncul lebih cepat saat pindah tab, dan Akun menampilkan profil dulu sebelum pengingat push.",
+  },
+  {
     id: "2026-08-21-beranda-posted-empty",
     version: "0.4.13",
     date: "21 Agu 2026",

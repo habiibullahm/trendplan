@@ -9,8 +9,8 @@ import { WeekTargetCard } from "@/features/planner/components/week-target-card";
 import { prisma } from "@/lib/prisma";
 import {
   getRecommendations,
+  getWeekPlanForBeranda,
 } from "@/features/planner/lib/planner";
-import { getWeekPlanForViewer } from "@/features/planner/lib/week-share";
 import { listInProgressContentItems } from "@/features/planner/lib/in-progress-items";
 import { formatWeekRange } from "@/lib/week";
 import { STATUS_LABEL } from "@/lib/labels";
@@ -21,15 +21,22 @@ export default async function DashboardPage() {
   if (!session?.user?.id) redirect("/login");
   const userId = session.user.id;
 
-  const user = await prisma.user.findUnique({
+  const userPromise = prisma.user.findUnique({
     where: { id: userId },
     select: { weeklyGoal: true, niche: true, name: true },
   });
-  const niche = resolveNiche(user?.niche);
-  const [weekPlan, topRecs] = await Promise.all([
-    getWeekPlanForViewer(userId),
-    getRecommendations(niche, 2),
+  // Overlap week plan with user; start recs as soon as niche is known.
+  const weekPlanPromise = getWeekPlanForBeranda(userId);
+  const topRecsPromise = userPromise.then((user) =>
+    getRecommendations(resolveNiche(user?.niche), 2),
+  );
+
+  const [user, weekPlan, topRecs] = await Promise.all([
+    userPromise,
+    weekPlanPromise,
+    topRecsPromise,
   ]);
+  const niche = resolveNiche(user?.niche);
 
   const scheduled = weekPlan.items.length;
   const goal = user?.weeklyGoal ?? 3;
