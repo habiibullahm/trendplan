@@ -9,7 +9,8 @@ Sebagai creator, saya ingin membuka riwayat konten yang sudah Posted untuk merev
 ## Acceptance criteria
 
 - Dashboard shows greeting, week range, weekly goal progress, and in-progress items when any exist.
-- Empty week (no in-progress items): empty copy plus **Buka Plan** → `/planner` (do not hide the section).
+- Empty week (no content items): empty copy plus **Buka Plan** → `/planner` (do not hide the section).
+- Week with only Posted items: section stays visible with Posted copy (not “Belum ada ide”) plus **Buka Plan**.
 - Dashboard recommendations teaser links to full rekomendasi.
 - Riwayat lists Posted items the user can access (owned or shared membership weeks), read-only preview.
 - Posted items in planner detail stay read-oriented for history consistency.

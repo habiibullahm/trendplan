@@ -89,6 +89,22 @@ export default async function DashboardPage() {
               </FadeIn>
             ))}
           </Stagger>
+        ) : scheduled > 0 ? (
+          <EmptyState className="mt-3">
+            <p className="font-medium text-ink">
+              Semua ide minggu ini sudah Posted
+            </p>
+            <p className="mt-1">
+              Lihat di{" "}
+              <Link
+                href="/riwayat"
+                className="font-semibold text-coral transition-colors hover:underline"
+              >
+                Riwayat
+              </Link>{" "}
+              atau buka Plan untuk detail.
+            </p>
+          </EmptyState>
         ) : (
           <EmptyState className="mt-3">
             <p className="font-medium text-ink">Belum ada ide minggu ini</p>
