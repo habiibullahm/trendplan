@@ -11,6 +11,7 @@ import {
   withValidation,
 } from "@/lib/action-middleware";
 import { requireAppUserAction } from "@/lib/auth/require-app-user";
+import { notifyAdminsOfFeedback } from "@/features/feedback/lib/notify-admins";
 import { submitFeedbackSchema } from "@/features/feedback/lib/validation";
 import { prisma } from "@/lib/prisma";
 
@@ -60,6 +61,20 @@ export async function submitFeedbackAction(
       } catch (err) {
         console.error("[feedback] create failed", err);
         return actionErrorCode("generic");
+      }
+
+      try {
+        const submitter = await prisma.user.findUnique({
+          where: { id: userId },
+          select: { email: true },
+        });
+        await notifyAdminsOfFeedback({
+          category: data.category,
+          message: data.message,
+          submitterEmail: submitter?.email ?? userId,
+        });
+      } catch (err) {
+        console.error("[feedback] admin notify wrapper failed", err);
       }
 
       return actionSuccess("Terima kasih — masukanmu sudah terkirim.");

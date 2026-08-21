@@ -1,7 +1,13 @@
 {
   "name": "trendplan",
-  "version": "0.4.3",
+  "version": "0.4.10",
   "private": true,
+  "browserslist": [
+    "chrome >= 111",
+    "edge >= 111",
+    "firefox >= 111",
+    "safari >= 17"
+  ],
   "scripts": {
     "dev": "next dev",
     "build": "prisma generate && next build",

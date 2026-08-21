@@ -38,11 +38,25 @@ export default defineConfig({
       testMatch: /.*\.spec\.ts/,
       testIgnore: /journeys\/.*/,
     },
+    // Journeys share one E2E_EMAIL planner week — run serially so create-ide
+    // slots and share seats do not race across files.
     {
-      name: "chromium-authenticated",
+      name: "journey-planner",
       use: { ...devices["Desktop Chrome"] },
-      testMatch: /journeys\/.*\.spec\.ts/,
+      testMatch: /journeys\/planner\.spec\.ts/,
       dependencies: ["setup"],
+    },
+    {
+      name: "journey-aktivitas",
+      use: { ...devices["Desktop Chrome"] },
+      testMatch: /journeys\/aktivitas\.spec\.ts/,
+      dependencies: ["journey-planner"],
+    },
+    {
+      name: "journey-week-share",
+      use: { ...devices["Desktop Chrome"] },
+      testMatch: /journeys\/week-share\.spec\.ts/,
+      dependencies: ["journey-aktivitas"],
     },
   ],
   webServer: {

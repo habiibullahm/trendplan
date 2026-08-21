@@ -1,6 +1,6 @@
 import { notFound, redirect } from "next/navigation";
 import Link from "next/link";
-import { auth } from "@/auth";
+import { getSafeSession } from "@/lib/auth/session";
 import { EditActivityForm } from "@/features/activities/components/edit-activity-form";
 import { prisma } from "@/lib/prisma";
 import { weekPlanAccessWhere } from "@/features/planner/lib/week-share";
@@ -19,7 +19,7 @@ export default async function ActivityEditPage({
   params,
   searchParams,
 }: Readonly<Props>) {
-  const session = await auth();
+  const session = await getSafeSession();
   if (!session?.user?.id) redirect("/login");
 
   const { activityId } = await params;

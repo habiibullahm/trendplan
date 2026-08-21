@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
-import { isClearSessionRequestAllowed } from "@/app/api/auth/clear-session/route";
+import { isClearSessionRequestAllowed } from "@/lib/auth/clear-session-guard";
 import { setNodeEnv } from "@/test/set-node-env";
 
 describe("isClearSessionRequestAllowed", () => {
