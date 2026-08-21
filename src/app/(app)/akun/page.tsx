@@ -1,19 +1,41 @@
 import Link from "next/link";
+import dynamic from "next/dynamic";
 import { Suspense } from "react";
 import { redirect } from "next/navigation";
-import { signOut } from "@/auth";
 import { AkunAvatar } from "@/features/auth/components/akun-avatar";
 import { AkunGoalEditor } from "@/features/auth/components/akun-goal-editor";
 import { AkunNicheEditor } from "@/features/auth/components/akun-niche-editor";
 import { AkunToastFromQuery } from "@/features/auth/components/akun-toast-from-query";
-import { ChangePasswordForm } from "@/features/auth/components/change-password-form";
 import { LogoutButton } from "@/features/auth/components/logout-button";
-import { UpdateLog } from "@/features/auth/components/update-log";
 import { PushReminderToggle } from "@/features/reminders/components/push-reminder-toggle";
-import { FeedbackForm } from "@/features/feedback/components/feedback-form";
+import { logoutAction } from "@/features/auth/actions/logout";
 import { isAdminEmail } from "@/lib/auth/admin";
 import { getSafeSession } from "@/lib/auth/session";
 import { prisma } from "@/lib/prisma";
+
+const ChangePasswordForm = dynamic(
+  () =>
+    import("@/features/auth/components/change-password-form").then((m) => ({
+      default: m.ChangePasswordForm,
+    })),
+  { loading: () => <div className="h-12" aria-hidden /> },
+);
+
+const FeedbackForm = dynamic(
+  () =>
+    import("@/features/feedback/components/feedback-form").then((m) => ({
+      default: m.FeedbackForm,
+    })),
+  { loading: () => <div className="h-12" aria-hidden /> },
+);
+
+const UpdateLog = dynamic(
+  () =>
+    import("@/features/auth/components/update-log").then((m) => ({
+      default: m.UpdateLog,
+    })),
+  { loading: () => <div className="h-10" aria-hidden /> },
+);
 
 function initialFrom(name: string | null | undefined, email: string): string {
   const source = name?.trim() || email.trim();
@@ -136,13 +158,7 @@ export default async function AkunPage() {
         <UpdateLog />
       </section>
 
-      <form
-        className="mt-6"
-        action={async () => {
-          "use server";
-          await signOut({ redirectTo: "/" });
-        }}
-      >
+      <form className="mt-6" action={logoutAction}>
         <LogoutButton />
       </form>
     </main>

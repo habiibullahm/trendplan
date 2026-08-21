@@ -11,6 +11,7 @@ import {
 import {
   dbSecurityClaims,
   shouldInvalidateForPasswordVersion,
+  shouldRefreshSecurityClaims,
 } from "@/lib/auth/jwt-claims";
 import { passwordSchema } from "@/lib/auth/validation";
 import {
@@ -105,11 +106,25 @@ export const { handlers, auth, signIn, signOut, unstable_update } = NextAuth({
       if (!token) return token;
 
       // Sign-in already stamped claims from authorize().
-      if (params.user) return token;
+      if (params.user) {
+        token.securityClaimsAt = Date.now();
+        return token;
+      }
       if (typeof token.id !== "string") return token;
 
-      // Always reload security claims from DB so edge soft-gates match Node
-      // (stale emailVerified after verify caused dashboard ↔ verify redirect loops).
+      // Soft-nav hits auth() often. Reload security claims on `update` or when
+      // SECURITY_CLAIMS_MAX_AGE_MS elapses (documented ≤30s revoke window for
+      // passwordVersion / deleted user on other sessions). Verify / password /
+      // onboarding call unstable_update and refresh immediately.
+      if (
+        !shouldRefreshSecurityClaims({
+          trigger: params.trigger,
+          securityClaimsAt: token.securityClaimsAt,
+        })
+      ) {
+        return token;
+      }
+
       const row = await prisma.user.findUnique({
         where: { id: token.id },
         select: {
@@ -169,7 +184,9 @@ export const { handlers, auth, signIn, signOut, unstable_update } = NextAuth({
         }
       }
 
-      Object.assign(token, dbSecurityClaims(row));
+      Object.assign(token, dbSecurityClaims(row), {
+        securityClaimsAt: Date.now(),
+      });
       return token;
     },
     async session(params) {

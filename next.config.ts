@@ -36,6 +36,23 @@ const nextConfig: NextConfig = {
       "./node_modules/@img/sharp-linux-x64/**/*",
     ],
   },
+  // Next ships unconditional Baseline polyfills; TrendPlan targets modern
+  // browsers (package.json browserslist, safari >= 17 / URL.canParse). Stub
+  // for smaller client JS. Re-check resolve paths after Next upgrades.
+  turbopack: {
+    resolveAlias: {
+      "../build/polyfills/polyfill-module": "./src/lib/modern-polyfill.js",
+      "next/dist/build/polyfills/polyfill-module": "./src/lib/modern-polyfill.js",
+    },
+  },
+  webpack(config) {
+    config.resolve.alias = {
+      ...config.resolve.alias,
+      "../build/polyfills/polyfill-module": false,
+      "next/dist/build/polyfills/polyfill-module": false,
+    };
+    return config;
+  },
   // Default Server Action body limit is 1 MB; profile photo allows up to 2 MB
   // (+ multipart overhead). See serverActions.bodySizeLimit docs.
   experimental: {

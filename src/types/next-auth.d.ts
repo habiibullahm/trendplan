@@ -27,5 +27,7 @@ declare module "next-auth/jwt" {
     emailVerified?: string | null;
     passwordNeedsUpgrade?: boolean;
     passwordVersion?: number;
+    /** Epoch ms when security claims were last loaded from DB. */
+    securityClaimsAt?: number;
   }
 }
