@@ -26,7 +26,7 @@ export const UPDATE_LOG: UpdateEntry[] = [
     version: "0.4.14",
     date: "21 Agu 2026",
     title: "Beranda dan navigasi lebih ringan",
-    body: "Beranda memuat plan minggu dengan query lebih ramping dan paralel, skeleton app muncul lebih cepat saat pindah tab, dan Akun menampilkan profil dulu sebelum pengingat push.",
+    body: "Beranda memuat plan minggu dengan query lebih ramping dan paralel. Skeleton app muncul lebih cepat saat pindah tab, dan Akun menampilkan profil dulu sebelum pengingat push.",
   },
   {
     id: "2026-08-21-beranda-posted-empty",

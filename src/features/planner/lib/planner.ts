@@ -30,11 +30,13 @@ export async function purgeStaleSoftDeletes(userId: string) {
  * Find a week plan by calendar Senin key, repairing legacy non-UTC timestamps
  * to canonical UTC midnight so unique(userId, weekStart) stays stable.
  */
-async function findOrNormalizeWeekPlan(
+async function findOrNormalizeWeekPlan<
+  TInclude extends Prisma.WeekPlanInclude,
+>(
   userId: string,
   weekStart: Date,
-  include: Prisma.WeekPlanInclude,
-) {
+  include: TInclude,
+): Promise<Prisma.WeekPlanGetPayload<{ include: TInclude }> | null> {
   const canonical = getWeekStart(weekStart);
   const key = formatWeekStartParam(canonical);
 
@@ -80,7 +82,7 @@ export async function getOrCreateWeekPlan(
   const weekStart = getWeekStart(date);
   const include = weekPlanBoardInclude();
   const existing = await findOrNormalizeWeekPlan(userId, weekStart, include);
-  if (existing) return existing as unknown as WeekPlanForViewer;
+  if (existing) return existing;
 
   return prisma.weekPlan.upsert({
     where: {
@@ -89,7 +91,7 @@ export async function getOrCreateWeekPlan(
     create: { userId, weekStart },
     update: {},
     include,
-  }) as unknown as Promise<WeekPlanForViewer>;
+  });
 }
 
 /** Owned week for Beranda — lean item select, no share joins. */
@@ -100,7 +102,7 @@ export async function getWeekPlanForBeranda(
   const weekStart = getWeekStart(date);
   const include = weekPlanBerandaInclude();
   const existing = await findOrNormalizeWeekPlan(userId, weekStart, include);
-  if (existing) return existing as unknown as WeekPlanForBeranda;
+  if (existing) return existing;
 
   return prisma.weekPlan.upsert({
     where: {
@@ -109,7 +111,7 @@ export async function getWeekPlanForBeranda(
     create: { userId, weekStart },
     update: {},
     include,
-  }) as unknown as Promise<WeekPlanForBeranda>;
+  });
 }
 
 /** Active item counts keyed by YYYY-MM-DD weekStart (no upsert). */

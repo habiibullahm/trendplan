@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
 import { scrollWindowTop } from "@/components/layout/scroll-to-top";
 
 const primaryNav = [
@@ -33,7 +33,6 @@ function isActive(pathname: string, href: string, basePath = "") {
 
 export function TopNav({ basePath = "" }: { basePath?: string }) {
   const pathname = usePathname();
-  const router = useRouter();
   const homeHref = withBase(basePath, "/dashboard");
 
   return (
@@ -53,12 +52,6 @@ export function TopNav({ basePath = "" }: { basePath?: string }) {
               <Link
                 key={item.href}
                 href={href}
-                onMouseEnter={() => {
-                  // Prod only — next.dev disables prefetch and our fetch warm was noisy.
-                  if (!basePath && process.env.NODE_ENV === "production") {
-                    router.prefetch(href);
-                  }
-                }}
                 onClick={() => {
                   if (item.href === "/tren") scrollWindowTop();
                 }}
@@ -80,7 +73,6 @@ export function TopNav({ basePath = "" }: { basePath?: string }) {
 
 export function BottomNav({ basePath = "" }: { basePath?: string }) {
   const pathname = usePathname();
-  const router = useRouter();
 
   return (
     <nav
@@ -95,11 +87,6 @@ export function BottomNav({ basePath = "" }: { basePath?: string }) {
             <li key={item.href}>
               <Link
                 href={href}
-                onTouchStart={() => {
-                  if (!basePath && process.env.NODE_ENV === "production") {
-                    router.prefetch(href);
-                  }
-                }}
                 onClick={() => {
                   if (item.href === "/tren") scrollWindowTop();
                 }}
