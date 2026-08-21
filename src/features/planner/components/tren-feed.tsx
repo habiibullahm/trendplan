@@ -12,6 +12,9 @@ import { EmptyState } from "@/components/ui/empty-state";
 import { FORMAT_LABEL } from "@/lib/labels";
 import { NICHES, type Niche } from "@/lib/niches";
 
+/** First N cards paint immediately so cover/title can be LCP (not opacity-0 FadeIn). */
+const INSTANT_CARD_COUNT = 2;
+
 export type TrenFeedItem = {
   id: string;
   title: string;
@@ -60,32 +63,37 @@ export function TrenFeed({
       </div>
 
       <Stagger as="ul" className="mt-6 space-y-4">
-        {visible.map((trend) => (
-          <FadeIn
-            key={trend.id}
-            as="li"
-            id={trend.id}
-            className="scroll-mt-24 rounded-2xl border border-border bg-surface p-4"
-          >
-            <TrendMediaBlock
-              media={{
-                coverUrl: trend.coverUrl,
-                videoUrl: trend.videoUrl,
-                audioTitle: trend.audioTitle,
-                audioUrl: trend.audioUrl,
-              }}
-            />
-            <p className="mt-3 text-xs font-semibold text-ink-muted">
-              {trend.niche}
-            </p>
-            <p className="mt-1 font-semibold text-ink">{trend.title}</p>
-            <p className="mt-1 text-sm italic text-ink-muted">{trend.hook}</p>
-            <p className="mt-2 text-xs text-ink-muted">
-              {FORMAT_LABEL[trend.format]} · skor {trend.score}
-            </p>
-            <AddToPlannerForm trendId={trend.id} />
-          </FadeIn>
-        ))}
+        {visible.map((trend, index) => {
+          const instant = index < INSTANT_CARD_COUNT;
+          return (
+            <FadeIn
+              key={trend.id}
+              as="li"
+              id={trend.id}
+              instant={instant}
+              className="scroll-mt-24 rounded-2xl border border-border bg-surface p-4"
+            >
+              <TrendMediaBlock
+                priority={index === 0}
+                media={{
+                  coverUrl: trend.coverUrl,
+                  videoUrl: trend.videoUrl,
+                  audioTitle: trend.audioTitle,
+                  audioUrl: trend.audioUrl,
+                }}
+              />
+              <p className="mt-3 text-xs font-semibold text-ink-muted">
+                {trend.niche}
+              </p>
+              <p className="mt-1 font-semibold text-ink">{trend.title}</p>
+              <p className="mt-1 text-sm italic text-ink-muted">{trend.hook}</p>
+              <p className="mt-2 text-xs text-ink-muted">
+                {FORMAT_LABEL[trend.format]} · skor {trend.score}
+              </p>
+              <AddToPlannerForm trendId={trend.id} />
+            </FadeIn>
+          );
+        })}
         {visible.length === 0 ? (
           <EmptyState as="li">
             {trends.length === 0 ? (

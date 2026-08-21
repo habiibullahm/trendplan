@@ -118,7 +118,9 @@ export async function getWeekPlanForViewer(
   date = new Date(),
   opts?: { view?: PlannerView },
 ): Promise<WeekPlanForViewer> {
-  await purgeStaleSoftDeletesForAccessible(userId);
+  // Soft-deleted rows are already excluded via deletedAt: null. Hard-delete GC
+  // must not block soft-nav TTFB (Neon round-trips).
+  void purgeStaleSoftDeletesForAccessible(userId);
 
   const weekStart = getWeekStart(date);
   const view = opts?.view ?? "mine";

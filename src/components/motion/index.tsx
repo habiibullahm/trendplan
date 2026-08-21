@@ -73,22 +73,26 @@ export function FadeIn({
   className,
   as = "div",
   id,
+  /** Skip opacity/y entrance so above-fold content can be LCP (e.g. first Tren cards). */
+  instant = false,
 }: {
   children: ReactNode;
   className?: string;
   as?: "div" | "li";
   id?: string;
+  instant?: boolean;
 }) {
   const reduce = usePrefersReducedMotion();
   const inStagger = useContext(StaggerContext);
+  const skipMotion = reduce || instant;
 
   const variants = {
-    hidden: reduce ? { opacity: 1, y: 0 } : { opacity: 0, y: 8 },
+    hidden: skipMotion ? { opacity: 1, y: 0 } : { opacity: 0, y: 8 },
     show: {
       opacity: 1,
       y: 0,
       transition: {
-        duration: reduce ? 0 : 0.28,
+        duration: skipMotion ? 0 : 0.28,
         ease: easeOut,
       },
     },

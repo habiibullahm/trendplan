@@ -81,9 +81,12 @@ const EMPTY_COVER_GRADIENT =
 function CoverPlaceholder({
   coverUrl,
   className,
+  priority = false,
 }: {
   coverUrl?: string | null;
   className?: string;
+  /** First-card LCP: eager decode + high fetch priority. */
+  priority?: boolean;
 }) {
   const src = mediaUrl(coverUrl);
   return (
@@ -103,6 +106,9 @@ function CoverPlaceholder({
           src={src}
           alt=""
           className="absolute inset-0 h-full w-full object-cover"
+          loading={priority ? "eager" : "lazy"}
+          fetchPriority={priority ? "high" : "auto"}
+          decoding={priority ? "sync" : "async"}
         />
       ) : null}
     </div>
@@ -146,7 +152,14 @@ function waitForVideoReady(el: HTMLVideoElement): Promise<void> {
 }
 
 /** Full Tren card media: cover/video + optional audio row. */
-export function TrendMediaBlock({ media }: { media: TrendMediaFields }) {
+export function TrendMediaBlock({
+  media,
+  priority = false,
+}: {
+  media: TrendMediaFields;
+  /** First visible card: prioritize cover for LCP; keep video off the critical path. */
+  priority?: boolean;
+}) {
   const frameRef = useRef<HTMLDivElement | null>(null);
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const userPausedRef = useRef(false);
@@ -279,6 +292,7 @@ export function TrendMediaBlock({ media }: { media: TrendMediaFields }) {
         <CoverPlaceholder
           coverUrl={coverSrc}
           className="absolute inset-0 z-0"
+          priority={priority}
         />
         {hasVideo ? (
           <>
@@ -288,7 +302,8 @@ export function TrendMediaBlock({ media }: { media: TrendMediaFields }) {
               src={videoSrc!}
               poster={coverSrc ?? undefined}
               playsInline
-              preload="auto"
+              // Cover is LCP; load bytes only when Putar / in-view autoplay kicks waitForVideoReady→load().
+              preload="none"
               muted
               loop
               onPause={() => setPlaying(false)}

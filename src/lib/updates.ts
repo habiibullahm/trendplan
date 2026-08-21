@@ -22,6 +22,13 @@ export const APP_VERSION = packageJson.version;
 
 export const UPDATE_LOG: UpdateEntry[] = [
   {
+    id: "2026-08-21-tren-lcp",
+    version: "0.4.6",
+    date: "21 Agu 2026",
+    title: "Tren lebih cepat tampil",
+    body: "Kartu tren di atas layar langsung terlihat (cover dan judul), tanpa menunggu animasi atau unduhan video.",
+  },
+  {
     id: "2026-08-21-soft-nav-ttfb",
     version: "0.4.5",
     date: "21 Agu 2026",
