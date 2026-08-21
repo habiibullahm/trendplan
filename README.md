@@ -46,7 +46,7 @@ See [docs/user-stories/](docs/user-stories/README.md). Highlights:
 
 ## AI assist
 
-Tombol **Bantu AI** di detail ide (Groq). Env: lihat [`.env.example`](.env.example) dan [AI caption assist](docs/user-stories/ai-caption-assist.md).
+Tombol **Bantu AI** di detail ide (Groq). Kunjungan pertama menampilkan petunjuk singkat. Env: lihat [`.env.example`](.env.example) dan [AI caption assist](docs/user-stories/ai-caption-assist.md).
 
 ## Setup lokal
 

@@ -22,6 +22,13 @@ export const APP_VERSION = packageJson.version;
 
 export const UPDATE_LOG: UpdateEntry[] = [
   {
+    id: "2026-08-18-bantu-ai-coachmark",
+    version: "0.4.11",
+    date: "21 Agu 2026",
+    title: "Petunjuk Bantu AI",
+    body: "Pertama kali buka detail ide, ada petunjuk singkat di tombol Bantu AI. Isi caption dan hashtag dari ide/tren kamu — tetap bisa diedit. Petunjuk tidak muncul lagi setelah Mengerti.",
+  },
+  {
     id: "2026-08-18-beranda-buka-plan",
     version: "0.4.10",
     date: "21 Agu 2026",
