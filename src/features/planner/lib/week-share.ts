@@ -17,7 +17,6 @@ import {
   shareRoleForUser,
   type ShareRole,
 } from "@/features/planner/lib/week-share-pure";
-import { softDeleteStaleBefore } from "@/features/planner/lib/soft-delete";
 import {
   weekPlanBoardInclude,
   type WeekPlanForViewer,
@@ -69,15 +68,6 @@ export function inviteUrl(rawToken: string): string {
   return buildInviteUrl(appBaseUrl(), rawToken);
 }
 
-async function purgeStaleSoftDeletesForAccessible(userId: string) {
-  await prisma.contentItem.deleteMany({
-    where: {
-      deletedAt: { lt: softDeleteStaleBefore() },
-      weekPlan: weekPlanAccessWhere(userId),
-    },
-  });
-}
-
 async function findMembershipWeekPlan(
   userId: string,
   weekStart: Date,
@@ -111,17 +101,16 @@ async function findMembershipWeekPlan(
  * Load the week plan for display/writes.
  * - view=mine (default): always the user's owned plan for that weekStart
  * - view=shared: membership week when seated as partner; else owned fallback
- * Single soft-delete purge; board include already has share fields (no re-fetch).
+ * Soft-deleted items excluded via deletedAt: null; GC runs on write actions.
  */
 export async function getWeekPlanForViewer(
   userId: string,
   date = new Date(),
   opts?: { view?: PlannerView },
 ): Promise<WeekPlanForViewer> {
-  // Soft-deleted rows are already excluded via deletedAt: null. Hard-delete GC
-  // must not block soft-nav TTFB (Neon round-trips).
-  void purgeStaleSoftDeletesForAccessible(userId);
-
+  // Do not GC here: concurrent deleteMany + find on the Prisma/pg adapter
+  // triggers pg@8 "client already executing a query" deprecation. Soft-deleted
+  // rows are excluded via deletedAt: null; hard-delete runs from write actions.
   const weekStart = getWeekStart(date);
   const view = opts?.view ?? "mine";
 
