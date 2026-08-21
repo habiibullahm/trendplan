@@ -22,6 +22,13 @@ export const APP_VERSION = packageJson.version;
 
 export const UPDATE_LOG: UpdateEntry[] = [
   {
+    id: "2026-08-21-beranda-posted-empty",
+    version: "0.4.13",
+    date: "21 Agu 2026",
+    title: "Beranda bedakan minggu kosong vs Posted",
+    body: "Kalau semua ide minggu ini sudah Posted, Beranda tidak lagi bilang “belum ada ide”. Tetap ada Buka Plan, plus tautan ke Riwayat.",
+  },
+  {
     id: "2026-08-18-empty-slot-saran-ide",
     version: "0.4.12",
     date: "21 Agu 2026",
