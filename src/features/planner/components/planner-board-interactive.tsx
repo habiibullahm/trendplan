@@ -27,12 +27,14 @@ import {
   type DragStartEvent,
 } from "@dnd-kit/core";
 import { CSS } from "@dnd-kit/utilities";
+import { GripVertical } from "lucide-react";
 import { toast } from "sonner";
 import { moveContentItemAction } from "@/features/planner/actions/content";
 import { dragId, dropId, parseDropDay } from "@/features/planner/lib/planner-dnd";
 import { Badge } from "@/components/ui/badge";
 import { STATUS_CLASS, STATUS_LABEL } from "@/lib/labels";
 import { DAY_SHORT, type PlannerView } from "@/lib/week";
+import { cn } from "@/lib/cn";
 import {
   buildByDay,
   itemHref,
@@ -198,22 +200,36 @@ function DraggableCard({
     }
   };
 
-  const shellClass = posted
-    ? "cursor-default"
-    : "cursor-grab active:cursor-grabbing";
+  const showHandle = !posted && !pending;
+  const handle = showHandle ? (
+    <button
+      type="button"
+      className={cn(
+        "min-touch inline-flex w-8 shrink-0 touch-none cursor-grab items-center justify-center text-ink-muted transition-colors hover:text-ink active:cursor-grabbing",
+        "rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-coral/40",
+      )}
+      aria-label="Pindahkan ide"
+      {...listeners}
+      {...attributes}
+    >
+      <GripVertical className="size-4" aria-hidden />
+    </button>
+  ) : null;
 
   if (layout === "list") {
     return (
       <div
         ref={setNodeRef}
         style={style}
-        className={`min-touch min-w-0 touch-none overflow-hidden rounded-2xl border border-border bg-surface ${shellClass}`}
-        {...(posted ? {} : listeners)}
-        {...(posted ? {} : attributes)}
+        className="min-touch flex min-w-0 items-stretch overflow-hidden rounded-2xl border border-border bg-surface"
       >
+        {handle}
         <Link
           href={itemHref(item.id, returnMonth, returnWeek, view)}
-          className="flex items-center justify-between gap-3 px-4 py-3"
+          className={cn(
+            "flex min-w-0 flex-1 items-center justify-between gap-3 py-3",
+            handle ? "pr-4 pl-1" : "px-4",
+          )}
           onClick={onDetailClick}
           draggable={false}
         >
@@ -235,13 +251,12 @@ function DraggableCard({
     <div
       ref={setNodeRef}
       style={style}
-      className={`mt-2 min-w-0 touch-none overflow-hidden ${shellClass}`}
-      {...(posted ? {} : listeners)}
-      {...(posted ? {} : attributes)}
+      className="mt-2 flex min-w-0 items-start gap-0.5 overflow-hidden"
     >
+      {handle}
       <Link
         href={itemHref(item.id, returnMonth, returnWeek, view)}
-        className="block min-w-0"
+        className="min-w-0 flex-1 pt-0.5"
         onClick={onDetailClick}
         draggable={false}
       >

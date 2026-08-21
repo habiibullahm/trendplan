@@ -22,6 +22,13 @@ export const APP_VERSION = packageJson.version;
 
 export const UPDATE_LOG: UpdateEntry[] = [
   {
+    id: "2026-08-21-planner-drag-handle",
+    version: "0.4.8",
+    date: "21 Agu 2026",
+    title: "Geser ide lewat ikon kiri",
+    body: "Di Plan, seret ide lewat ikon kecil di kiri kartu. Ketuk judul tetap buka detail tanpa ikut terseret.",
+  },
+  {
     id: "2026-08-21-auth-planner-rtt",
     version: "0.4.7",
     date: "21 Agu 2026",

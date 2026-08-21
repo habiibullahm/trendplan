@@ -198,7 +198,7 @@ export function StaticBoard({
 export function PlannerHint() {
   return (
     <p className="mt-4 text-sm text-ink-muted">
-      Seret kartu ke hari lain untuk memindahkan atau menukar. Ketuk singkat
+      Seret lewat ikon di kiri kartu untuk memindahkan atau menukar. Ketuk judul
       untuk membuka detail. Slot kosong? Ambil ide dari{" "}
       <Link
         href="/rekomendasi"
