@@ -101,6 +101,7 @@ export default async function AkunPage() {
           {showAdminInbox ? (
             <Link
               href="/admin/feedback"
+              prefetch
               className="min-touch flex items-center justify-between py-3 transition-colors hover:text-coral"
             >
               <span>
