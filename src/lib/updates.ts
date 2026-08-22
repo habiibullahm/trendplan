@@ -22,6 +22,20 @@ export const APP_VERSION = packageJson.version;
 
 export const UPDATE_LOG: UpdateEntry[] = [
   {
+    id: "2026-08-22-feedback-detail-wrap",
+    version: "0.4.18",
+    date: "22 Agu 2026",
+    title: "Detail masukan tidak timpa teks",
+    body: "Di popup Detail masukan, kategori, tanggal, isi pesan, dan email tampil berbaris rapi dan bisa di-scroll jika panjang, tanpa saling menutupi judul.",
+  },
+  {
+    id: "2026-08-22-admin-feedback-rsc",
+    version: "0.4.18",
+    date: "22 Agu 2026",
+    title: "Daftar masukan lebih rapi",
+    body: "Judul dan daftar masukan admin tidak saling timpa. Filter tampil dulu; isi menyusul. Skeleton muncul saat membuka dari Akun.",
+  },
+  {
     id: "2026-08-21-aktivitas-loading",
     version: "0.4.17",
     date: "21 Agu 2026",
