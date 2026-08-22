@@ -4,34 +4,14 @@ import {
   createContext,
   useCallback,
   useContext,
-  useEffect,
-  useRef,
   useState,
-  useActionState,
+  type ComponentType,
   type ReactNode,
 } from "react";
-import {
-  addTrendToPlannerAction,
-  type PlannerActionState,
-} from "@/features/planner/actions/content";
-import { Button } from "@/components/ui/button";
 import { ChipButton } from "@/components/ui/chip-button";
-import { Modal } from "@/components/ui/modal";
-import { Select } from "@/components/ui/select";
-import { useActionToasts } from "@/hooks/use-action-toasts";
-import {
-  idleActionResult,
-  isCompletedActionSuccess,
-} from "@/lib/action-result";
-import { DAY_SHORT, type PlannerView } from "@/lib/week";
-import type { EmptySlotTrend } from "@/features/planner/lib/empty-slot-assist";
+import type { EmptySlotSaranConfig } from "@/features/planner/components/empty-slot-saran-config";
 
-export type EmptySlotSaranConfig = {
-  suggestions: EmptySlotTrend[];
-  emptyDays: number[];
-  weekStartParam?: string;
-  view?: PlannerView;
-};
+export type { EmptySlotSaranConfig };
 
 type SaranCtx = EmptySlotSaranConfig & {
   disabled: boolean;
@@ -40,168 +20,14 @@ type SaranCtx = EmptySlotSaranConfig & {
 
 const EmptySlotSaranContext = createContext<SaranCtx | null>(null);
 
-const initial: PlannerActionState = idleActionResult;
-
-function PakaiForm({
-  trendId,
-  trendTitle,
-  dayOfWeek,
-  weekStartParam,
-  view,
-  busy,
-  onBusy,
-  onSuccess,
-}: {
-  trendId: string;
-  trendTitle: string;
-  dayOfWeek: number;
-  weekStartParam?: string;
-  view?: PlannerView;
-  busy: boolean;
-  onBusy: (id: string, next: boolean) => void;
-  onSuccess: () => void;
-}) {
-  const [state, action, pending] = useActionState(
-    addTrendToPlannerAction,
-    initial,
-  );
-  useActionToasts(state);
-
-  useEffect(() => {
-    onBusy(trendId, pending);
-    return () => onBusy(trendId, false);
-  }, [pending, onBusy, trendId]);
-
-  useEffect(() => {
-    if (isCompletedActionSuccess(state)) onSuccess();
-  }, [state, onSuccess]);
-
-  return (
-    <form
-      action={action}
-      className="mt-3"
-      onSubmit={() => onBusy(trendId, true)}
-    >
-      <input type="hidden" name="trendId" value={trendId} />
-      <input type="hidden" name="dayOfWeek" value={String(dayOfWeek)} />
-      {weekStartParam ? (
-        <input type="hidden" name="weekStart" value={weekStartParam} />
-      ) : null}
-      {view === "shared" ? (
-        <input type="hidden" name="view" value="shared" />
-      ) : null}
-      <Button
-        type="submit"
-        size="sm"
-        disabled={busy && !pending}
-        loading={pending}
-        loadingText="…"
-        aria-label={`Pakai ${trendTitle}`}
-      >
-        Pakai
-      </Button>
-    </form>
-  );
-}
-
-function SaranModalBody({
-  config,
-  initialDay,
-  onClose,
-}: {
-  config: EmptySlotSaranConfig;
-  initialDay: number;
-  onClose: () => void;
-}) {
-  const [day, setDay] = useState(initialDay);
-  const [busy, setBusy] = useState(false);
-  const selectable = config.emptyDays.includes(day)
-    ? day
-    : (config.emptyDays[0] ?? 0);
-
-  const pendingIds = useRef(new Set<string>());
-  const markBusy = useCallback((id: string, next: boolean) => {
-    if (next) pendingIds.current.add(id);
-    else pendingIds.current.delete(id);
-    setBusy(pendingIds.current.size > 0);
-  }, []);
-
-  return (
-    <>
-      <label className="block">
-        <span className="text-xs font-medium text-ink-muted">Hari</span>
-        <Select
-          className="mt-1 w-[5.25rem]"
-          value={String(selectable)}
-          disabled={busy}
-          onChange={(e) => setDay(Number(e.target.value))}
-        >
-          {config.emptyDays.map((d) => (
-            <option key={d} value={d}>
-              {DAY_SHORT[d]}
-            </option>
-          ))}
-        </Select>
-      </label>
-
-      <ul className="mt-4 space-y-3">
-        {config.suggestions.map((trend) => (
-          <li
-            key={trend.id}
-            className="rounded-xl border border-border bg-surface p-3"
-          >
-            <p className="text-sm font-semibold text-ink">{trend.title}</p>
-            {trend.reason ? (
-              <p className="mt-1 text-xs leading-relaxed text-ink-muted">
-                {trend.reason}
-              </p>
-            ) : null}
-            <PakaiForm
-              trendId={trend.id}
-              trendTitle={trend.title}
-              dayOfWeek={selectable}
-              weekStartParam={config.weekStartParam}
-              view={config.view}
-              busy={busy}
-              onBusy={markBusy}
-              onSuccess={onClose}
-            />
-          </li>
-        ))}
-      </ul>
-    </>
-  );
-}
-
-function SaranModal({
-  config,
-  openDay,
-  onClose,
-}: {
+type SaranModalProps = {
   config: EmptySlotSaranConfig;
   openDay: number | null;
   onClose: () => void;
-}) {
-  return (
-    <Modal
-      open={openDay !== null}
-      onClose={onClose}
-      title="Saran ide"
-      description="Tren belum dipakai minggu ini. Pilih hari kosong, lalu Pakai. Caption tetap lewat Bantu AI di detail."
-    >
-      {openDay !== null ? (
-        <SaranModalBody
-          key={openDay}
-          config={config}
-          initialDay={openDay}
-          onClose={onClose}
-        />
-      ) : null}
-    </Modal>
-  );
-}
+};
 
-export function EmptySlotSaranProvider({
+/** Tiny client host: modal chunk loads on first open. RSC children pass through. */
+export function EmptySlotSaranHost({
   config,
   disabled = false,
   children,
@@ -211,7 +37,15 @@ export function EmptySlotSaranProvider({
   children: ReactNode;
 }) {
   const [openDay, setOpenDay] = useState<number | null>(null);
-  const openForDay = useCallback((day: number) => setOpenDay(day), []);
+  const [Modal, setModal] = useState<ComponentType<SaranModalProps> | null>(
+    null,
+  );
+  const openForDay = useCallback((day: number) => {
+    setOpenDay(day);
+    void import("@/features/planner/components/empty-slot-saran-modal").then(
+      (m) => setModal(() => m.SaranModal),
+    );
+  }, []);
   const onClose = useCallback(() => setOpenDay(null), []);
 
   if (!config) return children;
@@ -221,7 +55,9 @@ export function EmptySlotSaranProvider({
       value={{ ...config, disabled, openForDay }}
     >
       {children}
-      <SaranModal config={config} openDay={openDay} onClose={onClose} />
+      {Modal ? (
+        <Modal config={config} openDay={openDay} onClose={onClose} />
+      ) : null}
     </EmptySlotSaranContext.Provider>
   );
 }
@@ -229,9 +65,11 @@ export function EmptySlotSaranProvider({
 export function EmptySlotSaranTrigger({
   day,
   className,
+  disabled,
 }: {
   day: number;
   className?: string;
+  disabled?: boolean;
 }) {
   const ctx = useContext(EmptySlotSaranContext);
   if (!ctx) return null;
@@ -242,7 +80,7 @@ export function EmptySlotSaranTrigger({
   return (
     <ChipButton
       variant="ghost"
-      disabled={ctx.disabled}
+      disabled={disabled ?? ctx.disabled}
       className={className}
       onClick={(e) => {
         e.preventDefault();

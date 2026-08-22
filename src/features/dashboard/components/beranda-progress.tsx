@@ -4,21 +4,20 @@ import { EmptyState } from "@/components/ui/empty-state";
 import { WeekTargetSkeleton } from "@/components/loading";
 import { Skeleton } from "@/components/ui/skeleton";
 import { WeekTargetCard } from "@/features/planner/components/week-target-card";
+import { getBerandaUser } from "@/features/dashboard/fetchers/user";
 import { getWeekPlanForBeranda } from "@/features/planner/fetchers/week-plan";
 import { listInProgressContentItems } from "@/features/planner/lib/in-progress-items";
+import { resolveNiche } from "@/lib/niches";
 import { formatWeekRange } from "@/lib/week";
 import { STATUS_LABEL } from "@/lib/labels";
 
-export async function BerandaProgressSection({
-  userId,
-  goal,
-  nicheLabel,
-}: {
-  userId: string;
-  goal: number;
-  nicheLabel: string;
-}) {
-  const weekPlan = await getWeekPlanForBeranda(userId);
+export async function BerandaProgressSection({ userId }: { userId: string }) {
+  const [user, weekPlan] = await Promise.all([
+    getBerandaUser(userId),
+    getWeekPlanForBeranda(userId),
+  ]);
+  const goal = user?.weeklyGoal ?? 3;
+  const nicheLabel = resolveNiche(user?.niche);
   const scheduled = weekPlan.items.length;
   const progress = Math.min(100, Math.round((scheduled / goal) * 100));
   const inProgressItems = listInProgressContentItems(weekPlan.items);

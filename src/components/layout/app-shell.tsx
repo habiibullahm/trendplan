@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
 import { TopNav, BottomNav } from "@/components/layout/app-nav";
 import { ScrollToTop } from "@/components/layout/scroll-to-top";
-import { MediaPlaybackProvider } from "@/features/planner/components/trend-media";
+import { MediaPlaybackProvider } from "@/features/planner/components/media-playback-provider";
 
 export function AppShell({
   children,

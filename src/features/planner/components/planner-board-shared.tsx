@@ -1,5 +1,3 @@
-"use client";
-
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 import { EmptySlotSaranTrigger } from "@/features/planner/components/empty-slot-saran";
@@ -128,7 +126,10 @@ export function StaticBoard({
                     </p>
                     <p className="text-sm text-ink-muted">+ Buat ide</p>
                   </Link>
-                  <EmptySlotSaranTrigger day={day} className="shrink-0 pr-3" />
+                  <EmptySlotSaranTrigger
+                    day={day}
+                    className="shrink-0 pr-3"
+                  />
                 </div>
               )}
             </li>

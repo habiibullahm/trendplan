@@ -9,7 +9,7 @@ import { ActivitiesBoard } from "@/features/activities/components/activities-boa
 import { CopyWeekButton } from "@/features/planner/components/copy-week-button";
 import { DeferredShareWeekButton } from "@/features/planner/components/deferred-share-week-button";
 import { MonthWeekNav } from "@/features/planner/components/month-week-nav";
-import { PlannerBoard } from "@/features/planner/components/planner-board";
+import { PlannerBoardStatic } from "@/features/planner/components/planner-board";
 import { PlannerBoardWithEmptySlotSaran } from "@/features/planner/components/planner-board-with-saran";
 import { PlannerTabs } from "@/features/planner/components/planner-tabs";
 import { PlannerToastFromQuery } from "@/features/planner/components/planner-toast";
@@ -322,7 +322,7 @@ export default async function PlannerPage({ searchParams }: Readonly<Props>) {
       />
 
       <Suspense
-        fallback={<PlannerBoard {...boardProps} saran={null} />}
+        fallback={<PlannerBoardStatic {...boardProps} />}
       >
         <PlannerBoardWithEmptySlotSaran
           {...boardProps}

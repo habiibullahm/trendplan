@@ -1,5 +1,3 @@
-"use client";
-
 /** Banner above planner tabs when week is shared. */
 export function SharedWeekBanner({
   role,
