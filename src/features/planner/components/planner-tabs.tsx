@@ -1,9 +1,5 @@
-"use client";
-
-import { useState, useTransition, type MouseEvent } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { Spinner } from "@/components/ui/spinner";
+import { LinkPendingSpinner } from "@/features/planner/components/link-pending";
 import {
   formatMonthParam,
   type PlannerTab,
@@ -37,16 +33,6 @@ function hrefFor(
   return `${basePath}/planner?${q.toString()}`;
 }
 
-function isModifiedClick(e: MouseEvent) {
-  return (
-    e.metaKey ||
-    e.ctrlKey ||
-    e.shiftKey ||
-    e.altKey ||
-    e.button !== 0
-  );
-}
-
 export function PlannerTabs({
   tab,
   year,
@@ -55,57 +41,28 @@ export function PlannerTabs({
   view = "mine",
   basePath = "",
 }: Props) {
-  const router = useRouter();
-  const [pending, startTransition] = useTransition();
-  const [pendingTab, setPendingTab] = useState<PlannerTab | null>(null);
-  const loadingTab = pending ? pendingTab : null;
-
   const items: { id: PlannerTab; label: string }[] = [
     { id: "konten", label: "Konten" },
     { id: "aktivitas", label: "Aktivitas" },
   ];
 
-  function goTab(next: PlannerTab) {
-    if (pending || next === tab) return;
-    setPendingTab(next);
-    startTransition(() => {
-      router.push(hrefFor(next, year, month, weekIndex, view, basePath));
-    });
-  }
-
   return (
-    <nav
-      aria-label="Tab planner"
-      aria-busy={pending || undefined}
-      className="mt-4 flex gap-1 rounded-xl border border-border bg-surface p-1"
-    >
+    <nav aria-label="Tab planner" className="mt-4 flex gap-1 rounded-xl border border-border bg-surface p-1">
       {items.map((item) => {
         const active = tab === item.id;
-        const loading = loadingTab === item.id;
         return (
           <Link
             key={item.id}
             href={hrefFor(item.id, year, month, weekIndex, view, basePath)}
+            prefetch
             className={`min-touch inline-flex flex-1 items-center justify-center gap-1.5 rounded-lg px-3 py-2 text-center text-sm font-semibold transition-colors ${
               active
                 ? "bg-coral/10 text-coral hover:bg-coral/15"
                 : "text-ink-muted hover:bg-coral/5 hover:text-ink"
-            } ${
-              pending && !loading
-                ? "pointer-events-none opacity-60"
-                : loading
-                  ? "pointer-events-none"
-                  : ""
             }`}
             aria-current={active ? "page" : undefined}
-            aria-busy={loading || undefined}
-            onClick={(e) => {
-              if (isModifiedClick(e)) return;
-              e.preventDefault();
-              goTab(item.id);
-            }}
           >
-            {loading ? <Spinner className="size-3.5 shrink-0" /> : null}
+            <LinkPendingSpinner className="size-3.5 shrink-0" />
             {item.label}
           </Link>
         );

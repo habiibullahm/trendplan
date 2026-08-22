@@ -25,7 +25,7 @@ export default function DemoDashboardPage() {
     <main className="flex w-full flex-1 flex-col">
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
-          <h1 className="font-[family-name:var(--font-fraunces)] text-2xl font-semibold tracking-tight text-ink sm:text-3xl">
+          <h1 className="text-2xl font-semibold tracking-tight text-ink sm:text-3xl">
             Halo, {DEMO_USER_NAME}
           </h1>
           <p className="mt-2 text-sm text-ink-muted">

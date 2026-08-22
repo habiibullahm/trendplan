@@ -2,56 +2,19 @@
 
 import Link from "next/link";
 import {
-  createContext,
   useCallback,
-  useContext,
   useEffect,
   useId,
   useRef,
   useState,
-  type ReactNode,
 } from "react";
+import { useMediaPlayback } from "@/features/planner/components/media-playback-provider";
 import type { TrendMediaFields } from "@/features/planner/lib/trend-media-types";
 
 export type { TrendMediaFields };
 
-type PlaybackApi = {
-  register: (id: string, stop: () => void) => void;
-  unregister: (id: string) => void;
-  claim: (id: string) => void;
-};
-
-const MediaPlaybackContext = createContext<PlaybackApi | null>(null);
-
-export function MediaPlaybackProvider({ children }: { children: ReactNode }) {
-  const stopsRef = useRef(new Map<string, () => void>());
-  const activeRef = useRef<string | null>(null);
-
-  const register = useCallback((id: string, stop: () => void) => {
-    stopsRef.current.set(id, stop);
-  }, []);
-
-  const unregister = useCallback((id: string) => {
-    stopsRef.current.delete(id);
-    if (activeRef.current === id) activeRef.current = null;
-  }, []);
-
-  const claim = useCallback((id: string) => {
-    if (activeRef.current && activeRef.current !== id) {
-      stopsRef.current.get(activeRef.current)?.();
-    }
-    activeRef.current = id;
-  }, []);
-
-  return (
-    <MediaPlaybackContext.Provider value={{ register, unregister, claim }}>
-      {children}
-    </MediaPlaybackContext.Provider>
-  );
-}
-
 function useMediaSlot(kind: "video" | "audio") {
-  const ctx = useContext(MediaPlaybackContext);
+  const ctx = useMediaPlayback();
   const reactId = useId();
   const id = `${kind}:${reactId}`;
   const stopRef = useRef<() => void>(() => {});

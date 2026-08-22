@@ -1,6 +1,6 @@
 {
   "name": "trendplan",
-  "version": "0.4.17",
+  "version": "0.4.18",
   "private": true,
   "browserslist": [
     "chrome >= 111",
@@ -11,6 +11,7 @@
   "scripts": {
     "dev": "next dev",
     "build": "prisma generate && next build",
+    "analyze": "prisma generate && ANALYZE=true next build",
     "postinstall": "prisma generate",
     "start": "next start",
     "lint": "eslint",

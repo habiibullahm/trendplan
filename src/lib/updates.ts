@@ -22,6 +22,27 @@ export const APP_VERSION = packageJson.version;
 
 export const UPDATE_LOG: UpdateEntry[] = [
   {
+    id: "2026-08-22-planner-link-pending",
+    version: "0.4.18",
+    date: "22 Agu 2026",
+    title: "Indikator saat ganti minggu di Plan",
+    body: "Ketuk tab, minggu, atau bulan di Plan, chip yang dipilih menampilkan Memuat sampai papan baru tampil. Navigasi tetap tautan biasa, tanpa spinner di seluruh layar.",
+  },
+  {
+    id: "2026-08-22-planner-js-idle",
+    version: "0.4.18",
+    date: "22 Agu 2026",
+    title: "Plan lebih ringan saat dibuka",
+    body: "Papan minggu tampil dulu; geser ide siap setelah papan tenang. Saran ide terbuka saat diketuk, bukan saat halaman baru dimuat.",
+  },
+  {
+    id: "2026-08-22-beranda-lcp-halo",
+    version: "0.4.18",
+    date: "22 Agu 2026",
+    title: "Halo Beranda muncul lebih dulu",
+    body: "Judul Halo di Beranda tampil dari sesi tanpa menunggu data minggu. Hurufnya sama dengan teks biasa supaya layar utama terasa lebih cepat.",
+  },
+  {
     id: "2026-08-21-aktivitas-loading",
     version: "0.4.17",
     date: "21 Agu 2026",
