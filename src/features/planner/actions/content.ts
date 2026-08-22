@@ -74,8 +74,12 @@ function returnHref(
   });
 }
 
-function revalidatePlanner(userId: string) {
+function revalidatePlannerBoard() {
   revalidatePath("/planner");
+}
+
+function revalidatePlanner(userId: string) {
+  revalidatePlannerBoard();
   revalidatePath("/dashboard");
   revalidatePath("/riwayat");
   // Immediate tag purge so Beranda week cache reads fresh after writes.
@@ -233,19 +237,25 @@ export async function updateContentItemAction(
     });
   }
 
+  const nextStatus = resolveStatusUpdate(item.status, statusParsed.data);
+
   await prisma.contentItem.update({
     where: { id: itemId },
     data: {
       caption: captionParsed.data || null,
       hashtags: hashtagsParsed.data || null,
-      status: resolveStatusUpdate(item.status, statusParsed.data),
+      status: nextStatus,
       // Legacy field — no longer editable in UI; clear leftovers on save.
       performanceNote: null,
     },
   });
 
-  revalidatePlanner(userId);
   revalidatePath(`/planner/${itemId}`);
+  if (nextStatus === "POSTED" || item.status === "POSTED") {
+    revalidatePlanner(userId);
+  } else {
+    revalidatePlannerBoard();
+  }
   redirect(returnHref(formData, item.weekPlan.weekStart, { toast: "saved" }));
 }
 
@@ -477,7 +487,9 @@ export async function moveContentItemAction(
     });
 
     if (result.status === "success") {
-      revalidatePlanner(userId);
+      revalidatePlannerBoard();
+      revalidatePath("/dashboard");
+      updateTag(berandaUserTag(userId));
     }
     return result;
   } catch {

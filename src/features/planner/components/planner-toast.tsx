@@ -113,7 +113,8 @@ export function PlannerToastFromQuery() {
       next.delete("toast");
       next.delete("undo");
       const qs = next.toString();
-      router.replace(qs ? `${pathname}?${qs}` : pathname);
+      const href = qs ? `${pathname}?${qs}` : pathname;
+      window.history.replaceState(window.history.state, "", href);
     }
 
     if (key === "deleted") {

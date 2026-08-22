@@ -1,15 +1,11 @@
 "use client";
 
 import type { ContentFormat } from "@/generated/prisma/client";
-import { useMemo, useState } from "react";
+import { startTransition, useMemo, useState } from "react";
 import { AddToPlannerForm } from "@/features/planner/components/add-to-planner-form";
 import { TrendIdeaCard } from "@/features/planner/components/trend-idea-card";
-import { FadeIn, Stagger } from "@/components/motion";
 import { EmptyState } from "@/components/ui/empty-state";
 import { NICHES, type Niche } from "@/lib/niches";
-
-/** First N cards paint immediately so cover/title can be LCP (not opacity-0 FadeIn). */
-const INSTANT_CARD_COUNT = 2;
 
 export type TrenFeedItem = {
   id: string;
@@ -50,50 +46,45 @@ export function TrenFeed({
         <FilterChip
           label="Semua"
           active={filter === "all"}
-          onClick={() => setFilter("all")}
+          onClick={() => startTransition(() => setFilter("all"))}
         />
         {NICHES.map((niche) => (
           <FilterChip
             key={niche}
             label={niche}
             active={filter === niche}
-            onClick={() => setFilter(niche)}
+            onClick={() => startTransition(() => setFilter(niche))}
           />
         ))}
       </div>
 
-      <Stagger as="ul" className="mt-6 space-y-4">
-        {visible.map((trend, index) => {
-          const instant = index < INSTANT_CARD_COUNT;
-          return (
-            <FadeIn
-              key={trend.id}
-              as="li"
-              id={trend.id}
-              instant={instant}
-              className="scroll-mt-24 rounded-2xl border border-border bg-surface p-4"
-            >
-              <TrendIdeaCard
-                priority={index === 0}
-                title={trend.title}
-                hook={trend.hook}
-                reason={trend.reason}
-                format={trend.format}
-                niche={trend.niche}
-                coverUrl={trend.coverUrl}
-                actions={
-                  readOnly ? (
-                    <p className="mt-3 rounded-xl border border-dashed border-border px-3 py-2 text-xs text-ink-muted">
-                      Tambah ke planner tersedia setelah daftar.
-                    </p>
-                  ) : (
-                    <AddToPlannerForm trendId={trend.id} />
-                  )
-                }
-              />
-            </FadeIn>
-          );
-        })}
+      <ul className="mt-6 space-y-4">
+        {visible.map((trend, index) => (
+          <li
+            key={trend.id}
+            id={trend.id}
+            className="scroll-mt-24 rounded-2xl border border-border bg-surface p-4"
+          >
+            <TrendIdeaCard
+              priority={index === 0}
+              title={trend.title}
+              hook={trend.hook}
+              reason={trend.reason}
+              format={trend.format}
+              niche={trend.niche}
+              coverUrl={trend.coverUrl}
+              actions={
+                readOnly ? (
+                  <p className="mt-3 rounded-xl border border-dashed border-border px-3 py-2 text-xs text-ink-muted">
+                    Tambah ke planner tersedia setelah daftar.
+                  </p>
+                ) : (
+                  <AddToPlannerForm trendId={trend.id} />
+                )
+              }
+            />
+          </li>
+        ))}
         {visible.length === 0 ? (
           <EmptyState as="li">
             {trends.length === 0 ? (
@@ -116,7 +107,7 @@ export function TrenFeed({
             )}
           </EmptyState>
         ) : null}
-      </Stagger>
+      </ul>
     </div>
   );
 }

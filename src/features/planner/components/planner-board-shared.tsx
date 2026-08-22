@@ -89,6 +89,7 @@ export function StaticBoard({
                 ) : (
                   <Link
                     href={itemHref(item.id, returnMonth, returnWeek, view)}
+                    prefetch={false}
                     className="min-touch flex items-center justify-between gap-3 rounded-2xl border border-border bg-surface px-4 py-3"
                   >
                     <div className="min-w-0">
@@ -171,6 +172,7 @@ export function StaticBoard({
                 ) : (
                   <Link
                     href={itemHref(item.id, returnMonth, returnWeek, view)}
+                    prefetch={false}
                     className="mt-2 block min-w-0"
                   >
                     <p className="line-clamp-3 break-words text-sm font-semibold leading-snug text-ink">

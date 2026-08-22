@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { scrollWindowTop } from "@/components/layout/scroll-to-top";
+import { usePlannerLayout } from "@/hooks/use-planner-layout";
 
 const primaryNav = [
   { href: "/dashboard", label: "Beranda" },
@@ -33,7 +34,9 @@ function isActive(pathname: string, href: string, basePath = "") {
 
 export function TopNav({ basePath = "" }: { basePath?: string }) {
   const pathname = usePathname();
+  const layout = usePlannerLayout();
   const homeHref = withBase(basePath, "/dashboard");
+  const prefetchTabs = layout === "grid";
 
   return (
     <header className="sticky top-0 z-40 hidden border-b border-border bg-surface/95 backdrop-blur-sm md:block">
@@ -52,8 +55,9 @@ export function TopNav({ basePath = "" }: { basePath?: string }) {
               <Link
                 key={item.href}
                 href={href}
+                prefetch={prefetchTabs}
                 onClick={() => {
-                  if (item.href === "/tren") scrollWindowTop();
+                  if (item.href === "/tren") scrollWindowTop({ smooth: false });
                 }}
                 className={`min-touch inline-flex items-center justify-center rounded-xl px-4 text-sm font-semibold transition-colors duration-200 ${
                   active
@@ -73,6 +77,8 @@ export function TopNav({ basePath = "" }: { basePath?: string }) {
 
 export function BottomNav({ basePath = "" }: { basePath?: string }) {
   const pathname = usePathname();
+  const layout = usePlannerLayout();
+  const prefetchTabs = layout === "list";
 
   return (
     <nav
@@ -87,8 +93,9 @@ export function BottomNav({ basePath = "" }: { basePath?: string }) {
             <li key={item.href}>
               <Link
                 href={href}
+                prefetch={prefetchTabs}
                 onClick={() => {
-                  if (item.href === "/tren") scrollWindowTop();
+                  if (item.href === "/tren") scrollWindowTop({ smooth: false });
                 }}
                 className={`group min-touch flex flex-col items-center justify-center gap-0.5 px-1 text-xs font-semibold transition-colors duration-200 ${
                   active
