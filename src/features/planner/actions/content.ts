@@ -78,12 +78,15 @@ function revalidatePlannerBoard() {
   revalidatePath("/planner");
 }
 
-function revalidatePlanner(userId: string) {
+function revalidatePlannerBoardAndBeranda(userId: string) {
   revalidatePlannerBoard();
   revalidatePath("/dashboard");
-  revalidatePath("/riwayat");
-  // Immediate tag purge so Beranda week cache reads fresh after writes.
   updateTag(berandaUserTag(userId));
+}
+
+function revalidatePlanner(userId: string) {
+  revalidatePlannerBoardAndBeranda(userId);
+  revalidatePath("/riwayat");
 }
 
 export type PlannerActionState = ActionResult;
@@ -251,7 +254,7 @@ export async function updateContentItemAction(
   });
 
   revalidatePath(`/planner/${itemId}`);
-  if (nextStatus === "POSTED" || item.status === "POSTED") {
+  if (nextStatus === "POSTED") {
     revalidatePlanner(userId);
   } else {
     revalidatePlannerBoard();
@@ -310,7 +313,7 @@ export async function softDeleteContentItemAction(formData: FormData) {
   // Sequential GC (not concurrent with the transaction) — keeps pg client happy.
   await purgeStaleSoftDeletes(userId);
 
-  revalidatePlanner(userId);
+  revalidatePlannerBoardAndBeranda(userId);
   redirect(
     returnHref(formData, item.weekPlan.weekStart, {
       toast: "deleted",
@@ -371,7 +374,7 @@ export async function restoreContentItemAction(
       return actionSuccess("Ide dikembalikan");
     });
 
-    if (result.status === "success") revalidatePlanner(userId);
+    if (result.status === "success") revalidatePlannerBoardAndBeranda(userId);
     return result;
   } catch {
     return actionFail("undo_failed", {
@@ -395,7 +398,7 @@ export async function purgeDeletedContentItemAction(
     },
   });
 
-  revalidatePlanner(userId);
+  revalidatePlannerBoardAndBeranda(userId);
   return { status: "success" };
 }
 
@@ -487,9 +490,7 @@ export async function moveContentItemAction(
     });
 
     if (result.status === "success") {
-      revalidatePlannerBoard();
-      revalidatePath("/dashboard");
-      updateTag(berandaUserTag(userId));
+      revalidatePlannerBoardAndBeranda(userId);
     }
     return result;
   } catch {

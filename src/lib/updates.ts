@@ -22,6 +22,13 @@ export const APP_VERSION = packageJson.version;
 
 export const UPDATE_LOG: UpdateEntry[] = [
   {
+    id: "2026-08-23-akun-plan-roundtrips",
+    version: "0.4.24",
+    date: "23 Agu 2026",
+    title: "Akun dan Plan lebih ringan saat kembali",
+    body: "Buka Akun lagi tidak selalu unduh profil dari awal. Dari Beranda, Plan dan detail ide tidak dimuat sebelum diketuk. Hapus ide tidak memuat ulang Riwayat.",
+  },
+  {
     id: "2026-08-23-planner-rsc-toast",
     version: "0.4.23",
     date: "23 Agu 2026",
