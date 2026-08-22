@@ -55,7 +55,7 @@ export default async function OnboardingPage({
         </h1>
         <p className="mt-2 text-sm text-ink-muted">
           Pilih niche utama dulu — rekomendasi mengikuti pilihanmu. Di Tren kamu
-          tetap bisa jelajahi FYP mock semua niche.
+          tetap bisa jelajahi katalog ide semua niche.
         </p>
 
         <OnboardingForm

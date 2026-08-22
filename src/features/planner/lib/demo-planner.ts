@@ -1,11 +1,6 @@
 import type { ContentFormat, ContentStatus } from "@/generated/prisma/client";
 import { formatWeekRange, getWeekStart } from "@/lib/week";
-import {
-  CURATED_AUDIO_URLS,
-  CURATED_COVERS,
-  CURATED_VIDEOS,
-} from "@/features/planner/lib/curated-trend-media";
-import type { TrendMediaFields } from "@/features/planner/lib/trend-media-types";
+import { CURATED_COVERS } from "@/features/planner/lib/curated-trend-media";
 
 export type DemoPlannerItem = {
   id: string;
@@ -19,29 +14,16 @@ export type DemoTrend = {
   title: string;
   hook: string;
   format: ContentFormat;
-  score: number;
   reason: string;
   niche?: string;
-} & TrendMediaFields;
+  coverUrl?: string | null;
+};
 
 export const DEMO_WEEKLY_GOAL = 5;
 export const DEMO_USER_NAME = "Demo Creator";
 export const DEMO_NICHE = "Couple Date Ideas";
 
 const COVERS = CURATED_COVERS;
-
-const AUDIO = [
-  {
-    audioTitle: "original sound — date night",
-    audioUrl: CURATED_AUDIO_URLS[0],
-  },
-  {
-    audioTitle: "soft piano loop",
-    audioUrl: CURATED_AUDIO_URLS[1],
-  },
-] as const;
-
-const VIDEO = CURATED_VIDEOS[0];
 
 /**
  * Planner mock = konten milik creator (judul kerja di plan).
@@ -105,70 +87,53 @@ export const DEMO_TRENDS: DemoTrend[] = [
     title: "Format: 3 date di bawah 100rb",
     hook: "3 date ideas that feel expensive…",
     format: "LIST",
-    score: 94,
     reason: "Tren hemat — cocok diisi ke slot kosong minggu ini",
     niche: "Couple Date Ideas",
     coverUrl: COVERS[0],
-    videoUrl: VIDEO,
-    ...AUDIO[0],
   },
   {
     id: "demo-trend-2",
     title: "POV: hujan, date di rumah aja",
     hook: "When it rains, try this instead…",
     format: "POV",
-    score: 91,
     reason: "POV low effort, mudah diambil creator solo",
     niche: "Couple Date Ideas",
     coverUrl: COVERS[1],
-    videoUrl: VIDEO,
-    ...AUDIO[1],
   },
   {
     id: "demo-trend-3",
     title: "Story: cafe aesthetic first date",
     hook: "We found the coziest cafe for…",
     format: "STORYTELLING",
-    score: 88,
     reason: "Visual cafe + storytelling pas niche couple",
     niche: "Couple Date Ideas",
     coverUrl: COVERS[2],
-    videoUrl: VIDEO,
-    audioTitle: "cafe ambience",
   },
   {
     id: "demo-trend-4",
     title: "List: checklist kencan pertama",
     hook: "Don’t go on a first date without…",
     format: "LIST",
-    score: 86,
     reason: "Checklist sering di-save audiens dating",
     niche: "Couple Date Ideas",
     coverUrl: COVERS[3],
-    videoUrl: VIDEO,
-    ...AUDIO[0],
   },
   {
     id: "demo-trend-5",
     title: "POV: night drive bareng doi",
     hook: "POV: night drive with your person…",
     format: "POV",
-    score: 82,
-    reason: "POV + musik malam masih sering naik di FYP",
+    reason: "POV + musik malam masih sering naik di niche couple",
     niche: "Couple Date Ideas",
     coverUrl: COVERS[0],
-    videoUrl: VIDEO,
-    ...AUDIO[1],
   },
   {
     id: "demo-trend-6",
     title: "POV: bookstore date soft launch",
     hook: "Take them to a bookstore and do this…",
     format: "POV",
-    score: 78,
     reason: "Aesthetic soft — beda dari konten cafe biasa",
     niche: "Couple Date Ideas",
-    // Intentional null media — CoverPlaceholder gradient, no Putar.
   },
 ];
 

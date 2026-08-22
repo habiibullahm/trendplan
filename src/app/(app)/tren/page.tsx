@@ -21,7 +21,7 @@ export default async function TrenPage() {
         Tren
       </h1>
       <p className="mt-1 text-sm text-ink-muted">
-        Ide yang lagi naik di niche-mu
+        Katalog ide untuk diplan. Filter niche, lalu Pakai ke hari.
       </p>
       <div className="mt-4">
         <TrenFeed
@@ -30,13 +30,10 @@ export default async function TrenPage() {
             id: t.id,
             title: t.title,
             hook: t.hook,
+            reason: t.reason,
             format: t.format,
-            score: t.score,
             niche: t.niche,
             coverUrl: t.coverUrl,
-            videoUrl: t.videoUrl,
-            audioTitle: t.audioTitle,
-            audioUrl: t.audioUrl,
           }))}
         />
       </div>

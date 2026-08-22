@@ -94,7 +94,7 @@ export default async function PlannerItemPage({
       ) : null}
       {item.trend ? (
         <p className="mt-2 text-xs text-ink-muted">
-          Sumber tren: {item.trend.title} · skor {item.trend.score}
+          Sumber tren: {item.trend.title}
         </p>
       ) : null}
 

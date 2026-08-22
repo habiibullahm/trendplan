@@ -3,13 +3,9 @@
 import type { ContentFormat } from "@/generated/prisma/client";
 import { useMemo, useState } from "react";
 import { AddToPlannerForm } from "@/features/planner/components/add-to-planner-form";
-import {
-  TrendMediaBlock,
-  type TrendMediaFields,
-} from "@/features/planner/components/trend-media";
+import { TrendIdeaCard } from "@/features/planner/components/trend-idea-card";
 import { FadeIn, Stagger } from "@/components/motion";
 import { EmptyState } from "@/components/ui/empty-state";
-import { FORMAT_LABEL } from "@/lib/labels";
 import { NICHES, type Niche } from "@/lib/niches";
 
 /** First N cards paint immediately so cover/title can be LCP (not opacity-0 FadeIn). */
@@ -19,19 +15,23 @@ export type TrenFeedItem = {
   id: string;
   title: string;
   hook: string;
+  reason: string;
   format: ContentFormat;
-  score: number;
   niche: string;
-} & TrendMediaFields;
+  coverUrl?: string | null;
+};
 
 type Filter = "all" | Niche;
 
 export function TrenFeed({
   trends,
   defaultNiche,
+  readOnly = false,
 }: {
   trends: TrenFeedItem[];
   defaultNiche: Niche;
+  /** Demo: no live Pakai (no server action). */
+  readOnly?: boolean;
 }) {
   const [filter, setFilter] = useState<Filter>(defaultNiche);
 
@@ -73,24 +73,24 @@ export function TrenFeed({
               instant={instant}
               className="scroll-mt-24 rounded-2xl border border-border bg-surface p-4"
             >
-              <TrendMediaBlock
+              <TrendIdeaCard
                 priority={index === 0}
-                media={{
-                  coverUrl: trend.coverUrl,
-                  videoUrl: trend.videoUrl,
-                  audioTitle: trend.audioTitle,
-                  audioUrl: trend.audioUrl,
-                }}
+                title={trend.title}
+                hook={trend.hook}
+                reason={trend.reason}
+                format={trend.format}
+                niche={trend.niche}
+                coverUrl={trend.coverUrl}
+                actions={
+                  readOnly ? (
+                    <p className="mt-3 rounded-xl border border-dashed border-border px-3 py-2 text-xs text-ink-muted">
+                      Tambah ke planner tersedia setelah daftar.
+                    </p>
+                  ) : (
+                    <AddToPlannerForm trendId={trend.id} />
+                  )
+                }
               />
-              <p className="mt-3 text-xs font-semibold text-ink-muted">
-                {trend.niche}
-              </p>
-              <p className="mt-1 font-semibold text-ink">{trend.title}</p>
-              <p className="mt-1 text-sm italic text-ink-muted">{trend.hook}</p>
-              <p className="mt-2 text-xs text-ink-muted">
-                {FORMAT_LABEL[trend.format]} · skor {trend.score}
-              </p>
-              <AddToPlannerForm trendId={trend.id} />
             </FadeIn>
           );
         })}

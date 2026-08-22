@@ -2,10 +2,9 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getSafeSession } from "@/lib/auth/session";
 import { AddToPlannerForm } from "@/features/planner/components/add-to-planner-form";
-import { CompactTrendMedia } from "@/features/planner/components/trend-media";
+import { TrendIdeaCard } from "@/features/planner/components/trend-idea-card";
 import { FadeIn, Stagger } from "@/components/motion";
 import { EmptyState } from "@/components/ui/empty-state";
-import { FORMAT_LABEL } from "@/lib/labels";
 import { resolveNiche } from "@/lib/niches";
 import { getRecommendations } from "@/features/planner/fetchers/recommendations";
 import { getUserNiche } from "@/features/planner/fetchers/planner-user";
@@ -20,18 +19,13 @@ export default async function RekomendasiPage() {
 
   return (
     <main className="flex flex-1 flex-col">
-      <div className="flex items-center justify-between gap-3">
-        <h1 className="font-[family-name:var(--font-fraunces)] text-3xl font-semibold text-ink">
-          Rekomendasi untukmu
-        </h1>
-        <span className="rounded-full border border-border bg-surface px-3 py-1 text-xs font-semibold text-ink-muted">
-          Mock
-        </span>
-      </div>
+      <h1 className="font-[family-name:var(--font-fraunces)] text-3xl font-semibold text-ink">
+        Rekomendasi untukmu
+      </h1>
       <p className="mt-2 text-sm text-ink-muted">
         Personal untuk niche {niche}.{" "}
         <Link href="/tren" className="font-semibold text-coral">
-          Lihat FYP semua niche di Tren
+          Lihat semua ide di Tren
         </Link>
       </p>
 
@@ -43,26 +37,15 @@ export default async function RekomendasiPage() {
             id={trend.id}
             className="scroll-mt-24 rounded-2xl border border-border bg-surface p-4"
           >
-            <div className="flex items-start gap-2">
-              <span className="mt-0.5 shrink-0 rounded-full bg-coral/10 px-2 py-0.5 text-xs font-semibold text-coral">
-                #{index + 1}
-              </span>
-              <div className="min-w-0 flex-1">
-                <CompactTrendMedia
-                  title={trend.title}
-                  media={{
-                    coverUrl: trend.coverUrl,
-                    audioTitle: trend.audioTitle,
-                    audioUrl: trend.audioUrl,
-                  }}
-                />
-                <p className="mt-2 text-sm text-ink">{trend.reason}</p>
-                <p className="mt-1 text-xs text-ink-muted">
-                  Format {FORMAT_LABEL[trend.format]} · skor {trend.score}
-                </p>
-                <AddToPlannerForm trendId={trend.id} />
-              </div>
-            </div>
+            <TrendIdeaCard
+              rank={index + 1}
+              title={trend.title}
+              hook={trend.hook}
+              reason={trend.reason}
+              format={trend.format}
+              coverUrl={trend.coverUrl}
+              actions={<AddToPlannerForm trendId={trend.id} />}
+            />
           </FadeIn>
         ))}
         {trends.length === 0 ? (
