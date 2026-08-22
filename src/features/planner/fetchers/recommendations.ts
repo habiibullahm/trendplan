@@ -15,7 +15,7 @@ export async function getRecommendations(
         where: cachedNiche ? { niche: cachedNiche } : undefined,
         orderBy: { score: "desc" },
         take: cachedLimit,
-        // Explicit scalars so media fields stay selected even if client/schema drift.
+        // Explicit scalars so cover stays selected even if client/schema drift.
         select: {
           id: true,
           title: true,
@@ -25,9 +25,6 @@ export async function getRecommendations(
           reason: true,
           niche: true,
           coverUrl: true,
-          videoUrl: true,
-          audioTitle: true,
-          audioUrl: true,
           createdAt: true,
         },
       });

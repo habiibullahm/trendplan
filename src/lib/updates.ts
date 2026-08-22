@@ -22,6 +22,13 @@ export const APP_VERSION = packageJson.version;
 
 export const UPDATE_LOG: UpdateEntry[] = [
   {
+    id: "2026-08-23-honest-tren-cards",
+    version: "0.4.20",
+    date: "23 Agu 2026",
+    title: "Kartu Tren jadi daftar ide",
+    body: "Kartu Tren dan Rekomendasi menampilkan ide (poster, judul, alasan, format) lalu Pakai ke hari. Teaser Beranda cukup judul dan format. Bukan pemutar video.",
+  },
+  {
     id: "2026-08-22-planner-link-pending",
     version: "0.4.19",
     date: "22 Agu 2026",

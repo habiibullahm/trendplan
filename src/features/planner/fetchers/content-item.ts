@@ -20,7 +20,7 @@ export async function getContentItemForEditor(userId: string, itemId: string) {
       hashtags: true,
       status: true,
       dayOfWeek: true,
-      trend: { select: { title: true, score: true } },
+      trend: { select: { title: true } },
       weekPlan: { select: { weekStart: true, userId: true } },
     },
   });

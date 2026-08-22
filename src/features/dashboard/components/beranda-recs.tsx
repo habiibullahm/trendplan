@@ -2,7 +2,7 @@ import Link from "next/link";
 import { FadeIn, Stagger } from "@/components/motion";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Skeleton } from "@/components/ui/skeleton";
-import { CompactTrendMedia } from "@/features/planner/components/trend-media";
+import { TrendIdeaCard } from "@/features/planner/components/trend-idea-card";
 import { getBerandaUser } from "@/features/dashboard/fetchers/user";
 import { getRecommendations } from "@/features/planner/fetchers/recommendations";
 import { resolveNiche } from "@/lib/niches";
@@ -28,14 +28,12 @@ export async function BerandaRecsSection({ userId }: { userId: string }) {
         {topRecs.map((trend) => (
           <FadeIn key={trend.id} as="li">
             <div className="rounded-2xl border border-border bg-surface px-4 py-3">
-              <CompactTrendMedia
+              <TrendIdeaCard
+                dense
                 title={trend.title}
                 titleHref={`/tren#${trend.id}`}
-                media={{
-                  coverUrl: trend.coverUrl,
-                  audioTitle: trend.audioTitle,
-                  audioUrl: trend.audioUrl,
-                }}
+                format={trend.format}
+                coverUrl={trend.coverUrl}
               />
             </div>
           </FadeIn>

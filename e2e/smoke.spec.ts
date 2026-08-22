@@ -40,6 +40,14 @@ test.describe("public shells", () => {
     ).toBeVisible();
   });
 
+  test("demo tren has no live Pakai", async ({ page }) => {
+    await page.goto("/demo/tren");
+    await expect(page.getByRole("button", { name: "Pakai" })).toHaveCount(0);
+    await expect(
+      page.getByText("Tambah ke planner tersedia setelah daftar.").first(),
+    ).toBeVisible();
+  });
+
   test("demo planner shows disabled Bagikan", async ({ page }) => {
     await page.goto("/demo/planner");
     const bagikan = page.getByRole("button", {

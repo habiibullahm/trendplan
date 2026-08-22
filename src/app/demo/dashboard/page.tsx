@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { FadeIn, Stagger } from "@/components/motion";
 import { ThemeToggle } from "@/components/theme/theme-toggle";
-import { CompactTrendMedia } from "@/features/planner/components/trend-media";
+import { TrendIdeaCard } from "@/features/planner/components/trend-idea-card";
 import { WeekTargetCard } from "@/features/planner/components/week-target-card";
 import { STATUS_LABEL } from "@/lib/labels";
 import {
@@ -91,14 +91,12 @@ export default function DemoDashboardPage() {
           {topRecs.map((trend) => (
             <FadeIn key={trend.id} as="li">
               <div className="rounded-2xl border border-border bg-surface px-4 py-3">
-                <CompactTrendMedia
+                <TrendIdeaCard
+                  dense
                   title={trend.title}
                   titleHref={`/demo/tren#${trend.id}`}
-                  media={{
-                    coverUrl: trend.coverUrl,
-                    audioTitle: trend.audioTitle,
-                    audioUrl: trend.audioUrl,
-                  }}
+                  format={trend.format}
+                  coverUrl={trend.coverUrl}
                 />
               </div>
             </FadeIn>
