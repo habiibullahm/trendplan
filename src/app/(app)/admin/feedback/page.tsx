@@ -1,10 +1,12 @@
-import { AdminFeedbackInbox } from "@/features/feedback/components/admin-feedback-inbox";
-import { listAdminFeedback } from "@/features/feedback/fetchers/admin-list";
+import { Suspense } from "react";
+import { AdminFeedbackFilters } from "@/features/feedback/components/admin-feedback-filters";
+import { AdminFeedbackList } from "@/features/feedback/components/admin-feedback-list";
 import {
   FEEDBACK_CATEGORIES,
   type FeedbackCategory,
 } from "@/features/feedback/lib/validation";
 import { requireAdminPage } from "@/lib/auth/require-admin";
+import { Skeleton } from "@/components/ui/skeleton";
 
 type Props = {
   searchParams: Promise<{ category?: string }>;
@@ -19,6 +21,16 @@ function parseCategory(
     : null;
 }
 
+function AdminFeedbackListFallback() {
+  return (
+    <div className="mt-6 space-y-2" aria-hidden>
+      <Skeleton className="h-24 w-full rounded-2xl" />
+      <Skeleton className="h-24 w-full rounded-2xl" />
+      <Skeleton className="h-24 w-full rounded-2xl" />
+    </div>
+  );
+}
+
 export default async function AdminFeedbackPage({
   searchParams,
 }: Readonly<Props>) {
@@ -27,24 +39,17 @@ export default async function AdminFeedbackPage({
   const params = await searchParams;
   const activeCategory = parseCategory(params.category);
 
-  const rows = await listAdminFeedback({ category: activeCategory });
-
-  const items = rows.map((row) => ({
-    id: row.id,
-    category: row.category,
-    message: row.message,
-    createdAt: row.createdAt.toISOString(),
-    user: row.user,
-  }));
-
   return (
-    <main className="mx-auto flex w-full max-w-lg flex-1 flex-col">
+    <main className="mx-auto flex w-full max-w-lg min-w-0 flex-1 flex-col">
       <h1 className="text-lg font-semibold text-ink">Masukan pengguna</h1>
-      <p className="mt-1 text-sm text-ink-muted">
+      <p className="mt-1 text-sm leading-snug text-ink-muted">
         Kirim masukan dari halaman Akun. Menampilkan 50 terbaru.
       </p>
-      <div className="mt-4">
-        <AdminFeedbackInbox items={items} activeCategory={activeCategory} />
+      <div className="mt-4 min-w-0">
+        <AdminFeedbackFilters activeCategory={activeCategory} />
+        <Suspense fallback={<AdminFeedbackListFallback />}>
+          <AdminFeedbackList category={activeCategory} />
+        </Suspense>
       </div>
     </main>
   );

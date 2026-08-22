@@ -159,6 +159,27 @@ export function AkunPageLoading({ as }: ShellProps = {}) {
   );
 }
 
+export function AdminFeedbackPageLoading({ as }: ShellProps = {}) {
+  return (
+    <PageLoading
+      label="Memuat masukan…"
+      className="mx-auto max-w-lg"
+      as={as}
+    >
+      <div aria-hidden>
+        <Skeleton className="h-6 w-44 max-w-full" />
+        <Skeleton className="mt-2 h-4 w-64 max-w-full" />
+      </div>
+      <ChipRowSkeleton count={4} className="mt-4" />
+      <div className="mt-6 space-y-2" aria-hidden>
+        <Skeleton className="h-24 w-full rounded-2xl" />
+        <Skeleton className="h-24 w-full rounded-2xl" />
+        <Skeleton className="h-24 w-full rounded-2xl" />
+      </div>
+    </PageLoading>
+  );
+}
+
 /** Edit / buat aktivitas — form shell (not the Plan board). */
 export function ActivityEditPageLoading({ as }: ShellProps = {}) {
   return (

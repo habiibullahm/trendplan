@@ -1,5 +1,6 @@
 export {
   ActivityEditPageLoading,
+  AdminFeedbackPageLoading,
   AkunPageLoading,
   DashboardPageLoading,
   PlannerPageLoading,

@@ -74,19 +74,32 @@ export function Modal({
       <DialogContent
         showCloseButton={false}
         finalFocus={modalFinalFocus(restoreFocus)}
-        className={cn(modalContentClassName(size), className)}
+        className={cn(
+          modalContentClassName(size),
+          "flex min-w-0 flex-col",
+          className,
+        )}
       >
         <DialogHeader
-          className={cn(titleAlign === "center" && "items-center text-center")}
+          className={cn(
+            "min-w-0 shrink-0",
+            titleAlign === "center" && "items-center text-center",
+          )}
         >
           <DialogTitle
-            className={cn(titleAlign === "center" && "text-center")}
+            className={cn(
+              "min-w-0 break-words leading-snug [overflow-wrap:anywhere]",
+              titleAlign === "center" && "text-center",
+            )}
           >
             {title}
           </DialogTitle>
           {description ? (
             <DialogDescription
-              className={cn(titleAlign === "center" && "text-center")}
+              className={cn(
+                "mt-1 block break-words leading-snug",
+                titleAlign === "center" && "text-center",
+              )}
             >
               {description}
             </DialogDescription>
@@ -94,7 +107,8 @@ export function Modal({
         </DialogHeader>
         <div
           className={cn(
-            description || title ? "mt-4" : undefined,
+            "min-h-0 min-w-0 overflow-y-auto",
+            description || title ? "mt-3" : undefined,
             bodyClassName,
           )}
         >
