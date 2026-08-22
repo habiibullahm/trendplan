@@ -237,6 +237,7 @@ function DraggableCard({
         {handle}
         <Link
           href={itemHref(item.id, returnMonth, returnWeek, view)}
+          prefetch={false}
           className={cn(
             "flex min-w-0 flex-1 items-center justify-between gap-3 py-3",
             handle ? "pr-4 pl-1" : "px-4",
@@ -267,6 +268,7 @@ function DraggableCard({
       {handle}
       <Link
         href={itemHref(item.id, returnMonth, returnWeek, view)}
+        prefetch={false}
         className="min-w-0 flex-1 pt-0.5"
         onClick={onDetailClick}
         draggable={false}

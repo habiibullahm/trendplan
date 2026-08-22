@@ -3,8 +3,12 @@
 import { useEffect, useLayoutEffect, useState } from "react";
 import { usePathname } from "next/navigation";
 
-export function scrollWindowTop() {
-  window.scrollTo({ top: 0, left: 0, behavior: "smooth" });
+export function scrollWindowTop(opts?: { smooth?: boolean }) {
+  window.scrollTo({
+    top: 0,
+    left: 0,
+    behavior: opts?.smooth === false ? "auto" : "smooth",
+  });
 }
 
 function shouldHandlePath(pathname: string) {

@@ -88,7 +88,7 @@ export function MonthWeekNav({
       <div className="flex flex-wrap items-center gap-2">
         <Link
           href={monthHref(prev.year, prev.month, tab, view)}
-          prefetch
+          prefetch={false}
           className={monthLinkClass}
           aria-label="Bulan sebelumnya"
         >
@@ -99,7 +99,7 @@ export function MonthWeekNav({
         </p>
         <Link
           href={monthHref(next.year, next.month, tab, view)}
-          prefetch
+          prefetch={false}
           className={monthLinkClass}
           aria-label="Bulan berikutnya"
         >
@@ -114,7 +114,7 @@ export function MonthWeekNav({
             <Link
               key={w.weekStartParam}
               href={weekHref(year, month, w.index, tab, view)}
-              prefetch
+              prefetch={false}
               aria-current={active ? "page" : undefined}
               className={`relative min-w-[7.5rem] shrink-0 rounded-xl border px-3 py-2 transition-colors duration-200 ${
                 active

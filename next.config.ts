@@ -60,6 +60,11 @@ const nextConfig: NextConfig = {
     serverActions: {
       bodySizeLimit: "2.5mb",
     },
+    /** Reuse tab RSC payloads on client (~30s) so Beranda/Tren/Plan do not refetch immediately. */
+    staleTimes: {
+      dynamic: 30,
+      static: 180,
+    },
   },
   images: {
     remotePatterns: vercelBlobRemotePatterns(),

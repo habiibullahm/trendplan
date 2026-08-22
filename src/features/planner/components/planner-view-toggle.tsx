@@ -53,7 +53,7 @@ export function PlannerViewToggle({
           <Link
             key={item.id}
             href={hrefFor(item.id, tab, year, month, weekIndex)}
-            prefetch
+            prefetch={false}
             className={`inline-flex items-center justify-center gap-1 rounded-md px-2.5 py-1 text-xs font-semibold transition-colors ${
               active
                 ? "bg-coral/10 text-coral"

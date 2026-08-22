@@ -22,6 +22,34 @@ export const APP_VERSION = packageJson.version;
 
 export const UPDATE_LOG: UpdateEntry[] = [
   {
+    id: "2026-08-23-akun-plan-roundtrips",
+    version: "0.4.24",
+    date: "23 Agu 2026",
+    title: "Akun dan Plan lebih ringan saat kembali",
+    body: "Buka Akun lagi tidak selalu unduh profil dari awal. Dari Beranda, Plan dan detail ide tidak dimuat sebelum diketuk. Hapus ide tidak memuat ulang Riwayat.",
+  },
+  {
+    id: "2026-08-23-planner-rsc-toast",
+    version: "0.4.23",
+    date: "23 Agu 2026",
+    title: "Plan tidak muat ulang setelah simpan",
+    body: "Setelah simpan ide atau pindah tab Plan, papan tidak diunduh ulang hanya untuk menghapus notifikasi. Daftar hari tidak memuat halaman detail sebelum diketuk.",
+  },
+  {
+    id: "2026-08-23-tren-filter-inp",
+    version: "0.4.22",
+    date: "23 Agu 2026",
+    title: "Filter Tren dan tab lebih gesit",
+    body: "Ganti niche di Tren langsung terasa, tanpa animasi daftar. Tab yang terlihat di layar disiapkan lebih dulu supaya ketukan berikutnya lebih cepat.",
+  },
+  {
+    id: "2026-08-23-tab-nav-cache",
+    version: "0.4.21",
+    date: "23 Agu 2026",
+    title: "Pindah tab lebih ringan",
+    body: "Beranda tidak lagi menampilkan kerangka layar dua kali. Ganti tab tidak memuat ulang data yang baru saja dibuka.",
+  },
+  {
     id: "2026-08-23-honest-tren-cards",
     version: "0.4.20",
     date: "23 Agu 2026",

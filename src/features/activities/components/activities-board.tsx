@@ -87,6 +87,7 @@ function ActivityRow({
     <li>
       <Link
         href={activityHref(item.id, returnMonth, returnWeek, view)}
+        prefetch={false}
         className="min-touch flex items-start gap-3 px-4 py-3 transition-colors hover:bg-coral/5"
       >
         {content}

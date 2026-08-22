@@ -3,7 +3,7 @@ import { redirect } from "next/navigation";
 import { getSafeSession } from "@/lib/auth/session";
 import {
   countActivitiesByWeekStarts,
-  listActivitiesForWeekPlan,
+  listActivitiesForViewerWeek,
 } from "@/features/activities/lib/activities";
 import { ActivitiesBoard } from "@/features/activities/components/activities-board";
 import { CopyWeekButton } from "@/features/planner/components/copy-week-button";
@@ -94,11 +94,13 @@ export default async function PlannerPage({ searchParams }: Readonly<Props>) {
   });
 
   if (tab === "aktivitas") {
-    const [canToggleShareView, weekPlan, activityCounts] = await Promise.all([
-      userHasPartnerSeatForWeek(userId, selection.weekStart),
-      weekPlanPromise,
-      countActivitiesByWeekStarts(userId, selection.weekStarts, { view }),
-    ]);
+    const [canToggleShareView, weekPlan, activityCounts, activityRows] =
+      await Promise.all([
+        userHasPartnerSeatForWeek(userId, selection.weekStart),
+        weekPlanPromise,
+        countActivitiesByWeekStarts(userId, selection.weekStarts, { view }),
+        listActivitiesForViewerWeek(userId, selection.weekStart, { view }),
+      ]);
 
     if (view === "shared" && !canToggleShareView) {
       redirect(
@@ -112,7 +114,9 @@ export default async function PlannerPage({ searchParams }: Readonly<Props>) {
       );
     }
 
-    const activities = await listActivitiesForWeekPlan(weekPlan.id);
+    const activities = activityRows.filter(
+      (row) => row.weekPlanId === weekPlan.id,
+    );
     const shareSnap = weekShareSnapshotFromPlan(weekPlan, userId);
     const role = shareRoleForUser(weekPlan, userId);
     const shareUi = buildShareUi(shareSnap, weekLabel);

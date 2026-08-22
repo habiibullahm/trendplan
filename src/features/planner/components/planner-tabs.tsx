@@ -54,7 +54,7 @@ export function PlannerTabs({
           <Link
             key={item.id}
             href={hrefFor(item.id, year, month, weekIndex, view, basePath)}
-            prefetch
+            prefetch={false}
             className={`min-touch inline-flex flex-1 items-center justify-center gap-1.5 rounded-lg px-3 py-2 text-center text-sm font-semibold transition-colors ${
               active
                 ? "bg-coral/10 text-coral hover:bg-coral/15"

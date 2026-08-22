@@ -1,6 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import { weekPlanAccessWhere } from "@/features/planner/lib/week-share";
-import { formatWeekStartParam, type PlannerView } from "@/lib/week";
+import { formatWeekStartParam, getWeekStart, type PlannerView } from "@/lib/week";
 
 /** ±14h around UTC midnight covers legacy Asia/Jakarta local-midnight rows. */
 const LEGACY_OFFSET_MS = 14 * 60 * 60 * 1000;
@@ -11,6 +11,8 @@ export type ActivityListItem = {
   title: string;
 };
 
+export type ActivityViewerListItem = ActivityListItem & { weekPlanId: string };
+
 /** Activities for a known week plan id, ordered by day then createdAt. */
 export async function listActivitiesForWeekPlan(
   weekPlanId: string,
@@ -20,6 +22,61 @@ export async function listActivitiesForWeekPlan(
     orderBy: [{ dayOfWeek: "asc" }, { createdAt: "asc" }],
     select: { id: true, dayOfWeek: true, title: true },
   });
+}
+
+/**
+ * Activities for the viewer week without waiting on the full board include.
+ * view=shared prefers a partner (foreign) week in the calendar window.
+ */
+export async function listActivitiesForViewerWeek(
+  userId: string,
+  weekStart: Date,
+  opts?: { view?: PlannerView },
+): Promise<ActivityViewerListItem[]> {
+  const canonical = getWeekStart(weekStart);
+  const key = formatWeekStartParam(canonical);
+  const view = opts?.view ?? "mine";
+  const min = new Date(canonical.getTime() - LEGACY_OFFSET_MS);
+  const max = new Date(canonical.getTime() + LEGACY_OFFSET_MS);
+
+  const rows = await prisma.activity.findMany({
+    where: {
+      weekPlan: {
+        AND: [
+          view === "shared" ? weekPlanAccessWhere(userId) : { userId },
+          { weekStart: { gte: min, lte: max } },
+        ],
+      },
+    },
+    orderBy: [{ dayOfWeek: "asc" }, { createdAt: "asc" }],
+    select: {
+      id: true,
+      dayOfWeek: true,
+      title: true,
+      weekPlanId: true,
+      weekPlan: { select: { weekStart: true, userId: true } },
+    },
+  });
+
+  const inWeek = rows.filter(
+    (row) => formatWeekStartParam(row.weekPlan.weekStart) === key,
+  );
+
+  const preferred =
+    view === "shared"
+      ? inWeek.filter((row) => row.weekPlan.userId !== userId)
+      : inWeek.filter((row) => row.weekPlan.userId === userId);
+  const chosen =
+    preferred.length > 0
+      ? preferred
+      : inWeek.filter((row) => row.weekPlan.userId === userId);
+
+  return chosen.map(({ id, dayOfWeek, title, weekPlanId }) => ({
+    id,
+    dayOfWeek,
+    title,
+    weekPlanId,
+  }));
 }
 
 /** Activities for a week plan (owned or partner), ordered by day then createdAt. */

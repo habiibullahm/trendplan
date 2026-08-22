@@ -1,6 +1,7 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
+import { revalidatePath, updateTag } from "next/cache";
+import { akunUserTag } from "@/features/auth/lib/akun-cache-tag";
 import { unstable_update } from "@/auth";
 import {
   actionFail,
@@ -39,6 +40,7 @@ export async function completeOnboardingAction(formData: FormData) {
 
   await unstable_update({});
 
+  updateTag(akunUserTag(gate.userId));
   revalidatePath("/dashboard");
   revalidatePath("/tren");
   revalidatePath("/rekomendasi");
@@ -71,6 +73,7 @@ export async function updateWeeklyGoalAction(
     });
   }
 
+  updateTag(akunUserTag(gated.userId));
   revalidatePath("/akun");
   revalidatePath("/dashboard");
   revalidatePath("/planner");
@@ -103,6 +106,7 @@ export async function updateNicheAction(
     });
   }
 
+  updateTag(akunUserTag(gated.userId));
   revalidatePath("/akun");
   revalidatePath("/dashboard");
   revalidatePath("/tren");

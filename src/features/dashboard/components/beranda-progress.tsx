@@ -41,6 +41,7 @@ export async function BerandaProgressSection({ userId }: { userId: string }) {
           </h2>
           <Link
             href="/planner"
+            prefetch={false}
             className="min-touch inline-flex shrink-0 items-center text-sm font-semibold text-coral transition-colors hover:underline"
           >
             Buka Plan
@@ -55,6 +56,7 @@ export async function BerandaProgressSection({ userId }: { userId: string }) {
               <FadeIn key={item.id} as="li">
                 <Link
                   href={`/planner/${item.id}`}
+                  prefetch={false}
                   className="min-touch flex items-center justify-between gap-2 px-4 py-3 transition-colors hover:bg-coral/5"
                 >
                   <span className="truncate text-sm font-medium text-ink">

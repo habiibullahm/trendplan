@@ -1,7 +1,8 @@
 "use server";
 
 import { del, put } from "@vercel/blob";
-import { revalidatePath } from "next/cache";
+import { revalidatePath, updateTag } from "next/cache";
+import { akunUserTag } from "@/features/auth/lib/akun-cache-tag";
 import { AVATAR_MAX_BYTES } from "@/features/auth/lib/avatar-image";
 import { prepareAvatarUpload } from "@/features/auth/lib/prepare-avatar-upload";
 import { assertRateLimits, getClientIp } from "@/lib/action-middleware";
@@ -136,6 +137,7 @@ export async function uploadProfileImageAction(
 
   await deleteAvatarBestEffort(existing?.imageUrl, userId);
 
+  updateTag(akunUserTag(userId));
   revalidatePath("/akun");
   revalidatePath("/dashboard");
   return actionSuccess("Foto profil diperbarui");
@@ -178,6 +180,7 @@ export async function removeProfileImageAction(
 
   await deleteAvatarBestEffort(existing.imageUrl, userId);
 
+  updateTag(akunUserTag(userId));
   revalidatePath("/akun");
   revalidatePath("/dashboard");
   return actionSuccess("Foto profil dihapus");
