@@ -76,12 +76,6 @@ model Trend {
   niche        String          @default("Couple Date Ideas")
   /** Curated cover poster (public URL, e.g. /media/trends/covers/…). */
   coverUrl     String?
-  /** Optional short curated video clip. */
-  videoUrl     String?
-  /** Display label for trending sound. */
-  audioTitle   String?
-  /** Optional curated audio clip. */
-  audioUrl     String?
   createdAt    DateTime        @default(now())
   contentItems ContentItem[]
 }

@@ -1,0 +1,4 @@
+-- AlterTable
+ALTER TABLE "Trend" DROP COLUMN IF EXISTS "videoUrl";
+ALTER TABLE "Trend" DROP COLUMN IF EXISTS "audioTitle";
+ALTER TABLE "Trend" DROP COLUMN IF EXISTS "audioUrl";

@@ -14,4 +14,4 @@ Sebagai creator niche Couple Date Ideas, saya ingin melihat katalog ide dan reko
 
 ## Out of scope
 
-Live TikTok FYP scrape, personalized ML ranking, paid trend APIs, video/audio on trend cards.
+Live TikTok FYP scrape, personalized ML ranking, paid trend APIs. Catalog has no video/audio.

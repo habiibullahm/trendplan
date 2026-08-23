@@ -143,7 +143,7 @@ export function OnboardingForm({
             <span className="font-medium">{niche ?? "—"}</span>
           </li>
           <li className="flex justify-between gap-3">
-            <span className="text-ink-muted">Tren mock siap</span>
+            <span className="text-ink-muted">Ide siap dipakai</span>
             <span className="font-medium text-sage">{trendCount} ide</span>
           </li>
         </ul>
