@@ -129,7 +129,7 @@ export default async function DemoPlannerPage({
                 </p>
                 <p className="mt-1 whitespace-pre-line text-sm text-ink">
                   {
-                    "Format: 3 date di bawah 100rb\n\n3 date ideas that feel expensive…"
+                    "List: date menu isi sendiri\n\nMalam ini kamu yang pilih dari menunya…"
                   }
                 </p>
               </div>
