@@ -122,6 +122,25 @@ const catalogBase = [
     ],
     "Food & Cooking",
   ),
+  ...attachCuratedMedia(
+    [
+      {
+        title: "List: 5 menit mobility yang PT izinin",
+        hook: "Bukan rehab liar, cuma yang udah boleh…",
+        format: ContentFormat.LIST,
+        score: 94,
+        reason: "Slot harian pendek, konkret",
+      },
+      {
+        title: "POV: brace on vs brace off",
+        hook: "Keluar rumah, dua versi lutut…",
+        format: ContentFormat.POV,
+        score: 91,
+        reason: "Visual sebelum/sesudah, mudah diambil",
+      },
+    ],
+    "ACL Recovery",
+  ),
 ];
 
 const catalog = catalogBase.map((row, i, arr) => {

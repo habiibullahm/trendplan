@@ -9,7 +9,7 @@ export const captionAssistSchema = z.object({
   caption: z
     .string()
     .describe(
-      "Caption TikTok singkat (1–2 kalimat), Bahasa Indonesia santai, mudah dibaca, engaging.",
+      "Caption TikTok 1–2 kalimat: hook di depan, Bahasa Indonesia untuk konten (bukan chat), tanpa hashtag di dalam teks.",
     ),
   hashtags: z
     .string()
