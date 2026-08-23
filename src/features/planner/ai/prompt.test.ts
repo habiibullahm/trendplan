@@ -150,6 +150,28 @@ describe("templateCaptionAssist reasons", () => {
   });
 });
 
+describe("captionAssistForPlannerAdd env branches", () => {
+  it("returns template when AI is off (Pakai still succeeds)", async () => {
+    const prev = process.env.AI_ASSIST_ENABLED;
+    process.env.AI_ASSIST_ENABLED = "false";
+    try {
+      const { captionAssistForPlannerAdd } = await import(
+        "@/features/planner/ai/generate-caption"
+      );
+      const r = await captionAssistForPlannerAdd("user-1", {
+        title: "T",
+        hook: "H",
+        niche: "N",
+      });
+      assert.equal(r.source, "template");
+      assert.equal(r.reason, "disabled");
+    } finally {
+      if (prev === undefined) delete process.env.AI_ASSIST_ENABLED;
+      else process.env.AI_ASSIST_ENABLED = prev;
+    }
+  });
+});
+
 describe("generateCaptionAssist env branches", () => {
   it("returns disabled when flag off", async () => {
     const prev = process.env.AI_ASSIST_ENABLED;

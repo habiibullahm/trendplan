@@ -14,10 +14,12 @@ import {
   getWeekPlanForViewer,
   weekPlanAccessWhere,
 } from "@/features/planner/lib/week-share";
+import { captionAssistForPlannerAdd } from "@/features/planner/ai/generate-caption";
 import {
   suggestCaption,
   suggestHashtags,
 } from "@/features/planner/lib/export-text";
+import { resolveNiche } from "@/lib/niches";
 import {
   isParkedSoftDeleteDay,
   parkDayOfWeek,
@@ -117,6 +119,19 @@ export async function addTrendToPlannerAction(
     return actionFail("day_occupied", { message: DAY_OCCUPIED_MESSAGE });
   }
 
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    select: { niche: true },
+  });
+  const assist = await captionAssistForPlannerAdd(userId, {
+    title: trend.title,
+    hook: trend.hook,
+    niche: resolveNiche(user?.niche),
+    trendTitle: trend.title,
+    trendReason: trend.reason,
+    trendFormat: trend.format,
+  });
+
   try {
     await prisma.contentItem.create({
       data: {
@@ -124,10 +139,10 @@ export async function addTrendToPlannerAction(
         dayOfWeek: dayParsed.data,
         title: trend.title,
         hook: trend.hook,
-        caption: suggestCaption({ title: trend.title, hook: trend.hook }),
+        caption: assist.caption,
         status: ContentStatus.IDE,
         trendId: trend.id,
-        hashtags: suggestHashtags(),
+        hashtags: assist.hashtags,
       },
     });
   } catch (error) {

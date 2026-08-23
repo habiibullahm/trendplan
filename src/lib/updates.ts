@@ -26,7 +26,7 @@ export const UPDATE_LOG: UpdateEntry[] = [
     version: "0.4.29",
     date: "23 Agu 2026",
     title: "Saran caption lebih seperti orang ngetik",
-    body: "Bantu AI mengisi caption dari satu momen konkret, bukan slogan atau ringkasan ide. Hashtag mengikuti isi ide, bukan niche akun yang tidak nyambung.",
+    body: "Pakai dan Bantu AI mengisi caption dari satu momen konkret, bukan slogan atau ringkasan ide. Hashtag mengikuti isi ide, bukan niche akun yang tidak nyambung.",
   },
   {
     id: "2026-08-23-acl-recovery-niche",

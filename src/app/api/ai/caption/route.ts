@@ -1,5 +1,6 @@
 import { gateAppUser } from "@/lib/auth/require-app-user";
 import { canCallCaptionModel } from "@/features/planner/ai/env";
+import { CAPTION_AI_RATE, captionAiRateKey } from "@/features/planner/ai/caption-rate";
 import { generateCaptionAssist } from "@/features/planner/ai/generate-caption";
 import { publicAssistReason } from "@/features/planner/ai/types";
 import { weekPlanAccessWhere } from "@/features/planner/lib/week-share";
@@ -9,7 +10,6 @@ import { prisma } from "@/lib/prisma";
 
 export const runtime = "nodejs";
 
-const RATE = { limit: 20, windowMs: 60 * 60 * 1000 } as const;
 
 type Body = {
   contentItemId?: unknown;
@@ -76,7 +76,10 @@ export async function POST(req: Request) {
 
   // Only burn rate-limit budget when we will call Groq (not template-only).
   if (canCallCaptionModel()) {
-    const limited = await checkRateLimit(`ai-caption:${gate.userId}`, RATE);
+    const limited = await checkRateLimit(
+      captionAiRateKey(gate.userId),
+      CAPTION_AI_RATE,
+    );
     if (!limited.ok) {
       return Response.json(
         { error: ActionErrors.rateLimited },

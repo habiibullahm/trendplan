@@ -3,11 +3,16 @@ import "server-only";
 import { APICallError, generateObject } from "ai";
 import { createOpenAI } from "@ai-sdk/openai";
 import {
+  canCallCaptionModel,
   getGroqApiKey,
   getGroqBaseUrl,
   getGroqModel,
   isAiAssistEnabled,
 } from "@/features/planner/ai/env";
+import {
+  CAPTION_AI_RATE,
+  captionAiRateKey,
+} from "@/features/planner/ai/caption-rate";
 import {
   buildCaptionAssistPrompt,
   CAPTION_ASSIST_SYSTEM,
@@ -128,4 +133,25 @@ export async function generateCaptionAssist(
     }
     return templateCaptionAssist(ctx, reason);
   }
+}
+
+/**
+ * Caption for Pakai: same Groq path as Bantu AI.
+ * Rate-limit or provider failure → template; Pakai must not fail.
+ */
+export async function captionAssistForPlannerAdd(
+  userId: string,
+  ctx: CaptionAssistContext,
+): Promise<CaptionAssistResult> {
+  if (canCallCaptionModel()) {
+    const { checkRateLimit } = await import("@/lib/rate-limit");
+    const limited = await checkRateLimit(
+      captionAiRateKey(userId),
+      CAPTION_AI_RATE,
+    );
+    if (!limited.ok) {
+      return templateCaptionAssist(ctx, "quota");
+    }
+  }
+  return generateCaptionAssist(ctx);
 }
