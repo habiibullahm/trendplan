@@ -2,6 +2,7 @@ export const NICHES = [
   "Couple Date Ideas",
   "Tech & Gadget",
   "Food & Cooking",
+  "ACL Recovery",
 ] as const;
 
 export type Niche = (typeof NICHES)[number];

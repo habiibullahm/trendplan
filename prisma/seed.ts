@@ -224,13 +224,73 @@ const foodTrends: TrendSeedInput[] = [
   },
 ];
 
+const aclTrends: TrendSeedInput[] = [
+  {
+    title: "List: 5 menit mobility yang PT izinin",
+    hook: "Bukan rehab liar, cuma yang udah boleh…",
+    format: ContentFormat.LIST,
+    score: 94,
+    reason: "Slot harian pendek, konkret",
+  },
+  {
+    title: "POV: brace on vs brace off",
+    hook: "Keluar rumah, dua versi lutut…",
+    format: ContentFormat.POV,
+    score: 91,
+    reason: "Visual sebelum/sesudah, mudah diambil",
+  },
+  {
+    title: "Story: minggu 2 vs minggu 12",
+    hook: "ROM-ku dulu vs sekarang…",
+    format: ContentFormat.STORYTELLING,
+    score: 88,
+    reason: "Cerita progres, bukan flex gym",
+  },
+  {
+    title: "List: 3 tanda stop, telepon PT",
+    hook: "Kalau ini muncul, jangan dipaksa…",
+    format: ContentFormat.LIST,
+    score: 85,
+    reason: "Edukasi aman, mudah di-save",
+  },
+  {
+    title: "POV: es plus elevate malam",
+    hook: "Malam ini cuma es dan kaki naik…",
+    format: ContentFormat.POV,
+    score: 82,
+    reason: "Ritual, konsisten posting",
+  },
+  {
+    title: "List: belanja dapur anti-bengkak",
+    hook: "Isi kulkas pas lagi susah jalan…",
+    format: ContentFormat.LIST,
+    score: 80,
+    reason: "Hemat effort, slot bekal",
+  },
+  {
+    title: "Story: hari datar, tetap niat",
+    hook: "Recovery bukan highlight tiap hari…",
+    format: ContentFormat.STORYTELLING,
+    score: 77,
+    reason: "Mental, relatable",
+  },
+  {
+    title: "POV: tangga satu anak",
+    hook: "Satu anak tangga, pelan…",
+    format: ContentFormat.POV,
+    score: 74,
+    reason: "Low effort, visual jelas",
+  },
+];
+
 const trendsBase: CuratedTrendSeedRow[] = [
   ...attachCuratedMedia(coupleTrends, "Couple Date Ideas"),
   ...attachCuratedMedia(techTrends, "Tech & Gadget"),
   ...attachCuratedMedia(foodTrends, "Food & Cooking"),
+  ...attachCuratedMedia(aclTrends, "ACL Recovery"),
 ];
 
-// Cover-only (second-to-last food) + empty media (last food) for UI path coverage.
+// Cover-only (second-to-last) + empty media (last row) for UI path coverage.
 const trends: CuratedTrendSeedRow[] = trendsBase.map((row, i, arr) => {
   if (i === arr.length - 2) return applyCoverOnly(row);
   if (i === arr.length - 1) return applyEmptyMedia(row);

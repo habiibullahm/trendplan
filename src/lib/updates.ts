@@ -22,6 +22,20 @@ export const APP_VERSION = packageJson.version;
 
 export const UPDATE_LOG: UpdateEntry[] = [
   {
+    id: "2026-08-23-acl-recovery-niche",
+    version: "0.4.28",
+    date: "23 Agu 2026",
+    title: "Niche ACL Recovery di Tren",
+    body: "Pilih ACL Recovery di onboarding atau Akun. Katalog ide rehab lutut (bukan nasihat medis) muncul di Tren dan Rekomendasi. Cek dulu dengan fisioterapis sebelum meniru gerakan.",
+  },
+  {
+    id: "2026-08-23-caption-creator-voice",
+    version: "0.4.27",
+    date: "23 Agu 2026",
+    title: "Saran caption lebih seperti TikTok",
+    body: "Bantu AI menulis caption seperti creator di feed: hook di depan, singkat, bahasa konten—bukan gaya ngobrol chat.",
+  },
+  {
     id: "2026-08-23-planner-seed-ideas",
     version: "0.4.26",
     date: "23 Agu 2026",

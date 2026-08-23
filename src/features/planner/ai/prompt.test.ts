@@ -1,7 +1,10 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 import { assistFeedbackForResult } from "@/features/planner/ai/assist-feedback";
-import { buildCaptionAssistPrompt } from "@/features/planner/ai/prompt";
+import {
+  buildCaptionAssistPrompt,
+  CAPTION_ASSIST_SYSTEM,
+} from "@/features/planner/ai/prompt";
 import {
   CAPTION_ASSIST_MAX_CAPTION,
   captionAssistSchema,
@@ -27,6 +30,15 @@ describe("caption assist prompt", () => {
     assert.match(prompt, /When it rains/);
     assert.match(prompt, /Sumber tren/);
     assert.match(prompt, /Bahasa Indonesia/);
+    assert.match(prompt, /caption creator TikTok/);
+  });
+
+  it("asks for creator feed voice, not chat slang", () => {
+    assert.match(CAPTION_ASSIST_SYSTEM, /Suara creator di feed/);
+    assert.match(CAPTION_ASSIST_SYSTEM, /Bukan chat WhatsApp/);
+    assert.match(CAPTION_ASSIST_SYSTEM, /jangan beri nasihat medis/);
+    assert.doesNotMatch(CAPTION_ASSIST_SYSTEM, /pasar orang Indo/);
+    assert.doesNotMatch(CAPTION_ASSIST_SYSTEM, /kayak ngobrol/);
   });
 });
 

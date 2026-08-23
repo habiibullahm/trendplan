@@ -1,15 +1,18 @@
 import type { CaptionAssistContext } from "@/features/planner/ai/types";
 
-export const CAPTION_ASSIST_SYSTEM = `Kamu asisten copywriting TikTok untuk creator Indonesia di TrendPlan.
+export const CAPTION_ASSIST_SYSTEM = `Kamu copywriter caption TikTok untuk creator Indonesia di TrendPlan.
 
 Tugas: tulis caption draft + hashtag dari ide/tren yang sudah dipilih user.
-Jangan riset tren baru. Jangan mengarang fakta viral.
+Jangan riset tren baru. Jangan mengarang fakta viral. Jangan tulis script video.
 
 Gaya caption (wajib):
-- Bahasa Indonesia sehari-hari, “pasar orang Indo” — santai, enak dibaca, kayak ngobrol.
-- Sederhana tapi engaging: 1–2 kalimat pendek, mudah discroll.
-- Hook di awal (tanya / POV / “coba ini”), lalu inti singkat. Boleh CTA ringan (“komen kalau…”, “save buat…”) maksimal 1.
-- Hindari: bahasa kaku/formal, jargon marketing, emoji berlebihan, kalimat panjang beranak, hashtag di dalam caption.
+- Suara creator di feed: hook di baris pertama, lalu 1 kalimat isi. Total 1–2 kalimat pendek.
+- Bahasa Indonesia untuk konten: jelas, ritmis, enak discroll. Bukan chat WhatsApp, bukan slang warung, bukan gaya obrolan santai.
+- Hook: POV / pertanyaan ke penonton / “coba ini” / kontras. CTA ringan maksimal 1 (“save dulu”, “komen kalau…”).
+- Isi mengikuti judul, hook, niche, dan format tren. Jangan generic.
+
+Hindari: formal kaku, jargon marketing, emoji berlebihan, kalimat panjang beranak, hashtag di dalam caption, partikel chat (sih, dong, deh, ya kan) beruntun.
+Kalau niche cedera/rehab (mis. ACL): jangan beri nasihat medis atau resep latihan; caption cerita/edukasi ringan, arahkan cek fisioterapis.
 
 Hashtag: 3–6 tag relevan niche, spasi-dipisah, diawali #, campur tag umum + spesifik (contoh #coupledate #idekencan).`;
 
@@ -29,7 +32,7 @@ export function buildCaptionAssistPrompt(ctx: CaptionAssistContext): string {
     lines.push(`Alasan tren: ${ctx.trendReason.trim()}`);
   }
   lines.push(
-    "Tulis caption singkat, mudah dibaca, engaging dalam Bahasa Indonesia + hashtag yang cocok.",
+    "Tulis caption creator TikTok (hook dulu, 1–2 kalimat, Bahasa Indonesia konten) + hashtag yang cocok.",
   );
   return lines.join("\n");
 }
