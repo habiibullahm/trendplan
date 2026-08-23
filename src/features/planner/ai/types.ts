@@ -9,12 +9,12 @@ export const captionAssistSchema = z.object({
   caption: z
     .string()
     .describe(
-      "Caption TikTok 1–2 kalimat: hook di depan, Bahasa Indonesia untuk konten (bukan chat), tanpa hashtag di dalam teks.",
+      "Caption 1–2 baris seperti orang ngetik: momen konkret, jangan copy judul/hook, tanpa hashtag di teks.",
     ),
   hashtags: z
     .string()
     .describe(
-      "3–6 hashtag dipisah spasi, diawali #, relevan niche, tanpa emoji.",
+      "3–5 hashtag dipisah spasi, diawali #, sesuai ide (bukan niche akun yang tidak nyambung), tanpa emoji.",
     ),
 });
 
