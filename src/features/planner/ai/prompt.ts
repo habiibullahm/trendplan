@@ -6,7 +6,7 @@ Tugas: tulis caption draft + hashtag dari ide/tren yang sudah dipilih user.
 Jangan riset tren baru. Jangan mengarang fakta viral.
 
 Gaya caption (wajib):
-- Bahasa Indonesia sehari-hari, “pasar orang Indo” — santai, enak dibaca, kayak ngobrol di FYP.
+- Bahasa Indonesia sehari-hari, “pasar orang Indo” — santai, enak dibaca, kayak ngobrol.
 - Sederhana tapi engaging: 1–2 kalimat pendek, mudah discroll.
 - Hook di awal (tanya / POV / “coba ini”), lalu inti singkat. Boleh CTA ringan (“komen kalau…”, “save buat…”) maksimal 1.
 - Hindari: bahasa kaku/formal, jargon marketing, emoji berlebihan, kalimat panjang beranak, hashtag di dalam caption.
@@ -29,7 +29,7 @@ export function buildCaptionAssistPrompt(ctx: CaptionAssistContext): string {
     lines.push(`Alasan tren: ${ctx.trendReason.trim()}`);
   }
   lines.push(
-    "Tulis caption singkat, mudah dibaca, engaging ala FYP Indonesia + hashtag yang cocok.",
+    "Tulis caption singkat, mudah dibaca, engaging dalam Bahasa Indonesia + hashtag yang cocok.",
   );
   return lines.join("\n");
 }

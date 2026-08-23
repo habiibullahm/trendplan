@@ -60,14 +60,14 @@ const coupleTrends: TrendSeedInput[] = [
     hook: "Pack this for the perfect sunset…",
     format: ContentFormat.LIST,
     score: 83,
-    reason: "Visual golden hour perform bagus di TikTok",
+    reason: "Visual sunset — mudah diisi ke slot weekend",
   },
   {
     title: "POV: night drive bareng doi",
     hook: "POV: night drive with your person…",
     format: ContentFormat.POV,
     score: 82,
-    reason: "POV + musik malam masih sering naik di FYP",
+    reason: "POV malam rendah effort, cocok slot weekday",
   },
   {
     title: "Story: anniversary hemat di rumah",
@@ -133,7 +133,7 @@ const techTrends: TrendSeedInput[] = [
     hook: "Clean cable setup in 5 minutes…",
     format: ContentFormat.LIST,
     score: 86,
-    reason: "Low effort, hasil visual jelas di FYP",
+    reason: "Low effort, hasil visual jelas untuk slot harian",
   },
   {
     title: "POV: noise cancelling pertama kali",
@@ -178,7 +178,7 @@ const foodTrends: TrendSeedInput[] = [
     hook: "Eggs in 60 seconds, trust me…",
     format: ContentFormat.POV,
     score: 90,
-    reason: "Super pendek, mudah di-loop FYP",
+    reason: "Super pendek, mudah diulang di slot harian",
   },
   {
     title: "Story: resep nenek jadi viral",
@@ -220,7 +220,7 @@ const foodTrends: TrendSeedInput[] = [
     hook: "Cafe-level iced coffee in 2 minutes…",
     format: ContentFormat.POV,
     score: 74,
-    reason: "Ritual kopi sering naik di FYP Indonesia",
+    reason: "Ritual kopi ringan untuk konsistensi posting",
   },
 ];
 
@@ -244,8 +244,7 @@ async function main() {
 
   await prisma.trend.createMany({ data: trends });
 
-  const withVideo = trends.filter((t) => Boolean(t.videoUrl)).length;
-  const withoutVideo = trends.length - withVideo;
+  const withCover = trends.filter((t) => Boolean(t.coverUrl)).length;
 
   for (const niche of NICHES) {
     const count = await prisma.trend.count({ where: { niche } });
@@ -253,7 +252,7 @@ async function main() {
   }
 
   console.log(
-    `Seed selesai: ${trends.length} tren total (${withVideo} with videoUrl, ${withoutVideo} without)`,
+    `Seed selesai: ${trends.length} tren total (${withCover} with coverUrl)`,
   );
 }
 

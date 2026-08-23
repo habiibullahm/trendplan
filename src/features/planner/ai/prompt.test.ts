@@ -26,7 +26,7 @@ describe("caption assist prompt", () => {
     assert.match(prompt, /POV hujan di rumah/);
     assert.match(prompt, /When it rains/);
     assert.match(prompt, /Sumber tren/);
-    assert.match(prompt, /FYP Indonesia/);
+    assert.match(prompt, /Bahasa Indonesia/);
   });
 });
 

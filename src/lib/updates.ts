@@ -22,6 +22,13 @@ export const APP_VERSION = packageJson.version;
 
 export const UPDATE_LOG: UpdateEntry[] = [
   {
+    id: "2026-08-23-honest-tren-catalog",
+    version: "0.4.25",
+    date: "23 Agu 2026",
+    title: "Kartu Tren hanya ide dan poster",
+    body: "Katalog Tren menampilkan poster, judul, hook, alasan, dan format. Tidak ada klip, suara, atau skor. Pakai tetap mengisi hari di Plan.",
+  },
+  {
     id: "2026-08-23-akun-plan-roundtrips",
     version: "0.4.24",
     date: "23 Agu 2026",

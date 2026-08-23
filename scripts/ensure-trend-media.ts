@@ -1,13 +1,12 @@
 /**
- * Ensure Trend rows have curated media without wiping IDs (safe for prod).
+ * Ensure Trend rows have curated covers without wiping IDs (safe for prod).
  *
- * Prod deploy: after shipping curated `/media/trends/` assets (and retiring
- * `/mocks/`), run `npm run db:ensure-trend-media` (or `init-prod-user-mocks`)
- * against prod DBs that still store `/mocks/` URLs — otherwise media 404s.
+ * Prod deploy: after retiring `/mocks/` and FYP video/audio columns, run
+ * `npm run db:ensure-trend-media` against DBs that still store `/mocks/`
+ * cover URLs — otherwise posters 404.
  *
- * - If no trends: create from a minimal curated catalog
- * - If trends exist: rewrite `/mocks/` URLs + backfill nulls; preserve
- *   intentional empty / curated cover-only rows
+ * - If no trends: create from a minimal cover+copy catalog
+ * - If trends exist: rewrite `/mocks/` covers; preserve intentional empty
  *
  * Usage:
  *   npx tsx scripts/ensure-trend-media.ts
@@ -36,7 +35,7 @@ if (process.env.TARGET_DATABASE_URL) {
   process.env.DATABASE_URL = process.env.DATABASE_URL_UNPOOLED;
 }
 
-/** Minimal catalog — mirrors prisma/seed niches so empty DBs get usable FYP. */
+/** Minimal catalog — mirrors prisma/seed niches so empty DBs get usable ideas. */
 const catalogBase = [
   ...attachCuratedMedia(
     [
@@ -99,7 +98,7 @@ const catalogBase = [
         hook: "Building a clean desk on a budget…",
         format: ContentFormat.POV,
         score: 88,
-        reason: "Budget setup sering naik di FYP gadget",
+        reason: "Budget setup — mudah diisi ke slot gadget",
       },
     ],
     "Tech & Gadget",
@@ -125,7 +124,6 @@ const catalogBase = [
   ),
 ];
 
-// Cover-only + empty (parity with prisma/seed) for UI path coverage on empty DBs.
 const catalog = catalogBase.map((row, i, arr) => {
   if (i === arr.length - 2) return applyCoverOnly(row);
   if (i === arr.length - 1) return applyEmptyMedia(row);
@@ -146,9 +144,6 @@ async function main() {
         select: {
           id: true,
           coverUrl: true,
-          videoUrl: true,
-          audioTitle: true,
-          audioUrl: true,
         },
       });
 
@@ -160,38 +155,24 @@ async function main() {
 
         await prisma.trend.update({
           where: { id: row.id },
-          data: {
-            coverUrl: next.coverUrl,
-            videoUrl: next.videoUrl,
-            audioTitle: next.audioTitle,
-            audioUrl: next.audioUrl,
-          },
+          data: { coverUrl: next.coverUrl },
         });
         updated += 1;
       }
       console.log(
-        `Backfilled/rewrote media on ${updated}/${rows.length} existing trends.`,
+        `Backfilled/rewrote covers on ${updated}/${rows.length} existing trends.`,
       );
     }
 
-    const withVideo = await prisma.trend.count({
-      where: { videoUrl: { not: null } },
-    });
     const stillMock = await prisma.trend.findMany({
-      select: { coverUrl: true, videoUrl: true, audioUrl: true },
+      select: { coverUrl: true },
     });
-    const mockCount = stillMock.filter(
-      (r) =>
-        isMockMediaUrl(r.coverUrl) ||
-        isMockMediaUrl(r.videoUrl) ||
-        isMockMediaUrl(r.audioUrl),
-    ).length;
+    const mockCount = stillMock.filter((r) => isMockMediaUrl(r.coverUrl)).length;
 
     console.log(
       JSON.stringify(
         {
           total: await prisma.trend.count(),
-          withVideo,
           stillMock: mockCount,
         },
         null,
