@@ -22,6 +22,13 @@ export const APP_VERSION = packageJson.version;
 
 export const UPDATE_LOG: UpdateEntry[] = [
   {
+    id: "2026-08-23-planner-seed-ideas",
+    version: "0.4.26",
+    date: "23 Agu 2026",
+    title: "Ide Tren lebih bisa dipakai di Plan",
+    body: "Katalog Couple, Tech, dan Food diisi ulang: judul, hook, dan alasan mengarah ke slot minggu, bukan klaim FYP. Demo ikut ide yang sama.",
+  },
+  {
     id: "2026-08-23-honest-tren-catalog",
     version: "0.4.25",
     date: "23 Agu 2026",
