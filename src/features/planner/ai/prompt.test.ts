@@ -29,13 +29,14 @@ describe("caption assist prompt", () => {
     assert.match(prompt, /POV hujan di rumah/);
     assert.match(prompt, /When it rains/);
     assert.match(prompt, /Sumber tren/);
-    assert.match(prompt, /Bahasa Indonesia/);
-    assert.match(prompt, /caption creator TikTok/);
+    assert.match(prompt, /jangan copy hook/);
+    assert.match(prompt, /momen konkret/);
   });
 
-  it("asks for creator feed voice, not chat slang", () => {
-    assert.match(CAPTION_ASSIST_SYSTEM, /Suara creator di feed/);
-    assert.match(CAPTION_ASSIST_SYSTEM, /Bukan chat WhatsApp/);
+  it("asks for human talk, not template or chat slang", () => {
+    assert.match(CAPTION_ASSIST_SYSTEM, /seolah creator Indonesia lagi ngetik/);
+    assert.match(CAPTION_ASSIST_SYSTEM, /Jangan copy-paste hook/);
+    assert.match(CAPTION_ASSIST_SYSTEM, /bukan niche akun/);
     assert.match(CAPTION_ASSIST_SYSTEM, /jangan beri nasihat medis/);
     assert.doesNotMatch(CAPTION_ASSIST_SYSTEM, /pasar orang Indo/);
     assert.doesNotMatch(CAPTION_ASSIST_SYSTEM, /kayak ngobrol/);
@@ -146,6 +147,28 @@ describe("templateCaptionAssist reasons", () => {
       "missing_key",
     );
     assert.equal(templateCaptionAssist(base, "error").source, "template");
+  });
+});
+
+describe("captionAssistForPlannerAdd env branches", () => {
+  it("returns template when AI is off (Pakai still succeeds)", async () => {
+    const prev = process.env.AI_ASSIST_ENABLED;
+    process.env.AI_ASSIST_ENABLED = "false";
+    try {
+      const { captionAssistForPlannerAdd } = await import(
+        "@/features/planner/ai/generate-caption"
+      );
+      const r = await captionAssistForPlannerAdd("user-1", {
+        title: "T",
+        hook: "H",
+        niche: "N",
+      });
+      assert.equal(r.source, "template");
+      assert.equal(r.reason, "disabled");
+    } finally {
+      if (prev === undefined) delete process.env.AI_ASSIST_ENABLED;
+      else process.env.AI_ASSIST_ENABLED = prev;
+    }
   });
 });
 

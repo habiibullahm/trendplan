@@ -22,6 +22,13 @@ export const APP_VERSION = packageJson.version;
 
 export const UPDATE_LOG: UpdateEntry[] = [
   {
+    id: "2026-08-23-caption-human-talk",
+    version: "0.4.29",
+    date: "23 Agu 2026",
+    title: "Saran caption lebih seperti orang ngetik",
+    body: "Pakai dan Bantu AI mengisi caption dari satu momen konkret, bukan slogan atau ringkasan ide. Hashtag mengikuti isi ide, bukan niche akun yang tidak nyambung.",
+  },
+  {
     id: "2026-08-23-acl-recovery-niche",
     version: "0.4.28",
     date: "23 Agu 2026",
