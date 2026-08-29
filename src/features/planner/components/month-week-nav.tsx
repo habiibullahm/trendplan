@@ -84,8 +84,8 @@ export function MonthWeekNav({
     "min-touch inline-flex items-center justify-center rounded-xl border border-border bg-surface px-3 text-sm font-semibold text-ink transition-colors hover:border-coral/40 hover:bg-coral/5";
 
   return (
-    <div className="mt-4 flex flex-col gap-3">
-      <div className="flex flex-wrap items-center gap-2">
+    <div className="mt-4 rounded-2xl border border-border bg-surface/60 p-3">
+      <div className="flex flex-wrap items-center justify-center gap-2">
         <Link
           href={monthHref(prev.year, prev.month, tab, view)}
           prefetch={false}
@@ -107,7 +107,7 @@ export function MonthWeekNav({
         </Link>
       </div>
 
-      <div className="tp-scroll-x -mx-1 flex gap-2 px-1">
+      <div className="tp-scroll-x mt-2 -mx-0.5 flex gap-2 px-0.5">
         {weeks.map((w) => {
           const active = w.index === weekIndex;
           return (

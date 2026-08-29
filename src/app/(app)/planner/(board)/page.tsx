@@ -269,9 +269,9 @@ export default async function PlannerPage({ searchParams }: Readonly<Props>) {
         <div className="flex flex-wrap items-center gap-3">
           <p
             className="text-sm font-medium tabular-nums text-ink"
-            aria-label={`${weekPlan.items.length} dari ${goal} target minggu terisi`}
+            aria-label={`${weekPlan.items.length} dari ${goal} target minggu`}
           >
-            {weekPlan.items.length}/{goal} terisi
+            {weekPlan.items.length} ide · target {goal}
           </p>
           <CopyWeekButton
             weekLabel={weekLabel}

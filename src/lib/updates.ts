@@ -22,6 +22,13 @@ export const APP_VERSION = packageJson.version;
 
 export const UPDATE_LOG: UpdateEntry[] = [
   {
+    id: "2026-08-29-plan-list-desktop",
+    version: "0.4.32",
+    date: "29 Agu 2026",
+    title: "Plan lebih jelas: daftar, target, dan badge",
+    body: "Papan Konten memakai daftar vertikal di desktop supaya judul terbaca. Progress jadi “N ide · target X” (bukan batas hari). Badge Draft kuning lembut / Posted sage; nav bulan digabung dengan strip minggu; Aktivitas kosong digelapkan dengan border putus-putus.",
+  },
+  {
     id: "2026-08-29-admin-feedback-reply",
     version: "0.4.31",
     date: "29 Agu 2026",

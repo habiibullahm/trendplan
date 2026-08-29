@@ -67,9 +67,9 @@ export function WeekTargetCard({
           </h2>
           <p
             className="shrink-0 text-sm font-semibold tabular-nums text-ink"
-            aria-label={`${scheduled} dari ${goal} ide terjadwal`}
+            aria-label={`${scheduled} dari ${goal} target minggu`}
           >
-            {scheduled}/{goal}
+            {scheduled} ide · target {goal}
           </p>
         </div>
 
