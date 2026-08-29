@@ -30,3 +30,16 @@ export const submitFeedbackSchema = z.object({
         .max(1000, "Masukan maksimal 1000 karakter."),
     ),
 });
+
+export const replyFeedbackSchema = z.object({
+  feedbackId: z.string().trim().min(1, "Masukan tidak valid."),
+  reply: z
+    .string()
+    .transform(sanitizeFeedbackMessage)
+    .pipe(
+      z
+        .string()
+        .min(10, "Balasan minimal 10 karakter.")
+        .max(2000, "Balasan maksimal 2000 karakter."),
+    ),
+});

@@ -16,6 +16,9 @@ export async function listAdminFeedback(opts?: {
       category: true,
       message: true,
       createdAt: true,
+      adminReply: true,
+      repliedAt: true,
+      repliedByEmail: true,
       user: { select: { name: true, email: true } },
     },
   });

@@ -13,6 +13,9 @@ export async function AdminFeedbackList({
     category: row.category,
     message: row.message,
     createdAt: row.createdAt.toISOString(),
+    adminReply: row.adminReply,
+    repliedAt: row.repliedAt?.toISOString() ?? null,
+    repliedByEmail: row.repliedByEmail,
     user: row.user,
   }));
   return <AdminFeedbackInbox items={items} filtered={Boolean(category)} />;

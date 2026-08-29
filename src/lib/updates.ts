@@ -22,6 +22,13 @@ export const APP_VERSION = packageJson.version;
 
 export const UPDATE_LOG: UpdateEntry[] = [
   {
+    id: "2026-08-29-admin-feedback-reply",
+    version: "0.4.31",
+    date: "29 Agu 2026",
+    title: "Balas masukan dari inbox admin",
+    body: "Owner bisa membalas masukan di Lihat masukan. Balasan tersimpan di inbox dan dikirim ke email pengirim (kalau email transaksi aktif).",
+  },
+  {
     id: "2026-08-29-day-dates-on-boards",
     version: "0.4.30",
     date: "29 Agu 2026",

@@ -196,12 +196,16 @@ model ReminderDispatch {
 
 /** In-app user feedback from Akun (Kirim masukan). */
 model Feedback {
-  id        String   @id @default(cuid())
-  userId    String
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  category  String
-  message   String
-  createdAt DateTime @default(now())
+  id              String    @id @default(cuid())
+  userId          String
+  user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  category        String
+  message         String
+  createdAt       DateTime  @default(now())
+  /** Admin reply text; null until first reply. */
+  adminReply      String?
+  repliedAt       DateTime?
+  repliedByEmail  String?
 
   @@index([userId])
   @@index([createdAt])
