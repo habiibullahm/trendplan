@@ -33,7 +33,7 @@ import { moveContentItemAction } from "@/features/planner/actions/content";
 import { dragId, dropId, parseDropDay } from "@/features/planner/lib/planner-dnd";
 import { Badge } from "@/components/ui/badge";
 import { STATUS_CLASS, STATUS_LABEL } from "@/lib/labels";
-import { DAY_SHORT, type PlannerView } from "@/lib/week";
+import { DAY_SHORT, dayBoardLabelFromParam, type PlannerView } from "@/lib/week";
 import { cn } from "@/lib/cn";
 import {
   buildByDay,
@@ -104,7 +104,7 @@ function DaySlot({
               )}
               className="min-touch flex min-w-0 flex-1 items-center gap-3 px-4 py-3"
             >
-              <p className="text-xs font-semibold text-ink-muted">{label}</p>
+              <p className="text-xs font-semibold leading-tight text-ink-muted">{label}</p>
               <p className="text-sm text-ink-muted">+ Buat ide</p>
             </Link>
             <EmptySlotSaranTrigger
@@ -128,7 +128,7 @@ function DaySlot({
       } ${overRing}`}
     >
       <div className="flex items-center justify-between gap-1">
-        <p className="min-w-0 text-xs font-semibold text-ink-muted">{label}</p>
+        <p className="min-w-0 break-words text-xs font-semibold leading-tight text-ink-muted">{label}</p>
         {item ? (
           <Badge
             size="sm"
@@ -246,7 +246,7 @@ function DraggableCard({
           draggable={false}
         >
           <div className="min-w-0">
-            <p className="text-xs font-semibold text-ink-muted">{label}</p>
+            <p className="text-xs font-semibold leading-tight text-ink-muted">{label}</p>
             <p className="truncate text-sm font-semibold text-ink">
               {item.title}
             </p>
@@ -281,12 +281,18 @@ function DraggableCard({
   );
 }
 
-function OverlayCard({ item }: { item: PlannerBoardItem }) {
+function OverlayCard({
+  item,
+  weekStartParam,
+}: {
+  item: PlannerBoardItem;
+  weekStartParam?: string;
+}) {
   return (
     <div className="max-w-[200px] min-w-0 scale-[1.02] cursor-grabbing overflow-hidden rounded-2xl border border-coral/40 bg-surface p-3 ring-2 ring-coral/30">
       <div className="flex items-center justify-between gap-1">
-        <p className="text-xs font-semibold text-ink-muted">
-          {DAY_SHORT[item.dayOfWeek]}
+        <p className="text-xs font-semibold leading-tight text-ink-muted">
+          {dayBoardLabelFromParam(weekStartParam, item.dayOfWeek)}
         </p>
         <Badge
           size="sm"
@@ -322,40 +328,46 @@ function BoardLayout({
   if (layout === "list") {
     return (
       <ul className="mt-6 space-y-2">
-        {DAY_SHORT.map((label, day) => (
-          <DaySlot
-            key={`list-${label}`}
-            day={day}
-            label={label}
-            item={byDay.get(day)}
-            layout="list"
-            pending={pending}
-            weekStartParam={weekStartParam}
-            returnMonth={returnMonth}
-            returnWeek={returnWeek}
-            view={view}
-          />
-        ))}
+        {DAY_SHORT.map((_, day) => {
+          const label = dayBoardLabelFromParam(weekStartParam, day);
+          return (
+            <DaySlot
+              key={`list-${day}`}
+              day={day}
+              label={label}
+              item={byDay.get(day)}
+              layout="list"
+              pending={pending}
+              weekStartParam={weekStartParam}
+              returnMonth={returnMonth}
+              returnWeek={returnWeek}
+              view={view}
+            />
+          );
+        })}
       </ul>
     );
   }
 
   return (
     <div className="mt-6 grid grid-cols-7 gap-2">
-      {DAY_SHORT.map((label, day) => (
-        <DaySlot
-          key={`grid-${label}`}
-          day={day}
-          label={label}
-          item={byDay.get(day)}
-          layout="grid"
-          pending={pending}
-          weekStartParam={weekStartParam}
-          returnMonth={returnMonth}
-          returnWeek={returnWeek}
-          view={view}
-        />
-      ))}
+      {DAY_SHORT.map((_, day) => {
+        const label = dayBoardLabelFromParam(weekStartParam, day);
+        return (
+          <DaySlot
+            key={`grid-${day}`}
+            day={day}
+            label={label}
+            item={byDay.get(day)}
+            layout="grid"
+            pending={pending}
+            weekStartParam={weekStartParam}
+            returnMonth={returnMonth}
+            returnWeek={returnWeek}
+            view={view}
+          />
+        );
+      })}
     </div>
   );
 }
@@ -513,7 +525,9 @@ export function InteractiveBoard({
           view={view}
         />
         <DragOverlay dropAnimation={null}>
-          {activeItem ? <OverlayCard item={activeItem} /> : null}
+          {activeItem ? (
+            <OverlayCard item={activeItem} weekStartParam={weekStartParam} />
+          ) : null}
         </DragOverlay>
       </DndContext>
     </SkipClickContext.Provider>

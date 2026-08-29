@@ -283,3 +283,32 @@ export const DAY_LABELS = [
 ] as const;
 
 export const DAY_SHORT = ["Sen", "Sel", "Rab", "Kam", "Jum", "Sab", "Min"] as const;
+
+/** Calendar day for Monday-based weekStart + dayOfWeek (0 = Senin … 6 = Minggu). */
+export function dateForWeekDay(weekStart: Date, dayOfWeek: number): Date {
+  const start = getWeekStart(weekStart);
+  const date = new Date(start);
+  date.setUTCDate(date.getUTCDate() + dayOfWeek);
+  return date;
+}
+
+/** Board header: `Sen · 24 Agu` (same id-ID day/month style as formatWeekRange). */
+export function formatDayBoardLabel(weekStart: Date, dayOfWeek: number): string {
+  const date = dateForWeekDay(weekStart, dayOfWeek);
+  const dayPart = new Intl.DateTimeFormat("id-ID", {
+    day: "numeric",
+    month: "short",
+    timeZone: "UTC",
+  }).format(date);
+  return `${DAY_SHORT[dayOfWeek]} · ${dayPart}`;
+}
+
+/** Label from weekStartParam, or DAY_SHORT when param is missing/invalid. */
+export function dayBoardLabelFromParam(
+  weekStartParam: string | undefined | null,
+  dayOfWeek: number,
+): string {
+  const weekStart = parseWeekStartParam(weekStartParam ?? null);
+  if (!weekStart) return DAY_SHORT[dayOfWeek];
+  return formatDayBoardLabel(weekStart, dayOfWeek);
+}

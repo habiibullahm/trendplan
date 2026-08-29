@@ -2,7 +2,7 @@ import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 import { EmptySlotSaranTrigger } from "@/features/planner/components/empty-slot-saran";
 import { STATUS_CLASS, STATUS_LABEL } from "@/lib/labels";
-import { DAY_SHORT, type PlannerView } from "@/lib/week";
+import { DAY_SHORT, dayBoardLabelFromParam, type PlannerView } from "@/lib/week";
 import type { ContentStatus } from "@/generated/prisma/client";
 
 export type PlannerBoardItem = {
@@ -67,15 +67,16 @@ export function StaticBoard({
   return (
     <>
       <ul className="mt-6 space-y-2 md:hidden">
-        {DAY_SHORT.map((label, day) => {
+        {DAY_SHORT.map((_, day) => {
+          const label = dayBoardLabelFromParam(weekStartParam, day);
           const item = byDay.get(day);
           return (
-            <li key={label} className="min-w-0">
+            <li key={day} className="min-w-0">
               {item ? (
                 readOnly ? (
                   <div className="min-touch flex items-center justify-between gap-3 rounded-2xl border border-border bg-surface px-4 py-3">
                     <div className="min-w-0">
-                      <p className="text-xs font-semibold text-ink-muted">
+                      <p className="text-xs font-semibold leading-tight text-ink-muted">
                         {label}
                       </p>
                       <p className="truncate text-sm font-semibold text-ink">
@@ -93,7 +94,7 @@ export function StaticBoard({
                     className="min-touch flex items-center justify-between gap-3 rounded-2xl border border-border bg-surface px-4 py-3"
                   >
                     <div className="min-w-0">
-                      <p className="text-xs font-semibold text-ink-muted">
+                      <p className="text-xs font-semibold leading-tight text-ink-muted">
                         {label}
                       </p>
                       <p className="truncate text-sm font-semibold text-ink">
@@ -107,7 +108,9 @@ export function StaticBoard({
                 )
               ) : readOnly ? (
                 <div className="min-touch flex items-center gap-3 rounded-2xl border border-dashed border-border px-4 py-3">
-                  <p className="text-xs font-semibold text-ink-muted">{label}</p>
+                  <p className="text-xs font-semibold leading-tight text-ink-muted">
+                    {label}
+                  </p>
                   <p className="text-sm text-ink-muted">Kosong</p>
                 </div>
               ) : (
@@ -122,7 +125,7 @@ export function StaticBoard({
                     )}
                     className="min-touch flex min-w-0 flex-1 items-center gap-3 px-4 py-3"
                   >
-                    <p className="text-xs font-semibold text-ink-muted">
+                    <p className="text-xs font-semibold leading-tight text-ink-muted">
                       {label}
                     </p>
                     <p className="text-sm text-ink-muted">+ Buat ide</p>
@@ -138,11 +141,12 @@ export function StaticBoard({
         })}
       </ul>
       <div className="mt-6 hidden grid-cols-7 gap-2 md:grid">
-        {DAY_SHORT.map((label, day) => {
+        {DAY_SHORT.map((_, day) => {
+          const label = dayBoardLabelFromParam(weekStartParam, day);
           const item = byDay.get(day);
           return (
             <div
-              key={label}
+              key={day}
               className={`min-h-36 min-w-0 overflow-hidden rounded-2xl border p-3 transition-colors ${
                 item
                   ? "border-border bg-surface"
@@ -150,7 +154,7 @@ export function StaticBoard({
               }`}
             >
               <div className="flex items-center justify-between gap-1">
-                <p className="min-w-0 text-xs font-semibold text-ink-muted">
+                <p className="min-w-0 break-words text-xs font-semibold leading-tight text-ink-muted">
                   {label}
                 </p>
                 {item ? (
