@@ -1,6 +1,8 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 import {
+  dayBoardLabelFromParam,
+  formatDayBoardLabel,
   formatMonthParam,
   formatWeekStartParam,
   getWeekStart,
@@ -152,5 +154,19 @@ describe("parsePlannerView", () => {
     assert.equal(parsePlannerView("mine"), "mine");
     assert.equal(parsePlannerView("shared"), "shared");
     assert.equal(parsePlannerView("other"), "mine");
+  });
+});
+
+describe("formatDayBoardLabel", () => {
+  it("labels Mon–Sun for week starting 2026-08-24", () => {
+    const weekStart = ymdToDate(2026, 8, 24);
+    assert.equal(formatDayBoardLabel(weekStart, 0), "Sen · 24 Agu");
+    assert.equal(formatDayBoardLabel(weekStart, 1), "Sel · 25 Agu");
+    assert.equal(formatDayBoardLabel(weekStart, 6), "Min · 30 Agu");
+  });
+
+  it("falls back to DAY_SHORT when weekStartParam is missing", () => {
+    assert.equal(dayBoardLabelFromParam(undefined, 0), "Sen");
+    assert.equal(dayBoardLabelFromParam("2026-08-24", 0), "Sen · 24 Agu");
   });
 });

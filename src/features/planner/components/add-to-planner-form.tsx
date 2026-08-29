@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useMemo } from "react";
 import {
   addTrendToPlannerAction,
   type PlannerActionState,
@@ -8,7 +8,12 @@ import {
 import { Button } from "@/components/ui/button";
 import { Select } from "@/components/ui/select";
 import { useActionToasts } from "@/hooks/use-action-toasts";
-import { DAY_SHORT } from "@/lib/week";
+import {
+  DAY_SHORT,
+  formatDayBoardLabel,
+  formatWeekStartParam,
+  getWeekStart,
+} from "@/lib/week";
 import { idleActionResult } from "@/lib/action-result";
 
 const initial: PlannerActionState = idleActionResult;
@@ -20,9 +25,13 @@ export function AddToPlannerForm({ trendId }: { trendId: string }) {
   );
   useActionToasts(state);
 
+  const weekStart = useMemo(() => getWeekStart(), []);
+  const weekStartParam = formatWeekStartParam(weekStart);
+
   return (
     <form action={action} className="mt-3 flex flex-col gap-2">
       <input type="hidden" name="trendId" value={trendId} />
+      <input type="hidden" name="weekStart" value={weekStartParam} />
       <p className="text-xs font-medium text-ink-muted">Pakai ke Planner</p>
       <div className="flex flex-wrap items-end justify-between gap-3">
         <label className="shrink-0">
@@ -30,11 +39,11 @@ export function AddToPlannerForm({ trendId }: { trendId: string }) {
           <Select
             name="dayOfWeek"
             defaultValue="0"
-            className="mt-0 w-[5.25rem]"
+            className="mt-0 w-[9.5rem]"
           >
-            {DAY_SHORT.map((label, index) => (
-              <option key={label} value={index}>
-                {label}
+            {DAY_SHORT.map((_, index) => (
+              <option key={index} value={index}>
+                {formatDayBoardLabel(weekStart, index)}
               </option>
             ))}
           </Select>

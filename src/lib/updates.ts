@@ -22,6 +22,13 @@ export const APP_VERSION = packageJson.version;
 
 export const UPDATE_LOG: UpdateEntry[] = [
   {
+    id: "2026-08-29-day-dates-on-boards",
+    version: "0.4.30",
+    date: "29 Agu 2026",
+    title: "Tanggal di tiap hari Plan dan Aktivitas",
+    body: "Header hari di papan Konten, daftar Aktivitas, dan pilihan hari Pakai di Tren/Rekomendasi menampilkan tanggal (mis. Sen · 24 Agu).",
+  },
+  {
     id: "2026-08-23-caption-human-talk",
     version: "0.4.29",
     date: "23 Agu 2026",

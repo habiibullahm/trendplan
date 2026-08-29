@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { DAY_SHORT, type PlannerView } from "@/lib/week";
+import { DAY_SHORT, dayBoardLabelFromParam, type PlannerView } from "@/lib/week";
 
 export type ActivitiesBoardItem = {
   id: string;
@@ -115,7 +115,8 @@ export function ActivitiesBoard({
 
   return (
     <ul className="mt-4 flex flex-col gap-2">
-      {DAY_SHORT.map((label, day) => {
+      {DAY_SHORT.map((_, day) => {
+        const label = dayBoardLabelFromParam(weekStartParam, day);
         const dayItems = byDay.get(day) ?? [];
         return (
           <li
@@ -124,7 +125,9 @@ export function ActivitiesBoard({
           >
             <div className="flex items-center justify-between gap-3 border-b border-border px-4 py-2">
               <div className="flex min-w-0 items-baseline gap-2">
-                <p className="text-xs font-semibold text-ink-muted">{label}</p>
+                <p className="text-xs font-semibold leading-tight text-ink-muted">
+                  {label}
+                </p>
                 {dayItems.length > 0 ? (
                   <p className="text-[11px] text-ink-muted">
                     {dayItems.length} item
@@ -165,7 +168,10 @@ export function ActivitiesBoard({
                 </Link>
               )
             ) : (
-              <ul className="divide-y divide-border" aria-label={`Aktivitas ${label}`}>
+              <ul
+                className="divide-y divide-border"
+                aria-label={`Aktivitas ${label}`}
+              >
                 {dayItems.map((item, index) => (
                   <ActivityRow
                     key={item.id}
