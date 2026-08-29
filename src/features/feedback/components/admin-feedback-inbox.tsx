@@ -1,24 +1,42 @@
 "use client";
 
-import { useState } from "react";
+import { useActionState, useCallback, useEffect, useState } from "react";
+import {
+  replyToFeedbackAction,
+  type FeedbackActionState,
+} from "@/features/feedback/actions";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Modal } from "@/components/ui/modal";
+import { Textarea } from "@/components/ui/textarea";
 import { copyText } from "@/features/planner/lib/clipboard";
-import { copyToastError, copyToastSuccess } from "@/features/planner/lib/copy-toast";
+import {
+  copyToastError,
+  copyToastSuccess,
+} from "@/features/planner/lib/copy-toast";
 import {
   FEEDBACK_CATEGORY_LABELS,
   type FeedbackCategory,
 } from "@/features/feedback/lib/validation";
+import { useActionToasts } from "@/hooks/use-action-toasts";
+import {
+  idleActionResult,
+  isCompletedActionSuccess,
+} from "@/lib/action-result";
 
 export type AdminFeedbackRow = {
   id: string;
   category: string;
   message: string;
   createdAt: string;
+  adminReply: string | null;
+  repliedAt: string | null;
+  repliedByEmail: string | null;
   user: { name: string | null; email: string };
 };
+
+const initialReply: FeedbackActionState = idleActionResult;
 
 function categoryLabel(category: string): string {
   if (category in FEEDBACK_CATEGORY_LABELS) {
@@ -44,6 +62,78 @@ function clampMessage(message: string, max = 120): string {
   return `${oneLine.slice(0, max - 1)}…`;
 }
 
+function FeedbackReplyForm({
+  item,
+  onReplied,
+  onPendingChange,
+}: {
+  item: AdminFeedbackRow;
+  onReplied: () => void;
+  onPendingChange: (pending: boolean) => void;
+}) {
+  const [state, action, pending] = useActionState(
+    replyToFeedbackAction,
+    initialReply,
+  );
+  useActionToasts(state);
+
+  useEffect(() => {
+    onPendingChange(pending);
+    return () => onPendingChange(false);
+  }, [pending, onPendingChange]);
+
+  useEffect(() => {
+    if (isCompletedActionSuccess(state)) onReplied();
+  }, [state, onReplied]);
+
+  const hasReply = Boolean(item.adminReply?.trim());
+
+  return (
+    <form action={action} className="flex flex-col gap-2 border-t border-border pt-3">
+      <input type="hidden" name="feedbackId" value={item.id} />
+      {hasReply ? (
+        <div className="rounded-xl border border-border bg-paper px-3 py-2">
+          <p className="text-[11px] font-semibold text-ink-muted">Balasan tersimpan</p>
+          <p className="mt-1 whitespace-pre-wrap break-words text-sm text-ink">
+            {item.adminReply}
+          </p>
+          {item.repliedAt ? (
+            <p className="mt-1 text-[11px] text-ink-muted">
+              {formatWhen(item.repliedAt)}
+              {item.repliedByEmail ? ` · ${item.repliedByEmail}` : null}
+            </p>
+          ) : null}
+        </div>
+      ) : null}
+      <label className="block">
+        <span className="text-xs font-medium text-ink-muted">
+          {hasReply ? "Perbarui balasan" : "Balasan"}
+        </span>
+        <Textarea
+          name="reply"
+          required
+          minLength={10}
+          maxLength={2000}
+          rows={4}
+          defaultValue={item.adminReply ?? ""}
+          key={`${item.id}-${item.repliedAt ?? "new"}`}
+          placeholder="Tulis balasan untuk pengirim (min. 10 karakter)…"
+          className="mt-1"
+        />
+      </label>
+      <Button
+        type="submit"
+        size="sm"
+        className="self-start"
+        loading={pending}
+        loadingText="Mengirim…"
+      >
+        {hasReply ? "Perbarui & kirim ulang" : "Kirim balasan"}
+      </Button>
+    </form>
+  );
+}
+
 export function AdminFeedbackInbox({
   items,
   filtered = false,
@@ -52,7 +142,15 @@ export function AdminFeedbackInbox({
   filtered?: boolean;
 }) {
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [replyPending, setReplyPending] = useState(false);
   const selected = items.find((i) => i.id === selectedId) ?? null;
+  const closeDetail = useCallback(() => {
+    if (replyPending) return;
+    setSelectedId(null);
+  }, [replyPending]);
+  const onReplyPendingChange = useCallback((pending: boolean) => {
+    setReplyPending(pending);
+  }, []);
 
   if (items.length === 0) {
     return (
@@ -78,12 +176,22 @@ export function AdminFeedbackInbox({
               className="min-touch w-full min-w-0 rounded-2xl border border-border bg-surface px-4 py-3 text-left transition-colors hover:border-coral/40 hover:bg-coral/5"
             >
               <div className="flex items-start justify-between gap-3">
-                <Badge
-                  size="sm"
-                  className="min-w-0 max-w-[min(100%,11rem)] truncate border-border bg-paper text-ink-muted"
-                >
-                  {categoryLabel(item.category)}
-                </Badge>
+                <div className="flex min-w-0 flex-wrap items-center gap-1.5">
+                  <Badge
+                    size="sm"
+                    className="min-w-0 max-w-[min(100%,11rem)] truncate border-border bg-paper text-ink-muted"
+                  >
+                    {categoryLabel(item.category)}
+                  </Badge>
+                  {item.repliedAt ? (
+                    <Badge
+                      size="sm"
+                      className="border-coral/30 bg-coral/10 text-coral"
+                    >
+                      Dibalas
+                    </Badge>
+                  ) : null}
+                </div>
                 <span className="shrink-0 text-right text-xs leading-5 text-ink-muted">
                   {formatWhen(item.createdAt)}
                 </span>
@@ -101,18 +209,16 @@ export function AdminFeedbackInbox({
 
       <Modal
         open={selected !== null}
-        onClose={() => setSelectedId(null)}
+        onClose={closeDetail}
         title="Detail masukan"
-        className="max-h-[min(85dvh,32rem)] overflow-hidden"
+        allowClose={!replyPending}
+        className="max-h-[min(85dvh,36rem)] overflow-y-auto"
       >
         {selected ? (
           <div className="flex flex-col gap-3">
             <p className="text-xs leading-snug text-ink-muted">
               <span className="block">{categoryLabel(selected.category)}</span>
-              <time
-                className="mt-0.5 block"
-                dateTime={selected.createdAt}
-              >
+              <time className="mt-0.5 block" dateTime={selected.createdAt}>
                 {formatWhen(selected.createdAt)}
               </time>
             </p>
@@ -128,6 +234,7 @@ export function AdminFeedbackInbox({
               size="sm"
               variant="secondary"
               className="shrink-0 self-start"
+              disabled={replyPending}
               onClick={async () => {
                 const ok = await copyText(selected.message);
                 if (ok) copyToastSuccess("Disalin");
@@ -136,6 +243,11 @@ export function AdminFeedbackInbox({
             >
               Salin
             </Button>
+            <FeedbackReplyForm
+              item={selected}
+              onReplied={closeDetail}
+              onPendingChange={onReplyPendingChange}
+            />
           </div>
         ) : null}
       </Modal>
