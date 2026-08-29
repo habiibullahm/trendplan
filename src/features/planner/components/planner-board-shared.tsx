@@ -65,149 +65,77 @@ export function StaticBoard({
 }) {
   const byDay = buildByDay(items);
   return (
-    <>
-      <ul className="mt-6 space-y-2 md:hidden">
-        {DAY_SHORT.map((_, day) => {
-          const label = dayBoardLabelFromParam(weekStartParam, day);
-          const item = byDay.get(day);
-          return (
-            <li key={day} className="min-w-0">
-              {item ? (
-                readOnly ? (
-                  <div className="min-touch flex items-center justify-between gap-3 rounded-2xl border border-border bg-surface px-4 py-3">
-                    <div className="min-w-0">
-                      <p className="text-xs font-semibold leading-tight text-ink-muted">
-                        {label}
-                      </p>
-                      <p className="truncate text-sm font-semibold text-ink">
-                        {item.title}
-                      </p>
-                    </div>
-                    <Badge className={`shrink-0 ${STATUS_CLASS[item.status]}`}>
-                      {STATUS_LABEL[item.status]}
-                    </Badge>
-                  </div>
-                ) : (
-                  <Link
-                    href={itemHref(item.id, returnMonth, returnWeek, view)}
-                    prefetch={false}
-                    className="min-touch flex items-center justify-between gap-3 rounded-2xl border border-border bg-surface px-4 py-3"
-                  >
-                    <div className="min-w-0">
-                      <p className="text-xs font-semibold leading-tight text-ink-muted">
-                        {label}
-                      </p>
-                      <p className="truncate text-sm font-semibold text-ink">
-                        {item.title}
-                      </p>
-                    </div>
-                    <Badge className={`shrink-0 ${STATUS_CLASS[item.status]}`}>
-                      {STATUS_LABEL[item.status]}
-                    </Badge>
-                  </Link>
-                )
-              ) : readOnly ? (
-                <div className="min-touch flex items-center gap-3 rounded-2xl border border-dashed border-border px-4 py-3">
-                  <p className="text-xs font-semibold leading-tight text-ink-muted">
-                    {label}
-                  </p>
-                  <p className="text-sm text-ink-muted">Kosong</p>
-                </div>
-              ) : (
-                <div className="flex items-center gap-1 rounded-2xl border border-dashed border-border transition-colors hover:border-coral/50 hover:bg-coral/5">
-                  <Link
-                    href={newPlanHref(
-                      day,
-                      weekStartParam,
-                      returnMonth,
-                      returnWeek,
-                      view,
-                    )}
-                    className="min-touch flex min-w-0 flex-1 items-center gap-3 px-4 py-3"
-                  >
+    <ul className="mt-6 space-y-2">
+      {DAY_SHORT.map((_, day) => {
+        const label = dayBoardLabelFromParam(weekStartParam, day);
+        const item = byDay.get(day);
+        return (
+          <li key={day} className="min-w-0">
+            {item ? (
+              readOnly ? (
+                <div className="min-touch flex items-center justify-between gap-3 rounded-2xl border border-border bg-surface px-4 py-3">
+                  <div className="min-w-0">
                     <p className="text-xs font-semibold leading-tight text-ink-muted">
                       {label}
                     </p>
-                    <p className="text-sm text-ink-muted">+ Buat ide</p>
-                  </Link>
-                  <EmptySlotSaranTrigger
-                    day={day}
-                    className="shrink-0 pr-3"
-                  />
-                </div>
-              )}
-            </li>
-          );
-        })}
-      </ul>
-      <div className="mt-6 hidden grid-cols-7 gap-2 md:grid">
-        {DAY_SHORT.map((_, day) => {
-          const label = dayBoardLabelFromParam(weekStartParam, day);
-          const item = byDay.get(day);
-          return (
-            <div
-              key={day}
-              className={`min-h-36 min-w-0 overflow-hidden rounded-2xl border p-3 transition-colors ${
-                item
-                  ? "border-border bg-surface"
-                  : "border-dashed border-border hover:border-coral/50 hover:bg-coral/5"
-              }`}
-            >
-              <div className="flex items-center justify-between gap-1">
-                <p className="min-w-0 break-words text-xs font-semibold leading-tight text-ink-muted">
-                  {label}
-                </p>
-                {item ? (
-                  <Badge
-                    size="sm"
-                    className={`max-w-[calc(100%-1.5rem)] shrink-0 truncate ${STATUS_CLASS[item.status]}`}
-                  >
-                    {STATUS_LABEL[item.status]}
-                  </Badge>
-                ) : null}
-              </div>
-              {item ? (
-                readOnly ? (
-                  <div className="mt-2 block min-w-0">
-                    <p className="line-clamp-3 break-words text-sm font-semibold leading-snug text-ink">
+                    <p className="line-clamp-2 break-words text-sm font-semibold leading-snug text-ink">
                       {item.title}
                     </p>
                   </div>
-                ) : (
-                  <Link
-                    href={itemHref(item.id, returnMonth, returnWeek, view)}
-                    prefetch={false}
-                    className="mt-2 block min-w-0"
-                  >
-                    <p className="line-clamp-3 break-words text-sm font-semibold leading-snug text-ink">
+                  <Badge className={`shrink-0 ${STATUS_CLASS[item.status]}`}>
+                    {STATUS_LABEL[item.status]}
+                  </Badge>
+                </div>
+              ) : (
+                <Link
+                  href={itemHref(item.id, returnMonth, returnWeek, view)}
+                  prefetch={false}
+                  className="min-touch flex items-center justify-between gap-3 rounded-2xl border border-border bg-surface px-4 py-3"
+                >
+                  <div className="min-w-0">
+                    <p className="text-xs font-semibold leading-tight text-ink-muted">
+                      {label}
+                    </p>
+                    <p className="line-clamp-2 break-words text-sm font-semibold leading-snug text-ink">
                       {item.title}
                     </p>
-                  </Link>
-                )
-              ) : readOnly ? (
-                <p className="mt-3 text-sm text-ink-muted">Kosong</p>
-              ) : (
-                <div className="mt-3 flex flex-col items-start gap-1">
-                  <Link
-                    href={newPlanHref(
-                      day,
-                      weekStartParam,
-                      returnMonth,
-                      returnWeek,
-                      view,
-                    )}
-                    className="block text-sm text-ink-muted transition-colors hover:text-coral"
-                  >
-                    + Buat ide
-                  </Link>
-                  <EmptySlotSaranTrigger day={day} />
-                </div>
-              )}
-            </div>
-          );
-        })}
-      </div>
-    </>
+                  </div>
+                  <Badge className={`shrink-0 ${STATUS_CLASS[item.status]}`}>
+                    {STATUS_LABEL[item.status]}
+                  </Badge>
+                </Link>
+              )
+            ) : readOnly ? (
+              <div className="min-touch flex items-center gap-3 rounded-2xl border border-dashed border-border px-4 py-3">
+                <p className="text-xs font-semibold leading-tight text-ink-muted">
+                  {label}
+                </p>
+                <p className="text-sm text-ink-muted">Kosong</p>
+              </div>
+            ) : (
+              <div className="flex items-center gap-1 rounded-2xl border border-dashed border-border transition-colors hover:border-coral/50 hover:bg-coral/5">
+                <Link
+                  href={newPlanHref(
+                    day,
+                    weekStartParam,
+                    returnMonth,
+                    returnWeek,
+                    view,
+                  )}
+                  className="min-touch flex min-w-0 flex-1 items-center gap-3 px-4 py-3"
+                >
+                  <p className="text-xs font-semibold leading-tight text-ink-muted">
+                    {label}
+                  </p>
+                  <p className="text-sm text-ink-muted">+ Buat ide</p>
+                </Link>
+                <EmptySlotSaranTrigger day={day} className="shrink-0 pr-3" />
+              </div>
+            )}
+          </li>
+        );
+      })}
+    </ul>
   );
 }
 

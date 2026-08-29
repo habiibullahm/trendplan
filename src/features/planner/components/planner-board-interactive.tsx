@@ -247,7 +247,7 @@ function DraggableCard({
         >
           <div className="min-w-0">
             <p className="text-xs font-semibold leading-tight text-ink-muted">{label}</p>
-            <p className="truncate text-sm font-semibold text-ink">
+            <p className="line-clamp-2 break-words text-sm font-semibold leading-snug text-ink">
               {item.title}
             </p>
           </div>

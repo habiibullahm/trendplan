@@ -118,17 +118,30 @@ export function ActivitiesBoard({
       {DAY_SHORT.map((_, day) => {
         const label = dayBoardLabelFromParam(weekStartParam, day);
         const dayItems = byDay.get(day) ?? [];
+        const empty = dayItems.length === 0;
         return (
           <li
             key={day}
-            className="min-w-0 overflow-hidden rounded-2xl border border-border bg-surface"
+            className={`min-w-0 overflow-hidden rounded-2xl border ${
+              empty
+                ? "border-dashed border-border/70 bg-transparent"
+                : "border-border bg-surface"
+            }`}
           >
-            <div className="flex items-center justify-between gap-3 border-b border-border px-4 py-2">
+            <div
+              className={`flex items-center justify-between gap-3 px-4 py-2 ${
+                empty ? "" : "border-b border-border"
+              }`}
+            >
               <div className="flex min-w-0 items-baseline gap-2">
-                <p className="text-xs font-semibold leading-tight text-ink-muted">
+                <p
+                  className={`text-xs font-semibold leading-tight ${
+                    empty ? "text-ink-muted/70" : "text-ink-muted"
+                  }`}
+                >
                   {label}
                 </p>
-                {dayItems.length > 0 ? (
+                {!empty ? (
                   <p className="text-[11px] text-ink-muted">
                     {dayItems.length} item
                   </p>
@@ -143,30 +156,19 @@ export function ActivitiesBoard({
                     returnWeek,
                     view,
                   )}
-                  className="text-xs font-semibold text-coral transition-colors hover:text-coral/80"
+                  className={`min-touch inline-flex items-center text-xs font-semibold transition-colors hover:text-coral/80 ${
+                    empty ? "text-coral/80" : "text-coral"
+                  }`}
                 >
                   + Tambah
                 </Link>
               ) : null}
             </div>
 
-            {dayItems.length === 0 ? (
-              readOnly ? (
-                <p className="px-4 py-3 text-sm text-ink-muted">Kosong</p>
-              ) : (
-                <Link
-                  href={newActivityHref(
-                    day,
-                    weekStartParam,
-                    returnMonth,
-                    returnWeek,
-                    view,
-                  )}
-                  className="min-touch block px-4 py-3 text-sm text-ink-muted transition-colors hover:bg-coral/5 hover:text-coral"
-                >
-                  + Tambah aktivitas
-                </Link>
-              )
+            {empty ? (
+              <p className="px-4 pb-3 text-sm text-ink-muted/60">
+                {readOnly ? "Kosong" : "Belum ada"}
+              </p>
             ) : (
               <ul
                 className="divide-y divide-border"

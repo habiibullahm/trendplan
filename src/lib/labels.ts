@@ -9,10 +9,10 @@ export const STATUS_LABEL: Record<ContentStatus, string> = {
 };
 
 export const STATUS_CLASS: Record<ContentStatus, string> = {
-  IDE: "border-border bg-paper text-ink-muted",
-  DRAFT: "border-border bg-paper text-ink-muted",
-  READY: "border-border bg-paper text-ink-muted",
-  POSTED: "border-coral/30 bg-coral/10 text-coral",
+  IDE: "border-amber-700/35 bg-amber-500/15 text-amber-950 dark:border-amber-400/40 dark:bg-amber-400/15 dark:text-amber-100",
+  DRAFT: "border-amber-700/35 bg-amber-500/15 text-amber-950 dark:border-amber-400/40 dark:bg-amber-400/15 dark:text-amber-100",
+  READY: "border-amber-700/35 bg-amber-500/15 text-amber-950 dark:border-amber-400/40 dark:bg-amber-400/15 dark:text-amber-100",
+  POSTED: "border-sage/40 bg-sage/15 text-sage",
 };
 
 /** Statuses shown in editors (pickers). */

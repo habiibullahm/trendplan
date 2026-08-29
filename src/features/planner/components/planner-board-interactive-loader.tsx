@@ -9,12 +9,14 @@ import {
   type ComponentType,
   type ReactNode,
 } from "react";
-import { usePlannerLayout } from "@/hooks/use-planner-layout";
 import type {
   LayoutKind,
   PlannerBoardItem,
 } from "@/features/planner/components/planner-board-shared";
 import type { PlannerView } from "@/lib/week";
+
+/** Plan konten always uses the full-width list (readable titles on desktop). */
+const BOARD_LAYOUT: LayoutKind = "list";
 
 type InteractiveBoardProps = {
   items: PlannerBoardItem[];
@@ -52,7 +54,6 @@ export function PlannerBoardInteractiveLoader({
   view,
   children,
 }: Omit<InteractiveBoardProps, "layout"> & { children: ReactNode }) {
-  const layout = usePlannerLayout();
   const [Interactive, setInteractive] = useState<ComponentType<
     InteractiveBoardProps
   > | null>(null);
@@ -64,13 +65,13 @@ export function PlannerBoardInteractiveLoader({
     .join("|");
 
   const commitIfReady = useCallback(() => {
-    if (!layout || !idleReady.current || !moduleRef.current) return;
+    if (!idleReady.current || !moduleRef.current) return;
     const Board = moduleRef.current;
     startTransition(() => setInteractive(() => Board));
-  }, [layout]);
+  }, []);
 
   const prefetch = useCallback(() => {
-    if (loading.current || !layout) return;
+    if (loading.current) return;
     loading.current = true;
     void import("@/features/planner/components/planner-board-interactive")
       .then((m) => {
@@ -81,29 +82,28 @@ export function PlannerBoardInteractiveLoader({
         loading.current = false;
         moduleRef.current = null;
       });
-  }, [layout, commitIfReady]);
+  }, [commitIfReady]);
 
   useEffect(() => {
-    if (!layout) return;
     prefetch();
     const id = scheduleIdle(() => {
       idleReady.current = true;
       commitIfReady();
     }, 2000);
     return () => cancelIdle(id);
-  }, [layout, prefetch, commitIfReady]);
+  }, [prefetch, commitIfReady]);
 
-  if (layout && Interactive) {
+  if (Interactive) {
     return (
       <Interactive
-        key={`${layout}:${boardKey}`}
+        key={`${BOARD_LAYOUT}:${boardKey}`}
         items={items}
-        layout={layout}
+        layout={BOARD_LAYOUT}
         weekStartParam={weekStartParam}
         returnMonth={returnMonth}
         returnWeek={returnWeek}
-          view={view}
-        />
+        view={view}
+      />
     );
   }
 

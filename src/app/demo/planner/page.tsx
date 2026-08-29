@@ -47,9 +47,9 @@ export default async function DemoPlannerPage({
             <>
               <p
                 className="text-sm font-medium tabular-nums text-ink"
-                aria-label={`${DEMO_ITEMS.length} dari 5 target minggu terisi`}
+                aria-label={`${DEMO_ITEMS.length} dari 5 target minggu`}
               >
-                {DEMO_ITEMS.length}/5 terisi
+                {DEMO_ITEMS.length} ide · target 5
               </p>
               <ChipButton disabled aria-label="Salin daftar rencana minggu ini">
                 Salin daftar
