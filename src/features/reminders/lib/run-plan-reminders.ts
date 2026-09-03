@@ -4,11 +4,15 @@ import {
   getTomorrowContext,
 } from "@/features/reminders/lib/eligibility";
 import { listWeekPlanItemsForReminder } from "@/features/planner/lib/week-share";
+import { listOwnedActivitiesForDay } from "@/features/activities/lib/activities";
 import { sendPushToMany } from "@/lib/web-push";
+import { getJakartaWeekdayMon0, getWeekStart } from "@/lib/week";
 
 /** Run daily H-1 plan reminders for all subscribed users. */
 export async function runPlanReminders(now = new Date()) {
   const { targetDate, weekStart, dayOfWeek } = getTomorrowContext(now);
+  const todayWeekStart = getWeekStart(now);
+  const todayDayOfWeek = getJakartaWeekdayMon0(now);
 
   const users = await prisma.user.findMany({
     where: { pushSubscriptions: { some: {} } },
@@ -43,10 +47,19 @@ export async function runPlanReminders(now = new Date()) {
     const tomorrowItems = items.filter(
       (i) => i.dayOfWeek === dayOfWeek && i.status !== "POSTED",
     );
+    const todayActivities = await listOwnedActivitiesForDay(
+      user.id,
+      todayWeekStart,
+      todayDayOfWeek,
+    );
+    const unfinishedActivitiesToday = todayActivities.filter(
+      (a) => !a.done,
+    ).length;
     const copy = buildPlanReminderCopy({
       tomorrowItems,
       weekItemCount: items.length,
       weeklyGoal: user.weeklyGoal,
+      unfinishedActivitiesToday,
     });
 
     if (!copy) {

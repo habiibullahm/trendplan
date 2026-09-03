@@ -66,15 +66,16 @@ export type DemoActivityItem = {
   id: string;
   dayOfWeek: number;
   title: string;
+  done: boolean;
 };
 
 /** Daily activities mock — independent from content slots. */
 export const DEMO_ACTIVITIES: DemoActivityItem[] = [
-  { id: "demo-act-1", dayOfWeek: 0, title: "Picnic di taman" },
-  { id: "demo-act-2", dayOfWeek: 0, title: "Nonton malam" },
-  { id: "demo-act-3", dayOfWeek: 5, title: "Date TMII" },
-  { id: "demo-act-4", dayOfWeek: 5, title: "Bianglala" },
-  { id: "demo-act-5", dayOfWeek: 6, title: "Brunch cafe" },
+  { id: "demo-act-1", dayOfWeek: 0, title: "Picnic di taman", done: true },
+  { id: "demo-act-2", dayOfWeek: 0, title: "Nonton malam", done: false },
+  { id: "demo-act-3", dayOfWeek: 5, title: "Date TMII", done: false },
+  { id: "demo-act-4", dayOfWeek: 5, title: "Bianglala", done: false },
+  { id: "demo-act-5", dayOfWeek: 6, title: "Brunch cafe", done: false },
 ];
 
 /**

@@ -40,14 +40,17 @@ export type ReminderCopy = {
 
 /**
  * Primary: unfinished item(s) for tomorrow.
- * Fallback: week under weeklyGoal when no tomorrow item.
+ * Then: today's unchecked activities, so they don't get lost overnight.
+ * Fallback: week under weeklyGoal when neither applies.
  */
 export function buildPlanReminderCopy(opts: {
   tomorrowItems: Pick<ContentItem, "title">[];
   weekItemCount: number;
   weeklyGoal: number;
+  unfinishedActivitiesToday?: number;
 }): ReminderCopy | null {
-  const { tomorrowItems, weekItemCount, weeklyGoal } = opts;
+  const { tomorrowItems, weekItemCount, weeklyGoal, unfinishedActivitiesToday = 0 } =
+    opts;
 
   if (tomorrowItems.length === 1) {
     return {
@@ -61,6 +64,21 @@ export function buildPlanReminderCopy(opts: {
       title: "Pengingat TrendPlan",
       body: `Besok ada ${tomorrowItems.length} ide siap disiapkan`,
       url: "/planner",
+    };
+  }
+
+  if (unfinishedActivitiesToday === 1) {
+    return {
+      title: "Pengingat TrendPlan",
+      body: "1 aktivitas hari ini belum dicentang",
+      url: "/planner?tab=aktivitas",
+    };
+  }
+  if (unfinishedActivitiesToday > 1) {
+    return {
+      title: "Pengingat TrendPlan",
+      body: `${unfinishedActivitiesToday} aktivitas hari ini belum dicentang`,
+      url: "/planner?tab=aktivitas",
     };
   }
 
