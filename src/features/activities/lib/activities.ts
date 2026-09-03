@@ -9,6 +9,7 @@ export type ActivityListItem = {
   id: string;
   dayOfWeek: number;
   title: string;
+  done: boolean;
 };
 
 export type ActivityViewerListItem = ActivityListItem & { weekPlanId: string };
@@ -20,7 +21,7 @@ export async function listActivitiesForWeekPlan(
   return prisma.activity.findMany({
     where: { weekPlanId },
     orderBy: [{ dayOfWeek: "asc" }, { createdAt: "asc" }],
-    select: { id: true, dayOfWeek: true, title: true },
+    select: { id: true, dayOfWeek: true, title: true, done: true },
   });
 }
 
@@ -53,6 +54,7 @@ export async function listActivitiesForViewerWeek(
       id: true,
       dayOfWeek: true,
       title: true,
+      done: true,
       weekPlanId: true,
       weekPlan: { select: { weekStart: true, userId: true } },
     },
@@ -71,10 +73,11 @@ export async function listActivitiesForViewerWeek(
       ? preferred
       : inWeek.filter((row) => row.weekPlan.userId === userId);
 
-  return chosen.map(({ id, dayOfWeek, title, weekPlanId }) => ({
+  return chosen.map(({ id, dayOfWeek, title, done, weekPlanId }) => ({
     id,
     dayOfWeek,
     title,
+    done,
     weekPlanId,
   }));
 }
@@ -90,6 +93,25 @@ export async function listActivitiesForWeek(
   );
   const plan = await getWeekPlanForViewer(userId, weekStart, opts);
   return listActivitiesForWeekPlan(plan.id);
+}
+
+/** Owned-week activities for a given day, for the nightly reminder job. */
+export async function listOwnedActivitiesForDay(
+  userId: string,
+  weekStart: Date,
+  dayOfWeek: number,
+): Promise<Pick<ActivityListItem, "title" | "done">[]> {
+  const canonical = getWeekStart(weekStart);
+  const plan = await prisma.weekPlan.findUnique({
+    where: { userId_weekStart: { userId, weekStart: canonical } },
+    select: {
+      activities: {
+        where: { dayOfWeek },
+        select: { title: true, done: true },
+      },
+    },
+  });
+  return plan?.activities ?? [];
 }
 
 /** Activity counts keyed by YYYY-MM-DD weekStart. */

@@ -130,6 +130,7 @@ model Activity {
   weekPlanId String
   dayOfWeek  Int
   title      String
+  done       Boolean  @default(false)
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
   weekPlan   WeekPlan @relation(fields: [weekPlanId], references: [id], onDelete: Cascade)

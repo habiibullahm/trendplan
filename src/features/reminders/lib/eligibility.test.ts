@@ -44,6 +44,29 @@ describe("buildPlanReminderCopy", () => {
     });
     assert.equal(copy, null);
   });
+
+  it("reminds about today's unfinished activities before weekly goal fallback", () => {
+    const copy = buildPlanReminderCopy({
+      tomorrowItems: [],
+      weekItemCount: 3,
+      weeklyGoal: 3,
+      unfinishedActivitiesToday: 2,
+    });
+    assert.ok(copy);
+    assert.match(copy!.body, /2 aktivitas hari ini belum dicentang/);
+    assert.equal(copy!.url, "/planner?tab=aktivitas");
+  });
+
+  it("prefers tomorrow item over today's unfinished activities", () => {
+    const copy = buildPlanReminderCopy({
+      tomorrowItems: [{ title: "Date night POV" }],
+      weekItemCount: 1,
+      weeklyGoal: 3,
+      unfinishedActivitiesToday: 5,
+    });
+    assert.ok(copy);
+    assert.match(copy!.body, /Besok: Date night POV/);
+  });
 });
 
 describe("ymdToDate smoke", () => {

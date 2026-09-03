@@ -142,6 +142,41 @@ export async function updateActivityAction(
   );
 }
 
+export async function toggleActivityDoneAction(
+  activityId: string,
+  done: boolean,
+) {
+  const userId = await requireUserId();
+
+  const activity = await prisma.activity.findFirst({
+    where: { id: activityId, weekPlan: weekPlanAccessWhere(userId) },
+    select: { id: true },
+  });
+  if (!activity) return;
+
+  await prisma.activity.update({
+    where: { id: activityId },
+    data: { done },
+  });
+
+  revalidateActivities();
+}
+
+/** Inline delete from the checklist row — no redirect, just revalidates. */
+export async function deleteActivityInlineAction(activityId: string) {
+  const userId = await requireUserId();
+
+  const activity = await prisma.activity.findFirst({
+    where: { id: activityId, weekPlan: weekPlanAccessWhere(userId) },
+    select: { id: true },
+  });
+  if (!activity) return;
+
+  await prisma.activity.delete({ where: { id: activityId } });
+
+  revalidateActivities();
+}
+
 export async function deleteActivityAction(formData: FormData) {
   const userId = await requireUserId();
   const activityId = String(formData.get("activityId") ?? "");
