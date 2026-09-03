@@ -136,8 +136,13 @@ export default async function PlannerPage({ searchParams }: Readonly<Props>) {
         <Suspense fallback={null}>
           <PlannerToastFromQuery />
         </Suspense>
-        <h1 className="sr-only">Planner Aktivitas</h1>
-        <div className="flex flex-wrap items-center justify-between gap-3">
+        <h1 className="font-[family-name:var(--font-fraunces)] text-2xl font-semibold tracking-tight text-ink sm:text-3xl">
+          Plan
+        </h1>
+        <p className="mt-1 text-sm text-ink-muted">
+          Susun ide kontenmu minggu ini, per hari.
+        </p>
+        <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
           <p className="min-w-0 text-sm text-ink-muted">
             Minggu {selection.weekIndex} · {weekLabel}
           </p>
@@ -261,8 +266,13 @@ export default async function PlannerPage({ searchParams }: Readonly<Props>) {
       <Suspense fallback={null}>
         <PlannerToastFromQuery />
       </Suspense>
-      <h1 className="sr-only">Planner</h1>
-      <div className="flex flex-wrap items-center justify-between gap-3">
+      <h1 className="font-[family-name:var(--font-fraunces)] text-2xl font-semibold tracking-tight text-ink sm:text-3xl">
+        Plan
+      </h1>
+      <p className="mt-1 text-sm text-ink-muted">
+        Susun ide kontenmu minggu ini, per hari.
+      </p>
+      <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
         <p className="min-w-0 text-sm text-ink-muted">
           Minggu {selection.weekIndex} · {weekLabel}
         </p>

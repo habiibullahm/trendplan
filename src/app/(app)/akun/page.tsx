@@ -59,9 +59,14 @@ export default async function AkunPage() {
       <Suspense fallback={null}>
         <AkunToastFromQuery />
       </Suspense>
-      <h1 className="sr-only">Akun</h1>
+      <h1 className="font-[family-name:var(--font-fraunces)] text-2xl font-semibold tracking-tight text-ink sm:text-3xl">
+        Akun
+      </h1>
+      <p className="mt-1 text-sm text-ink-muted">
+        Kelola profil, preferensi, dan keamanan akunmu.
+      </p>
 
-      <div className="mt-0">
+      <div className="mt-4">
         <AkunAvatar
           imageUrl={user.imageUrl}
           initialLetter={initial}
