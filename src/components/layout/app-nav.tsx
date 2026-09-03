@@ -2,14 +2,15 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { CalendarDays, Home, TrendingUp, User } from "lucide-react";
 import { scrollWindowTop } from "@/components/layout/scroll-to-top";
 import { usePlannerLayout } from "@/hooks/use-planner-layout";
 
 const primaryNav = [
-  { href: "/dashboard", label: "Beranda" },
-  { href: "/tren", label: "Tren" },
-  { href: "/planner", label: "Plan" },
-  { href: "/akun", label: "Akun" },
+  { href: "/dashboard", label: "Beranda", icon: Home },
+  { href: "/tren", label: "Tren", icon: TrendingUp },
+  { href: "/planner", label: "Plan", icon: CalendarDays },
+  { href: "/akun", label: "Akun", icon: User },
 ] as const;
 
 function withBase(basePath: string, href: string) {
@@ -89,6 +90,7 @@ export function BottomNav({ basePath = "" }: { basePath?: string }) {
         {primaryNav.map((item) => {
           const href = withBase(basePath, item.href);
           const active = isActive(pathname, item.href, basePath);
+          const Icon = item.icon;
           return (
             <li key={item.href}>
               <Link
@@ -103,14 +105,7 @@ export function BottomNav({ basePath = "" }: { basePath?: string }) {
                     : "text-ink-muted hover:text-ink"
                 }`}
               >
-                <span
-                  className={`h-1 w-1 rounded-full transition-colors duration-200 ${
-                    active
-                      ? "bg-coral"
-                      : "bg-transparent group-hover:bg-ink-muted/50"
-                  }`}
-                  aria-hidden
-                />
+                <Icon className="h-5 w-5" strokeWidth={active ? 2.25 : 1.75} aria-hidden />
                 {item.label}
               </Link>
             </li>
